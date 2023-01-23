@@ -30,5 +30,6 @@
   "editor.autoClosingDelete": "never",
   "editor.autoClosingOvertype": "never",
   "editor.autoClosingQuotes": "never",
-  "editor.autoSurround": "never"
+  "editor.autoSurround": "never",
+  "wpilib.autoStartRioLog": false
 }
