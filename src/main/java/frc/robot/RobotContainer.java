@@ -20,7 +20,6 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Wrist;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -37,7 +36,6 @@ public class RobotContainer {
   private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
   public Chassis chassis = new Chassis();
   public Arm arm = new Arm();
-  public Wrist wrist = new Wrist();
   public Vision vision = new Vision();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -60,7 +58,13 @@ public class RobotContainer {
         ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2) );}
         ,chassis)
       );
-
+      //These values for the controller, these is joystick and will have to be adjusted
+      arm.setDefaultCommand(new RunCommand(
+        ()->{
+          arm.armMotor.set(driver.getRawAxis(1)); 
+          arm.retractMotor.set(driver.getRawAxis(2));
+        }
+      , arm));
 
     // Configure the trigger bindings
     configureBindings();
