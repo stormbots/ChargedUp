@@ -19,6 +19,7 @@ import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Tower;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Wrist;
 
@@ -39,6 +40,7 @@ public class RobotContainer {
   public Arm arm = new Arm();
   public Wrist wrist = new Wrist();
   public Vision vision = new Vision();
+  public Tower tower = new Tower();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick driver = new CommandJoystick(0);
