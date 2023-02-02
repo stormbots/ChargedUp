@@ -34,10 +34,16 @@ public class Robot extends TimedRobot {
     String key = "/bot/isCompBot";
     Constants.isCompBot = Preferences.getBoolean(key,true);
     if(! Preferences.containsKey(key)){
-      System.err.println("ROBOT NAME NOT DEFINED:");
+      System.err.println("ROBOT COMP STATE NOT DEFINED:");
       System.err.println("Assuming COMP for safety: View Preferences to change");
+      Preferences.setBoolean(key, true);
     }
-    // Preferences.setBoolean(key, Constants.isCompBot); // Do we want to set manually?
+    if(Constants.isCompBot==true){
+      System.err.println("Comp Bot Detected!");
+    }else{
+      System.err.println("Practice Bot Detected! Using practice bot values");
+      Constants.SetPracticebotValues();
+    }
     
     robotContainer = new RobotContainer();
   }

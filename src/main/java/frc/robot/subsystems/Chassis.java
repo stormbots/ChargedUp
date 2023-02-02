@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ChassisConstants;
+import frc.robot.Constants.HardwareID;
 
 public class Chassis extends SubsystemBase {
   
@@ -49,10 +51,10 @@ public class Chassis extends SubsystemBase {
 
 
     //CAN ID's are placeholders
-    leftLeader = new CANSparkMax(1,MotorType.kBrushless);
-    leftFollower = new CANSparkMax(2,MotorType.kBrushless);
-    rightLeader = new CANSparkMax(3,MotorType.kBrushless);
-    rightFollower = new CANSparkMax(4,MotorType.kBrushless);
+    leftLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorLeft,MotorType.kBrushless);
+    leftFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorLeftFollower,MotorType.kBrushless);
+    rightLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorRight,MotorType.kBrushless);
+    rightFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorRightFollower,MotorType.kBrushless);
     
     //Encoders for each side
     leftEncoder = leftLeader.getEncoder();
@@ -75,11 +77,11 @@ public class Chassis extends SubsystemBase {
     leftLeader.follow(leftFollower);
     rightLeader.follow(rightFollower);
 
-    leftLeader.setInverted(true);
-    rightLeader.setInverted(!leftLeader.getInverted());
+    leftLeader.setInverted(ChassisConstants.kLeftInverted);
+    rightLeader.setInverted(ChassisConstants.kRightInverted);
 
     //Declare drivetrain
-    shifter = new Solenoid(PneumaticsModuleType.REVPH, Constants.isCompBot?1:1);
+    shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
 
     shiftManual(Gear.LOW);
   }
