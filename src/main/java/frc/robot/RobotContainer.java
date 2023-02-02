@@ -11,12 +11,14 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.Intake;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Vision;
@@ -61,8 +63,8 @@ public class RobotContainer {
       //These values for the controller, these is joystick and will have to be adjusted
       arm.setDefaultCommand(new RunCommand(
         ()->{
-          arm.armMotor.set(driver.getRawAxis(1)); 
-          arm.retractMotor.set(driver.getRawAxis(2));
+          arm.driveArm(operator.getRawAxis(0)); 
+          arm.driveBoom(operator.getRawAxis(1));
         }
       , arm));
 
@@ -86,7 +88,15 @@ public class RobotContainer {
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    driver.button(0).whileTrue(exampleSubsystem.exampleMethodCommand());
+    driver.button(1).whileTrue(exampleSubsystem.exampleMethodCommand());
+    operator.button(1).whileTrue(new InstantCommand(()->arm.pickupUprightCone()));
+    operator.button(1).whileFalse(new InstantCommand(()->arm.handMotor.set(0.0)));
+    operator.button(2).whileTrue(new InstantCommand(()->arm.pickupCube()));
+    operator.button(2).whileFalse(new InstantCommand(()->arm.handMotor.set(0.0)));
+    operator.button(4).whileTrue(new InstantCommand(()->arm.pickupTippedCone()));
+    operator.button(4).whileFalse(new InstantCommand(()->arm.handMotor.set(0.0)));
+
+    operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
   }
 
   /**
@@ -97,7 +107,7 @@ public class RobotContainer {
   public Command getAutonomousCommand(){
     // An example command will be run in autonomous
 
-    // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.
+    // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.f
     // return Autos.exampleAuto(exampleSubsystem);
     return autoChooser.getSelected();
   }

@@ -5,8 +5,10 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
@@ -18,24 +20,46 @@ import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
-    /** Motors for the Tower */
+  public static enum Intake{
+    /** Utility enum to provide named values for intake solenoid states 
+    * This helps keep consistent types and umambiguous functions
+    */
+    OPEN(true, true),
+    CLOSED(false, false);
+    private boolean compbot,practicebot;
+    Intake(boolean compbot, boolean practicebot){
+      this.compbot = compbot;
+      this.practicebot = practicebot;
+    }
+    public boolean bool(){return Constants.isCompBot ? this.compbot : this.practicebot;};
+  }
+
+  
+    //-Motors to move the arm up and down
     public CANSparkMax armMotor = new CANSparkMax(5, MotorType.kBrushless);
     public CANSparkMax armMotorA = new CANSparkMax(6, MotorType.kBrushless);
-    public CANSparkMax retractMotor = new CANSparkMax(7, MotorType.kBrushless);
-    public RelativeEncoder encoderArmMotor = armMotor.getEncoder();
-    public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
-    DutyCycleEncoder armAbsEncoder = new DutyCycleEncoder(5);
+    private SparkMaxPIDController armPID;
 
-    /** Motors for the Arm*/
-    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
+    //-Motor to move the arm in and out
+    public CANSparkMax boomMotor = new CANSparkMax(7, MotorType.kBrushless);
+    private SparkMaxPIDController boomPID;
+    //Analog Encoder
+    public DutyCycleEncoder shaftEncoder = new DutyCycleEncoder(0);//This is the DIO port on the roborio this is plugged into
+
+    public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
+
+    /** Motor + Solenoidfor the intake**/
+    public CANSparkMax handMotor = new CANSparkMax(9, MotorType.kBrushless);
+    Solenoid wristSolenoid = new Solenoid(PneumaticsModuleType.REVPH, 3); //temp value
     // public RelativeEncoder encoderRotateMotor = rotateMotor.getEncoder();
     
-    /** Solenod for the hand Variables */
+    //Wrist Servo for up/down
     Servo wristServo = new Servo(8);
-    Solenoid wristSolenoid = new Solenoid(PneumaticsModuleType.REVPH, 3); //temp value
-    public final boolean HAND_OPEN = true;
+   
+    //Wrist variables
     SlewRateLimiter wristAngleEstimate = new SlewRateLimiter(2);
     double wristAngleTarget = 0.0;
 
@@ -44,24 +68,31 @@ public class Arm extends SubsystemBase {
     double targetArmPos = 0.0;
     double currentArmPos = 0.0;
     double armPower = 0.0;
-    double armAngle = 0.0;
+
     
     /** Variables for the hand */
-    double intakePower = 0.0;
-
-    /** Arm Feet Forward */ 
-    double kArmFF;
+    public double intakeSpeed = 0.3;
 
     /** Arm Max and Min values for angles */
     public static final double MAX_ANGLE = 90; //temp values
     public static final double MIN_ANGLE = 0; //temp values
     
-    /** Wrist Linear Actuator Variables */
-    double m_speed = 10.0; //temp value 10 mm/sec
-    double m_length = 50.0;
-    double setPos;
-    double curPos;
+    //Constants for PIDS
+    public double kBoomP =0.0;
+    public double kBoomI =0.0;
+    public double kBoomD =0.0;
 
+    public double kBoomFF = 0.0;
+
+    public double kArmP =0.0;
+    public double kArmI =0.0;
+    public double kArmD =0.0;
+
+    public double kArmFF = 0.0;
+
+    //Angle from analog encoder
+    public double armAngle =0.0;
+    
     /**
      * Parameters for L16-R Actuonix Linear Actuators
      *
@@ -71,63 +102,96 @@ public class Arm extends SubsystemBase {
     */
     public Arm() {
       /** Note: this JUST FOR PRACTICE BOT!! */
-      intakeMotor.setInverted(true); //Double check this!
+      handMotor.setInverted(true); //Double check this!
 
-      //SmartDashboard stuff
-      //SmartDashboard.putData("Arm/Position", getArmAngle());
+      //Current Limits, Arbitrary
+      armMotor.setSmartCurrentLimit(10);
+      armMotorA.setSmartCurrentLimit(10);
 
-      armMotor.setInverted(false);
-      armMotorA.follow(armMotor,true);
+      boomMotor.setSmartCurrentLimit(10);
+
+      handMotor.setSmartCurrentLimit(10);
+
+      armMotorA.follow(armMotorA,true);
       
+      //PIDS
+      armMotor.getPIDController();
+
+      armPID.setP(kArmP);
+      armPID.setI(kArmI);
+      armPID.setD(kArmD);
+
+      armPID.setFF(kArmFF);
+
+      boomMotor.getPIDController();
+
+      boomPID.setP(kBoomP);
+      boomPID.setI(kBoomP);
+      boomPID.setD(kBoomP);
+
+      boomPID.setFF(kBoomFF);
+
       /** Set the bounds for thwe wrist */
       wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
-
+      
+      shaftEncoder.reset();
       /**  */
     }
 
-
-    /** Solenoid stuff */
-    //rotateMotor.setSmartCurrentLimit(30); //Broke fix later for safety
-    
-
-    @Override
-    public void periodic() {
-        // This method will be called once per scheduler run
-        /** SmartDashboard for the arm */
-        SmartDashboard.getNumber("arm/ArmAngle", encoderArmMotor.getPosition());
-
-    }
-    
-    // private Mode mode = Mode.CLOSEDLOOP;
-
-    /** Boom Code */
     public Arm setAngle(double pos) {
         targetArmPos = pos;
         return this;
     }
     public double getArmAngle() {
-        return encoderArmMotor.getPosition();
+        return armMotor.getEncoder().getPosition();
     }
     public boolean isOnTarget(double tolerance) {
         return Clamp.bounded(getArmAngle(), targetArmPos - tolerance, targetArmPos + tolerance);
     }
     public void configSetArmEncoderPosition(double angle) {
-        encoderArmMotor.setPosition((int)armAnalogLerp.getReverse(angle));
+        armMotor.getEncoder().setPosition((int)armAnalogLerp.getReverse(angle));
     }
 
-    public Arm setArmLength(double length) { //Do this later
-         
-      return this;
+
+    public void setBoomLength(double length) { //Do this later
+        boomPID.setReference(0, ControlType.kPosition, 0, 0, ArbFFUnits.kVoltage);
     }
 
-    /** This for the Hand */
-    public void openHand(){
-        wristSolenoid.set(HAND_OPEN);
+    public void driveBoom(double power){
+      boomMotor.set(power/4);
     }
-    public void closeHand(){
-        wristSolenoid.set(!HAND_OPEN);
+    public void driveArm(double power){
+      armMotor.set(power/4);
     }
 
+
+    /**Hand Methods*/
+    public void pickupTippedCone(){
+      wristServo.set(0);//Make hand point at ground
+      actuateHand(Intake.CLOSED);//Close intake to pickup a cone
+      handMotor.set(intakeSpeed);//Intake
+    }
+
+    public void pickupUprightCone(){
+      wristServo.set(0.5);//Make hand level TODO more sophisticated
+      actuateHand(Intake.CLOSED);//Close intake to pickup a cone
+      handMotor.set(intakeSpeed);//Intake
+    }
+
+    public void pickupCube(){
+      wristServo.set(0.5);//Make hand level
+      actuateHand(Intake.OPEN);//Open intake to pickup cube
+      handMotor.set(intakeSpeed);
+    }
+
+    public void releaseGamePiece(){
+      actuateHand(Intake.OPEN);
+      handMotor.set(-intakeSpeed);
+    }
+
+    public void actuateHand(Intake intake){
+      wristSolenoid.set(intake.bool());
+    }
     /** This for the wrist */
     // Run this method in any periodic function to update the position estimation of your servo
     public Arm setWristAngle(double angle) {
@@ -144,10 +208,21 @@ public class Arm extends SubsystemBase {
       return wristAngleEstimate.calculate(wristAngleTarget);
     }
     //Checks if the servo is at its target position, must be calling {@link #updateCurPos() updateCurPos()} periodically @return true when servo is at its target
-    public boolean isFinished() {
-      return curPos == setPos;
-    }
+    // public boolean isFinished() {
+    //   return curPos == setPos;
+    // }
 
+    
+    @Override
+    public void periodic() {
+
+      
+        // This method will be called once per scheduler run
+        /** SmartDashboard for the arm */
+        SmartDashboard.getNumber("arm/ArmAngle", armMotor.getEncoder().getPosition());
+
+    }
+    
     @Override
     public void simulationPeriodic() {
         // This method will be called once per scheduler run during simulation
