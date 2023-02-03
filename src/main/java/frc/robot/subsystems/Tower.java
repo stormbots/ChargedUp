@@ -13,16 +13,18 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Tower extends SubsystemBase {
 
-  CANSparkMax motor = new CANSparkMax(19, MotorType.kBrushless);
+  CANSparkMax motor = new CANSparkMax(Constants.HardwareID.kTurretMotor, MotorType.kBrushless);
   RelativeEncoder encoder = motor.getEncoder();
   SparkMaxPIDController pid = motor.getPIDController();
   double ks = 0; //Volts
 
   /** Creates a new Tower. */
   public Tower() {
+    
     encoder.setPositionConversionFactor(10);
     encoder.setPosition(0); //TODO read current position from absdolute encoder
 

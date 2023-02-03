@@ -48,8 +48,8 @@ public final class Constants {
     // public static int kFunnelRightSolenoid=6;
 
     //Turret //TBD
-    // public static int kTurretMotor = ???;
-    // public static int kTurretAnalogEncoderChannel=???;
+    public static int kTurretMotor = 15;
+    public static int kTurretAnalogEncoderChannel=6;
 
     //Vision and driver stuff
     public static int kCameraFrontID=0;
