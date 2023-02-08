@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Arm.Intake;
+import frc.robot.subsystems.Arm.IntakePosition;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Vision;
@@ -87,16 +87,34 @@ public class RobotContainer {
         .onTrue(new ExampleCommand(exampleSubsystem));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
+    // cancelling on release..
+    InstantCommand stopArm = new InstantCommand(()->{
+      arm.driveArm(0); arm.driveBoom(0);
+    }, arm);
     driver.button(1).whileTrue(exampleSubsystem.exampleMethodCommand());
-    operator.button(1).whileTrue(new InstantCommand(()->arm.pickupUprightCone()));
-    operator.button(1).whileFalse(new InstantCommand(()->arm.handMotor.set(0.0)));
-    operator.button(2).whileTrue(new InstantCommand(()->arm.pickupCube()));
-    operator.button(2).whileFalse(new InstantCommand(()->arm.handMotor.set(0.0)));
-    operator.button(4).whileTrue(new InstantCommand(()->arm.pickupTippedCone()));
-    operator.button(4).whileFalse(new InstantCommand(()->arm.handMotor.set(0.0)));
+    // pick up a upright cone
+    operator.button(1).whileTrue(new InstantCommand(()->
+      arm.setWristAngle(0).setHand(IntakePosition.OPEN).setIntake(-0.05)
+      ,arm)); 
+    operator.button(1).onFalse(stopArm);
 
-    operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
+    //pick up cube
+    operator.button(2).whileTrue(new InstantCommand(()->{
+      arm.setWristAngle(0).setIntake(-0.05).setHand(IntakePosition.CLOSED);
+      }
+      ,arm
+      ));
+    operator.button(2).onFalse(stopArm);
+    //pick up a tipped cone
+    operator.button(4).whileTrue(new InstantCommand(()->{
+      arm.setWristAngle(0).setIntake(-0.05).setHand(IntakePosition.CLOSED).setIntake(-0.05);
+    }
+    ,arm
+    ));
+    operator.button(4).onFalse(stopArm);
+    
+    //Release the game piece
+    // operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
   }
 
   /**

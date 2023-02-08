@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.nio.channels.ClosedByInterruptException;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -14,6 +16,7 @@ import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.estimator.AngleStatistics;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -22,16 +25,17 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.IntakeConstants;
 
 public class Arm extends SubsystemBase {
-  public static enum Intake{
+  public static enum IntakePosition{
     /** Utility enum to provide named values for intake solenoid states 
     * This helps keep consistent types and umambiguous functions
     */
     OPEN(true, true),
     CLOSED(false, false);
     private boolean compbot,practicebot;
-    Intake(boolean compbot, boolean practicebot){
+    IntakePosition(boolean compbot, boolean practicebot){
       this.compbot = compbot;
       this.practicebot = practicebot;
     }
@@ -73,6 +77,7 @@ public class Arm extends SubsystemBase {
     
     /** Variables for the hand */
     public double intakeSpeed = 0.3;
+    public boolean isOpen;
 
     /** Arm Max and Min values for angles */
     public static final double MAX_ANGLE = 90; //temp values
@@ -83,13 +88,11 @@ public class Arm extends SubsystemBase {
     public double kBoomI =0.0;
     public double kBoomD =0.0;
 
-    public double kBoomFF = 0.0;
 
     public double kArmP =0.0;
     public double kArmI =0.0;
     public double kArmD =0.0;
 
-    public double kArmFF = 0.0;
 
     //Angle from analog encoder
     public double armAngle =0.0;
@@ -125,14 +128,12 @@ public class Arm extends SubsystemBase {
       armPID.setP(kArmP);
       armPID.setI(kArmI);
       armPID.setD(kArmD);
-
-      armPID.setFF(kArmFF);
+      armPID.setFF(0);
 
       boomPID.setP(kBoomP);
-      boomPID.setI(kBoomP);
-      boomPID.setD(kBoomP);
-
-      boomPID.setFF(kBoomFF);
+      boomPID.setI(kBoomI);
+      boomPID.setD(kBoomD);
+      boomPID.setFF(0);
 
       /** Set the bounds for thwe wrist */
       wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
@@ -169,32 +170,15 @@ public class Arm extends SubsystemBase {
 
 
     /**Hand Methods*/
-    public void pickupTippedCone(){
-      wristServo.set(0);//Make hand point at ground
-      actuateHand(Intake.CLOSED);//Close intake to pickup a cone
-      handMotor.set(intakeSpeed);//Intake
-    }
-
-    public void pickupUprightCone(){
-      wristServo.set(0.5);//Make hand level TODO more sophisticated
-      actuateHand(Intake.CLOSED);//Close intake to pickup a cone
-      handMotor.set(intakeSpeed);//Intake
-    }
-
-    public void pickupCube(){
-      wristServo.set(0.5);//Make hand level
-      actuateHand(Intake.OPEN);//Open intake to pickup cube
-      handMotor.set(intakeSpeed);
-    }
-
-    public void releaseGamePiece(){
-      actuateHand(Intake.OPEN);
-      handMotor.set(-intakeSpeed);
-    }
-
-    public void actuateHand(Intake intake){
+    public Arm setHand(IntakePosition intake){
       wristSolenoid.set(intake.bool());
+      return this;
     }
+    public Arm setIntake(double power){
+      handMotor.set(power);
+      return this;
+    }
+
     /** This for the wrist */
     // Run this method in any periodic function to update the position estimation of your servo
     public Arm setWristAngle(double angle) {
@@ -223,6 +207,27 @@ public class Arm extends SubsystemBase {
         // This method will be called once per scheduler run
         /** SmartDashboard for the arm */
         SmartDashboard.getNumber("arm/ArmAngle", armMotor.getEncoder().getPosition());
+
+        //arm/open/wrist SmartDashboard stuff
+        SmartDashboard.getNumber("arm/openwrist/targetWristPos", targetArmPos);
+        // SmartDashboard.getBoolean("arm/wrist/OpenOrClosed", actuateHand(Intake.CLOSED));
+        // SmartDashboard.getNumber("arm/wrist/voltage", );
+
+        // // aropem/wrist/
+        //   // targetArmPos
+        //   open or close 
+        //   output voltage
+        // arm/boom 
+        //   rotations
+        //   targetlen
+        //   actuallengt
+        //   utput voltage
+        // arm/ angle
+        //   targetangle
+        //   measured arm Angle
+        //   measured abs encoder angle 
+        //   output volts
+
 
     }
     
