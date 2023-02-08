@@ -8,6 +8,8 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,6 +35,7 @@ public class RobotContainer {
   //NavX Gyroscope and Accellerometer
   public AHRS navx = new AHRS(Port.kMXP);
   Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
+  public PowerDistribution pdp = new PowerDistribution(0,ModuleType.kCTRE);
 
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
@@ -52,12 +55,13 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(){
+    pdp.clearStickyFaults();
     navx.reset();
 
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
       new RunCommand(
-        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2) );}
+        ()->{chassis.arcadeDrive( driver.getRawAxis(1), driver.getRawAxis(2) );}
         ,chassis)
       );
       //These values for the controller, these is joystick and will have to be adjusted

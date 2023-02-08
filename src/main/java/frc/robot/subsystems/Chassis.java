@@ -45,7 +45,7 @@ public class Chassis extends SubsystemBase {
 
   Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);;
 
-  DifferentialDrive chassis = new DifferentialDrive(leftLeader, rightLeader);
+  DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
 
   /** Creates a new Chassis. */
   public Chassis() {
@@ -61,14 +61,14 @@ public class Chassis extends SubsystemBase {
 
       //m.setOpenLoopRampRate(0.2);
 
-      m.setIdleMode(IdleMode.kBrake);
+      m.setIdleMode(IdleMode.kCoast);
 
       //Restricts each motor to a max of 60 amps
       m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current limit to chassis
     }
     //Set motors to follow the same side
-    leftLeader.follow(leftFollower);
-    rightLeader.follow(rightFollower);
+    leftFollower.follow(leftLeader);
+    rightFollower.follow(rightLeader);
 
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
@@ -77,7 +77,7 @@ public class Chassis extends SubsystemBase {
   }
   
   public void arcadeDrive(double power, double turn) {
-    chassis.arcadeDrive(power,turn);
+    driveTrain.arcadeDrive(power,turn);
   }
 
   public void shiftManual(Gear gear){
