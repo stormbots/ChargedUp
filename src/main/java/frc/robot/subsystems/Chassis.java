@@ -34,31 +34,24 @@ public class Chassis extends SubsystemBase {
     public boolean bool(){return Constants.isCompBot ? this.compbot : this.practicebot;};
   }
 
-  private CANSparkMax leftLeader;
-  private CANSparkMax rightLeader;
-  private CANSparkMax leftFollower;
-  private CANSparkMax rightFollower;
+  //CAN ID's are placeholders
+  private CANSparkMax leftLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorLeft,MotorType.kBrushless);
+  private CANSparkMax leftFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorLeftFollower,MotorType.kBrushless);
+  private CANSparkMax rightLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorRight,MotorType.kBrushless);
+  private CANSparkMax rightFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorRightFollower,MotorType.kBrushless);
+  
+  private RelativeEncoder leftEncoder = leftLeader.getEncoder();
+  private RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
-  public RelativeEncoder leftEncoder;
-  public RelativeEncoder rightEncoder;
+  Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);;
 
-  Solenoid shifter;
-
-  DifferentialDrive chassis;
+  DifferentialDrive chassis = new DifferentialDrive(leftLeader, rightLeader);
 
   /** Creates a new Chassis. */
   public Chassis() {
 
 
-    //CAN ID's are placeholders
-    leftLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorLeft,MotorType.kBrushless);
-    leftFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorLeftFollower,MotorType.kBrushless);
-    rightLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorRight,MotorType.kBrushless);
-    rightFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorRightFollower,MotorType.kBrushless);
     
-    //Encoders for each side
-    leftEncoder = leftLeader.getEncoder();
-    rightEncoder = rightLeader.getEncoder();
     //Reset Encoders
     leftEncoder.setPosition(0);
     rightEncoder.setPosition(0);
@@ -79,9 +72,6 @@ public class Chassis extends SubsystemBase {
 
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
-
-    //Declare drivetrain
-    shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
 
     shiftManual(Gear.LOW);
   }

@@ -30,8 +30,8 @@ public final class Constants {
     // public static int kChassisBrakeSolenoid=3; //Potential hardware, undecided
     
     // Arm inputs
-    public static int kArmMotor=5;
-    public static int kArmMotorFollower=6;
+    public static int kArmMotor=6;
+    // public static int kArmMotorFollower=6;
     public static int kRetractMotor=7;
     public static int kRetractBrakeSolenoid=3;
     public static int kArmAnalogEncoderChannel=1;

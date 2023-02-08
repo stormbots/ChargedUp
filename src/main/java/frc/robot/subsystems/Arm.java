@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
@@ -39,25 +40,25 @@ public class Arm extends SubsystemBase {
 
   
     //-Motors to move the arm up and down
-    public CANSparkMax armMotor = new CANSparkMax(5, MotorType.kBrushless);
-    public CANSparkMax armMotorA = new CANSparkMax(6, MotorType.kBrushless);
-    private SparkMaxPIDController armPID;
+    public CANSparkMax armMotor = new CANSparkMax(Constants.HardwareID.kArmMotor, MotorType.kBrushless);
+    //public CANSparkMax armMotorA = new CANSparkMax(Constants.HardwareID.kArmMotorFollower, MotorType.kBrushless);
+    private SparkMaxPIDController armPID = armMotor.getPIDController();
 
     //-Motor to move the arm in and out
-    public CANSparkMax boomMotor = new CANSparkMax(7, MotorType.kBrushless);
-    private SparkMaxPIDController boomPID;
+    public CANSparkMax boomMotor = new CANSparkMax(Constants.HardwareID.kRetractMotor, MotorType.kBrushless);
+    private SparkMaxPIDController boomPID = boomMotor.getPIDController();
     //Analog Encoder
-    public DutyCycleEncoder shaftEncoder = new DutyCycleEncoder(0);//This is the DIO port on the roborio this is plugged into
+    public DutyCycleEncoder shaftEncoder = new DutyCycleEncoder(Constants.HardwareID.kArmAnalogEncoderChannel);//This is the DIO port on the roborio this is plugged into
 
     public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
 
     /** Motor + Solenoidfor the intake**/
-    public CANSparkMax handMotor = new CANSparkMax(9, MotorType.kBrushless);
-    Solenoid wristSolenoid = new Solenoid(PneumaticsModuleType.REVPH, 3); //temp value
+    public CANSparkMax handMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
+    Solenoid wristSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); //temp value
     // public RelativeEncoder encoderRotateMotor = rotateMotor.getEncoder();
     
     //Wrist Servo for up/down
-    Servo wristServo = new Servo(8);
+    Servo wristServo = new Servo(Constants.HardwareID.kWristServoChannel);
    
     //Wrist variables
     SlewRateLimiter wristAngleEstimate = new SlewRateLimiter(2);
@@ -103,27 +104,29 @@ public class Arm extends SubsystemBase {
     public Arm() {
       /** Note: this JUST FOR PRACTICE BOT!! */
       handMotor.setInverted(true); //Double check this!
+      armMotor.setIdleMode(IdleMode.kBrake);
+      // armMotorA.setIdleMode(IdleMode.kBrake);
+      boomMotor.setIdleMode(IdleMode.kBrake);
+      handMotor.setIdleMode(IdleMode.kBrake);
+
 
       //Current Limits, Arbitrary
       armMotor.setSmartCurrentLimit(10);
-      armMotorA.setSmartCurrentLimit(10);
+      //armMotorA.setSmartCurrentLimit(10);
 
       boomMotor.setSmartCurrentLimit(10);
 
       handMotor.setSmartCurrentLimit(10);
 
-      armMotorA.follow(armMotorA,true);
+      //armMotorA.follow(armMotorA,true);
       
       //PIDS
-      armMotor.getPIDController();
 
       armPID.setP(kArmP);
       armPID.setI(kArmI);
       armPID.setD(kArmD);
 
       armPID.setFF(kArmFF);
-
-      boomMotor.getPIDController();
 
       boomPID.setP(kBoomP);
       boomPID.setI(kBoomP);
