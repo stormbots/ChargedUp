@@ -20,8 +20,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
-  UsbCamera camera1;
-  UsbCamera camera2;
+  // UsbCamera camera1;
+  // UsbCamera camera2;
   private RobotContainer robotContainer;
   
   /**
@@ -96,8 +96,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit(){
-    if(camera1 == null) {camera1 = CameraServer.startAutomaticCapture(0);}
-    if(camera2 ==null)  {camera2 = CameraServer.startAutomaticCapture(2);}
+    // if(camera1 == null) {camera1 = CameraServer.startAutomaticCapture(0);}
+    // if(camera2 ==null)  {camera2 = CameraServer.startAutomaticCapture(2);}
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

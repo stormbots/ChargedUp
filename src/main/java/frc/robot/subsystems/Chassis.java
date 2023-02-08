@@ -12,6 +12,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ChassisConstants;
@@ -43,7 +44,7 @@ public class Chassis extends SubsystemBase {
   private RelativeEncoder leftEncoder = leftLeader.getEncoder();
   private RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
-  Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);;
+  Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
 
   DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
 
@@ -61,10 +62,10 @@ public class Chassis extends SubsystemBase {
 
       //m.setOpenLoopRampRate(0.2);
 
-      m.setIdleMode(IdleMode.kCoast);
-
+      m.setIdleMode(IdleMode.kBrake);
+      m.clearFaults();
       //Restricts each motor to a max of 60 amps
-      m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current limit to chassis
+      m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current li.mit to chassis
     }
     //Set motors to follow the same side
     leftFollower.follow(leftLeader);
@@ -88,5 +89,7 @@ public class Chassis extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
+   
   }
 }

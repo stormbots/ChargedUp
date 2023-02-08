@@ -118,7 +118,7 @@ public class RobotContainer {
     operator.button(4).onFalse(stopArm);
     
     //Release the game piece
-    // operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
+    //operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
   }
 
   /**
