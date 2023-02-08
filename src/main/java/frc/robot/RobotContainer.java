@@ -14,11 +14,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Funnel;
 import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Wrist;
 
@@ -39,10 +41,13 @@ public class RobotContainer {
   public Arm arm = new Arm();
   public Wrist wrist = new Wrist();
   public Vision vision = new Vision();
+  public Funnel funnel = new Funnel();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick driver = new CommandJoystick(0);
   private final CommandJoystick operator = new CommandJoystick(1);
+
+
 
   //Commands
   ExampleCommand exampleCommand = new ExampleCommand(exampleSubsystem);
@@ -83,6 +88,28 @@ public class RobotContainer {
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
     driver.button(0).whileTrue(exampleSubsystem.exampleMethodCommand());
+    //Down Command for the funnel
+    operator.button(8).whileTrue(new InstantCommand(()->{
+      setFunnelPosition(FunnelPosition.DOWN);
+    }, funnel
+    ));
+    //Up Command for the funnel 
+    operator.button(11).whileTrue(new InstantCommand(()->{
+      setFunnelPosition(FunnelPosition.UP);
+    }, funnel
+    ));
+    //Rotate the cones Forward
+    operator.button(9).whileTrue(new InstantCommand(()->{
+      rightFunnelMotor.set(0.2);
+    }, funnel
+    ));
+    //Rotate the cones Backward
+    operator.button(10).whileTrue(new InstantCommand(()->{
+      rightFunnelMotor.set(-0.2);
+    }, funnel
+    ));
+    
+  
   }
 
   /**
