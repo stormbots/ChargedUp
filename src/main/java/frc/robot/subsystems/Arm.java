@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import java.nio.channels.ClosedByInterruptException;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -52,7 +53,7 @@ public class Arm extends SubsystemBase {
     public CANSparkMax boomMotor = new CANSparkMax(Constants.HardwareID.kRetractMotor, MotorType.kBrushless);
     private SparkMaxPIDController boomPID = boomMotor.getPIDController();
     //Analog Encoder
-    public DutyCycleEncoder shaftEncoder = new DutyCycleEncoder(Constants.HardwareID.kArmAnalogEncoderChannel);//This is the DIO port on the roborio this is plugged into
+    public DutyCycleEncoder armAbsEncoder = new DutyCycleEncoder(Constants.HardwareID.kArmAnalogEncoderChannel);//This is the DIO port on the roborio this is plugged into
 
     public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
 
@@ -138,7 +139,7 @@ public class Arm extends SubsystemBase {
       /** Set the bounds for thwe wrist */
       wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
       
-      shaftEncoder.reset();
+      armAbsEncoder.reset();
       /**  */
     }
 
@@ -159,6 +160,16 @@ public class Arm extends SubsystemBase {
 
     public void setBoomLength(double length) { //Do this later
         boomPID.setReference(0, ControlType.kPosition, 0, 0, ArbFFUnits.kVoltage);
+    }
+    public double getBoomLength(){
+      double rotations = boomMotor.getEncoder().getPosition()/boomMotor.getEncoder().getPositionConversionFactor();
+      double id = .5;
+      double strapwidth = 0.03;
+      double od = 2*rotations*strapwidth + id;
+      double area = Math.PI*od - Math.PI*id;
+      double length =0 ;
+      /* this is wrong and done quickly from memory*/
+      return 0;
     }
 
     public void driveBoom(double power){
@@ -210,24 +221,21 @@ public class Arm extends SubsystemBase {
 
         //arm/open/wrist SmartDashboard stuff
         SmartDashboard.getNumber("arm/openwrist/targetWristPos", targetArmPos);
-        // SmartDashboard.getBoolean("arm/wrist/OpenOrClosed", actuateHand(Intake.CLOSED));
-        // SmartDashboard.getNumber("arm/wrist/voltage", );
+        // SmartDashboard.getBoolean("arm/wrist/OpenOrClosed", setHand(IntakePosition.CLOSED));
+        SmartDashboard.getNumber("arm/wrist/intakeVoltage", handMotor.getAppliedOutput()*handMotor.getBusVoltage());
 
-        // // aropem/wrist/
-        //   // targetArmPos
-        //   open or close 
-        //   output voltage
-        // arm/boom 
-        //   rotations
-        //   targetlen
-        //   actuallengt
-        //   utput voltage
-        // arm/ angle
-        //   targetangle
-        //   measured arm Angle
-        //   measured abs encoder angle 
-        //   output volts
+        //arm/boom SmartDashboard stuff
+        SmartDashboard.getNumber("arm/boom/rotations", getArmAngle()); //Not sure
+        // SmartDashboard.getNumber("arm/boom/targetLength", setBoomLength(length));
+        // SmartDashboard.getNumber("arm/boom/actualLength", defaultValue);
+        SmartDashboard.getNumber("arm/boom/boomOutput", boomMotor.getAppliedOutput()*boomMotor.getBusVoltage());
 
+        //arm/angle
+        // SmartDashboard.getNumber("arm/boom/rotations", getArmAngle()); //Not sure how this would work
+        SmartDashboard.getNumber("arm/angle/targetAngle", armAngle);
+        SmartDashboard.getNumber("arm/angle/encoderAngle", armMotor.getEncoder().getPosition());
+        SmartDashboard.getNumber("arm/mesuredAbsoluteEnconderAngle", armAbsEncoder.getAbsolutePosition()); //??
+        SmartDashboard.getNumber("arm/angle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
     }
     
