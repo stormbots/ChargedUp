@@ -21,18 +21,7 @@ import frc.robot.Constants.HardwareID;
 public class Chassis extends SubsystemBase {
   
   public static enum Gear{
-    /** Utility enum to provide named values for shifted gear states 
-    * This helps keep consistent types and umanbiguous functions
-    */
-
-    HIGH(true, true),
-    LOW(false, false);
-    private boolean compbot,practicebot;
-    Gear(boolean compbot, boolean practicebot){
-      this.compbot = compbot;
-      this.practicebot = practicebot;
-    }
-    public boolean bool(){return Constants.isCompBot ? this.compbot : this.practicebot;};
+    LOW,HIGH
   }
 
   //CAN ID's are placeholders
@@ -50,9 +39,6 @@ public class Chassis extends SubsystemBase {
 
   /** Creates a new Chassis. */
   public Chassis() {
-
-
-    
     //Reset Encoders
     leftEncoder.setPosition(0);
     rightEncoder.setPosition(0);
@@ -74,22 +60,27 @@ public class Chassis extends SubsystemBase {
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
 
-    shiftManual(Gear.LOW);
+    setShifter(Gear.HIGH);
   }
-  
+
+  public void setShifter(Gear gear){
+    if(gear == Gear.HIGH){
+      shifter.set(ChassisConstants.kShiftHigh);
+    }
+    else{
+      shifter.set(ChassisConstants.kShiftLow);
+    }
+  }
   public void arcadeDrive(double power, double turn) {
     driveTrain.arcadeDrive(power,turn);
   }
 
-  public void shiftManual(Gear gear){
-    shifter.set(gear.bool());
-  }
+ 
 
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
-   
   }
 }

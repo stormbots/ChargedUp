@@ -13,17 +13,17 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Arm.IntakePosition;
 import frc.robot.subsystems.Chassis;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Arm.retractSolenoidPosition;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -34,11 +34,10 @@ import frc.robot.subsystems.Vision;
 public class RobotContainer {
   //NavX Gyroscope and Accellerometer
   public AHRS navx = new AHRS(Port.kMXP);
-  Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
-  public PowerDistribution pdp = new PowerDistribution(0,ModuleType.kCTRE);
+  Compressor compressor = new Compressor(1, PneumaticsModuleType.REVPH);
+  public PowerDistribution pdp = new PowerDistribution(21,ModuleType.kRev);
 
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
   public Chassis chassis = new Chassis();
   public Arm arm = new Arm();
   public Vision vision = new Vision();
@@ -46,31 +45,35 @@ public class RobotContainer {
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick driver = new CommandJoystick(0);
   private final CommandJoystick operator = new CommandJoystick(1);
+  
 
   //Commands
-  ExampleCommand exampleCommand = new ExampleCommand(exampleSubsystem);
   SendableChooser<Command> autoChooser = new SendableChooser<>();
 
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(){
-    pdp.clearStickyFaults();
+   
+   
+    //compressor.clearStickyFaults();
     navx.reset();
-
+    //SmartDashboard.putNumber("PCH #", compressor.getModuleNumber());
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
       new RunCommand(
-        ()->{chassis.arcadeDrive( driver.getRawAxis(1), driver.getRawAxis(2) );}
+        ()->{chassis.arcadeDrive( driver.getRawAxis(1), driver.getRawAxis(2) *.75);}
         ,chassis)
       );
       //These values for the controller, these is joystick and will have to be adjusted
       arm.setDefaultCommand(new RunCommand(
         ()->{
-          arm.driveArm(operator.getRawAxis(0)); 
-          arm.driveBoom(operator.getRawAxis(1));
-        }
-      , arm));
+          arm.driveArm(-operator.getRawAxis(1));
+          arm.driveRetract(operator.getRawAxis(0));
+          arm.wristServo.set(operator.getRawAxis(2));
+          //arm.setWristAngle(Lerp.lerp(operator.getRawAxis(3), -1, 1, 45,10));
+        },arm
+      ));
 
     // Configure the trigger bindings
     configureBindings();
@@ -86,39 +89,74 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings(){
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(exampleSubsystem));
-
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release..
-    InstantCommand stopArm = new InstantCommand(()->{
-      arm.driveArm(0); arm.driveBoom(0);
-    }, arm);
-    driver.button(1).whileTrue(exampleSubsystem.exampleMethodCommand());
-    // pick up a upright cone
-    operator.button(1).whileTrue(new InstantCommand(()->
-      arm.setWristAngle(0).setHand(IntakePosition.OPEN).setIntake(-0.05)
-      ,arm)); 
-    operator.button(1).onFalse(stopArm);
-
-    //pick up cube
-    operator.button(2).whileTrue(new InstantCommand(()->{
-      arm.setWristAngle(0).setIntake(-0.05).setHand(IntakePosition.CLOSED);
+    //DRIVER
+    driver.button(6).whileTrue(new RunCommand(()->{
+      chassis.setShifter(Gear.LOW);
+    })); 
+    driver.button(6).onFalse(new RunCommand (()->{
+      chassis.setShifter(Gear.HIGH);
+    }));
+    //CONTROLLER
+  
+    operator.button(7).whileTrue(new RunCommand(()->{
+      //Pickup from double substation
+      arm.testRetractPID(8.2);
+      arm.testArmPID(61.0);
+    })); 
+    operator.button(5).whileTrue(new RunCommand(()->{
+      //Score Mid
+      arm.testArmPID(40.1);
+      if (arm.armMotor.getEncoder().getPosition() >34){
+        arm.testRetractPID(27);
       }
-      ,arm
-      ));
-    operator.button(2).onFalse(stopArm);
-    //pick up a tipped cone
-    operator.button(4).whileTrue(new InstantCommand(()->{
-      arm.setWristAngle(0).setIntake(-0.05).setHand(IntakePosition.CLOSED).setIntake(-0.05);
-    }
-    ,arm
+    })); 
+    operator.button(6).whileTrue(new RunCommand (()->{
+      //Score Top
+      arm.testArmPID(44.0);
+      if (arm.armMotor.getEncoder().getPosition() >40){
+        arm.testRetractPID(48);
+      }
+      
+    }));
+    operator.button(8).whileTrue(new RunCommand (()->{
+      //PickupGround
+      arm.testRetractPID(0);
+      if (arm.retractMotor.getEncoder().getPosition() < 5){
+        arm.testArmPID(-30);
+      }
+    }));
+    operator.button(3).onFalse(new RunCommand (()->{
+
+      //Set to mid platform
+      arm.intakeMotor.set(0.0);
+    }));
+    operator.button(4).whileTrue(new RunCommand (()->{
+      //Set to mid platform
+      arm.intakeMotor.set(-0.1);
+    }));
+    operator.button(4).onFalse(new RunCommand (()->{
+      //Set to mid platform
+      arm.intakeMotor.set(0.0);
+    }));
+
+    //INTAKE MOTORS DRIVE INWARDS
+    operator.povCenter().whileFalse(new InstantCommand(()->arm.intakeMotor.set(1.0)));
+    //CUBE/CONE SELECTOR
+    operator.button(1).onTrue(new ConditionalCommand(
+      new InstantCommand(()->arm.setIntake(retractSolenoidPosition.ENGAGED)), 
+      new InstantCommand(()->arm.setIntake(retractSolenoidPosition.DISENGAGED)),
+      ()->arm.intakeSelector()
     ));
-    operator.button(4).onFalse(stopArm);
+   
+    //Debug for boom encoder
+    // operator.button(11).whileTrue(new InstantCommand(()->{
+    //   arm.setRetractBrake(retractSolenoidPosition.DISENGAGED);
+    //   arm.retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+    // })); 
+    // operator.button(11).onFalse(new InstantCommand (()->{
+    //   arm.retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+    // }));
     
-    //Release the game piece
-    //operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
   }
 
   /**

@@ -31,26 +31,16 @@ public final class Constants {
     
     // Arm inputs
     public static int kArmMotor=6;
-    // public static int kArmMotorFollower=6;
     public static int kRetractMotor=7;
-    public static int kRetractBrakeSolenoid=3;
-    public static int kArmAnalogEncoderChannel=1;
+    public static int kRetractBrakeSolenoid=0;//freaking out
+    public static int kArmAnalogEncoderChannel=0;
 
     //Hand+wrist
     public static int kWristServoChannel=8;
-    public static int kIntakeSolenoid=4;
+    public static int kIntakeSolenoid=3;
     public static int kIntakeMotor=9;
 
-    //Funnel
-    public static int kFunnelLeftMotor=10;
-    public static int kFunnelRightMotor=11;
-    // public static int kFunnelLeftSolenoid=5;
-    // public static int kFunnelRightSolenoid=6;
-
-    //Turret //TBD
-    // public static int kTurretMotor = ???;
-    // public static int kTurretAnalogEncoderChannel=???;
-
+  
     //Vision and driver stuff
     public static int kCameraFrontID=0;
     public static int kCameraRearID=1;
@@ -64,8 +54,8 @@ public final class Constants {
     public static double kWheelSpacing=28;//TODO estimated
     public static double kWheelDiameter=6;//TODO estimated, and possibly not even useful
 
-    public static boolean kShifterHigh=false; //TODO
-    public static boolean kShiftLow=!kShifterHigh; //TODO
+    public static boolean kShiftHigh=false; //TODO
+    public static boolean kShiftLow=!kShiftHigh; //TODO
 
     public static boolean kLeftInverted = true;
     public static boolean kRightInverted = !kLeftInverted;
@@ -86,7 +76,7 @@ public final class Constants {
 
     //All FFs are in volts
     public static double kCosFFNear = 0; //feed forward to cause no motion as the arm is rotated around
-    public static double kCosFFFar = 0;
+    public static double kCosFFFar = 0.33;//In voltage
     public static double ksFFNear = 0; //FF that causes it to move again; Will probably be small
     public static double ksFFFar = 0;
     public static double kvFFNear = 0;
@@ -96,13 +86,19 @@ public final class Constants {
   }
 
   public static class RetractConstants{
+    /** Arm extension, in inches from center of rotation axis*/
+    public static double kMinRetraction=0;
+    /** Arm extension, in inches from center of rotation axis*/
+    public static double kMaxRetraction=30;
+    public static boolean ENGAGED = true;
+    public static boolean DISENGAGED = !ENGAGED;
     public static double kGeartrain=5.56;
     public static double kStrapWidth=0.03;
     public static double kInnerDiameter=0.5;
     public static double kMaxOuterDiameter=1.5;
 
-    public static double ksFFNear = 0;
-    public static double ksFFFar = 0;
+    public static double ksFFNear = -0.65; //volts at 0 rotatons, changes based on whether we are extending or retracting
+    public static double ksFFFar = -.05; //volts at 40.880 rotations
     public static double kvFFNear = 0;
     public static double kvFFFar = 0;
     public static double kaFFNear = 0;
@@ -133,6 +129,8 @@ public final class Constants {
    * 
    */
   public static void SetPracticebotValues(){
+    ArmConstants.kAbsoluteAngleOffset=32.645;
+
 
   }
 
