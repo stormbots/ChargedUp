@@ -107,7 +107,7 @@ public final class Constants {
     public static double kMinRetractionInches=0;
     public static double kMaxRetractionInches=30;
 
-    public static boolean ENGAGED = true;
+    public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;
     public static double kGeartrain=5.56;
     public static double kStrapWidth=0.03;
@@ -141,7 +141,7 @@ public final class Constants {
   }
 
   public static class IntakeConstants{
-    public static boolean kClosedBoolean=true;
+    public static boolean kClosedBoolean=false;
     public static boolean kOpenBoolean=!kClosedBoolean;
     public static int kCurrentLimitFree=25;
     public static int kCurrentLimitStall=18;

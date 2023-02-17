@@ -59,7 +59,7 @@ public class Arm extends SubsystemBase {
 
     /** Motor + Solenoidfor the intake**/
     public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
-    public Solenoid wristSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); 
+    public Solenoid intakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); 
     public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid);//temp value
    
     
@@ -154,7 +154,7 @@ public class Arm extends SubsystemBase {
       SmartDashboard.putData("arm/ResetAbsEncoder",new InstantCommand(()->armAbsEncoder.reset()));
       
       
-      setWristAngle(0);
+      //setWristAngle(0);
       setRetractBrake(RetractSolenoidPosition.DISENGAGED);
       setIntake(IntakeSolenoidPosition.CLOSED);
 
@@ -226,7 +226,7 @@ public class Arm extends SubsystemBase {
     }
     public void driveServo(double power){
       wristServo.set(Lerp.lerp(power,-1,1,0,1));
-      SmartDashboard.putNumber("servo", Lerp.lerp(power,-1,1,0,1));
+      SmartDashboard.putNumber("servoDirection", Lerp.lerp(power,-1,1,0,1));
     }
    
     public double getAbsoluteEncoderPosition(){
@@ -242,23 +242,23 @@ public class Arm extends SubsystemBase {
     public void setIntake(IntakeSolenoidPosition handPosition){
       this.intakeSolenoidPosition=handPosition;
       if(handPosition == IntakeSolenoidPosition.CLOSED){
-        brakeSolenoid.set(IntakeConstants.kClosedBoolean);
+        intakeSolenoid.set(IntakeConstants.kClosedBoolean);
       }
       else{
-        brakeSolenoid.set(IntakeConstants.kOpenBoolean);
+        intakeSolenoid.set(IntakeConstants.kOpenBoolean);
       }
     }
 
     /** set angle relative to ground  */
-    public Arm setWristAngle(double angle) {
-      this.wristAngleTarget = angle;
-      angle = angle-getArmAngle();
-      SmartDashboard.putNumber("servo/angle", angle);
-      wristAngleEstimate.calculate(angle);
-      double servoOut = Lerp.lerp(angle,WristConstants.kMinAngle,WristConstants.kMaxAngle,0,1);
-      wristServo.set(servoOut);
-      return this;
-    }
+    // public Arm setWristAngle(double angle) {
+    //   this.wristAngleTarget = angle;
+    //   angle = angle-getArmAngle();
+    //   SmartDashboard.putNumber("servo/angle", angle);
+    //   wristAngleEstimate.calculate(angle);
+    //   double servoOut = Lerp.lerp(angle,WristConstants.kMinAngle,WristConstants.kMaxAngle,0,1);
+    //   wristServo.set(servoOut);
+    //   return this;
+    // }
 
     //* Current position of the servo, must be calling {@link #updateCurPos() updateCurPos()} periodically 
     public double getWristAngle() {
