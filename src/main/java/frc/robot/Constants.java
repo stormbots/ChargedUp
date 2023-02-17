@@ -61,7 +61,6 @@ public final class Constants {
 
     public static boolean kLeftInverted = true;
     public static boolean kRightInverted = !kLeftInverted;
-    
   }
 
   public  static class VisionConstants{
@@ -74,8 +73,6 @@ public final class Constants {
     public static double kGeartrain = 1/140.0;
     public static double kAbsoluteAngleOffset=0;
     public static double kAbsoluteAngleDistancePerRotation=90/(0.34-0.09);
-    public static double kMinAngle = 0;
-    public static double kMaxAngle = 90;
     public static double kMotorEncoderConversionFactor = 90/(71.12105560302734-1.4);
 
     //All FFs are in volts
@@ -151,21 +148,68 @@ public final class Constants {
     public static boolean kIntakeMotorInverted=true;
   }
 
-  public static class FunnelConstants{
-    public static boolean kDeployedBooleanLeft=true;
-    public static boolean kRetractedBooleanLeft=!kDeployedBooleanLeft;
-    public static boolean kDeployedBooleanRight=true;
-    public static boolean kRetractedBooleanRight=!kDeployedBooleanRight;
-    public static double kCurrentLimitFree=8;
-    public static double kCurrentLimitStall=2;
-  }
-
-
   /** Contains tuned paramaters for Practice Bot, if they differ from comp
    * 
    */
   public static void SetPracticebotValues(){
+
+    //Hardware IDs
+    HardwareID.kChassisMotorLeft=1;
+    HardwareID.kChassisMotorLeftFollower=2;
+    HardwareID.kChassisMotorRight=3;
+    HardwareID.kChassisMotorRightFollower=4;
+    HardwareID.kShifterSolenoid=1;
+    HardwareID.kArmMotor=6;
+    HardwareID.kRetractMotor=7;
+    HardwareID.kRetractBrakeSolenoid=0;//freaking out
+    HardwareID.kArmAnalogEncoderChannel=0;
+    HardwareID.kWristServoChannel=8;
+    HardwareID.kIntakeSolenoid=3;
+    HardwareID.kIntakeMotor=9;
+
+
+
+    //Arm parameters
+    ArmConstants.kAbsoluteAngleDistancePerRotation=90/(0.34-0.09);
+    ArmConstants.kCosFFNear = 0; //feed forward to cause no motion as the arm is rotated around
+    ArmConstants.kCosFFFar = 0.33;//In voltage
+    ArmConstants.kPNear = 0.05;
+    ArmConstants.kPFar = ArmConstants.kPNear; //TODO
+
     ArmConstants.kAbsoluteAngleOffset=32.645;
+    ArmConstants.kSoftLimitReverseNear = -30;
+    ArmConstants.kSoftLimitForwardNear = 90;
+    ArmConstants.kSoftLimitReverseFar = -10;
+    ArmConstants.kSoftLimitForwardFar = 90;
+
+
+    //Retraction constants
+    RetractConstants.kMinRetractionRotations=40;
+    RetractConstants.kMaxRetractionRotations=40;
+    RetractConstants.kMinRetractionInches=0;
+    RetractConstants.kMaxRetractionInches=30;
+
+    RetractConstants.kGeartrain=5.56;
+    RetractConstants.kStrapWidth=0.03;
+    RetractConstants.kInnerDiameter=0.5;
+    RetractConstants.kMaxOuterDiameter=1.5;
+
+    RetractConstants.ksFFNear = -0.65; //volts at 0 rotatons, changes based on whether we are extending or retracting
+    RetractConstants.ksFFFar = -.05; //volts at 40.880 rotations
+
+    RetractConstants.kPNear =0.05;
+
+    //Wrist Constants
+    IntakeConstants.kCurrentLimitFree=25;
+    IntakeConstants.kCurrentLimitStall=18;
+
+
+    // WristConstants.kMinAngle=0; 
+    // WristConstants.kMaxAngle=0; 
+    // WristConstants.kMinRotations=0; 
+    // WristConstants.kMaxRotations=10;
+    // WristConstants.kConversionFactor=(WristConstants.kMaxAngle-WristConstants.kMinAngle)/(WristConstants.kMaxRotations-WristConstants.kMinRotations);
+    // WristConstants.kReverseMotor=false;
 
 
   }
