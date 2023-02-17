@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.stormbots.Lerp;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -71,8 +73,10 @@ public final class Constants {
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
     public static double kAbsoluteAngleOffset=0;
+    public static double kAbsoluteAngleDistancePerRotation=90/(0.34-0.09);
     public static double kMinAngle = 0;
     public static double kMaxAngle = 90;
+    public static double kMotorEncoderConversionFactor = 90/(71.12105560302734-1.4);
 
     //All FFs are in volts
     public static double kCosFFNear = 0; //feed forward to cause no motion as the arm is rotated around
@@ -83,13 +87,29 @@ public final class Constants {
     public static double kvFFFar = 0;
     public static double kaFFNear = 0;
     public static double kaFFFar = 0;
+
+    public static double kPNear = 0.05;
+    public static double kINear = 0; 
+    public static double kDNear = 0;
+
+    public static double kPFar = kPNear; //TODO
+    public static double kIFar = 0; 
+    public static double kDFar = 0;
+
+    public static float kSoftLimitReverseNear = -30;
+    public static float kSoftLimitForwardNear = 90;
+    public static float kSoftLimitReverseFar = -10;
+    public static float kSoftLimitForwardFar = 90;
+    
   }
 
   public static class RetractConstants{
-    /** Arm extension, in inches from center of rotation axis*/
-    public static double kMinRetraction=0;
-    /** Arm extension, in inches from center of rotation axis*/
-    public static double kMaxRetraction=30;
+    //Measured from center of turret mounting to center of wrist axis
+    public static double kMinRetractionRotations=0;
+    public static double kMaxRetractionRotations=40;
+    public static double kMinRetractionInches=0;
+    public static double kMaxRetractionInches=30;
+
     public static boolean ENGAGED = true;
     public static boolean DISENGAGED = !ENGAGED;
     public static double kGeartrain=5.56;
@@ -103,16 +123,32 @@ public final class Constants {
     public static double kvFFFar = 0;
     public static double kaFFNear = 0;
     public static double kaFFFar = 0;
+
+    public static double kPNear = 0.05;
+    public static double kINear = 0; 
+    public static double kDNear = 0;
+
+    public static double kPFar = kPNear; //TODO
+    public static double kIFar = 0; 
+    public static double kDFar = 0;
+
   }
 
   public static class WristConstants{
+    public static double kMinAngle=0; 
+    public static double kMaxAngle=0; 
+    public static double kMinRotations=0; 
+    public static double kMaxRotations=10;
+    public static double kConversionFactor=(kMaxAngle-kMinAngle)/(kMaxRotations-kMinRotations);
+    public static boolean kReverseMotor=false;
   }
 
   public static class IntakeConstants{
     public static boolean kClosedBoolean=true;
     public static boolean kOpenBoolean=!kClosedBoolean;
-    public static double kCurrentLimitFree=4;
-    public static double kCurrentLimitStall=1;
+    public static int kCurrentLimitFree=25;
+    public static int kCurrentLimitStall=18;
+    public static boolean kIntakeMotorInverted=true;
   }
 
   public static class FunnelConstants{

@@ -24,13 +24,22 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.RetractConstants;
+import frc.robot.Constants.WristConstants;
 
 public class Arm extends SubsystemBase {
   
-  public static enum retractSolenoidPosition{
+  public static enum RetractSolenoidPosition{
     ENGAGED,DISENGAGED
   }
+  
+  public static enum IntakeSolenoidPosition{
+    OPEN,CLOSED
+  }
+
+  private RetractSolenoidPosition retractSolenoidPosition = RetractSolenoidPosition.DISENGAGED;
+  private IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
 
 
   
@@ -45,8 +54,8 @@ public class Arm extends SubsystemBase {
     public DutyCycleEncoder armAbsEncoder = new DutyCycleEncoder(Constants.HardwareID.kArmAnalogEncoderChannel);//This is the DIO port on the roborio this is plugged into
 
     public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
-    Lerp armksFFLerp = new Lerp(RetractConstants.kMinRetraction, RetractConstants.kMaxRetraction, ArmConstants.ksFFNear, ArmConstants.ksFFFar); //arm extension to ff output
-    Lerp armkCosFFLerp = new Lerp(RetractConstants.kMinRetraction, RetractConstants.kMaxRetraction, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar); //arm ext to ff output
+    Lerp armksFFLerp = new Lerp(RetractConstants.kMinRetractionInches, RetractConstants.kMaxRetractionInches, ArmConstants.ksFFNear, ArmConstants.ksFFFar); //arm extension to ff output
+    Lerp armkCosFFLerp = new Lerp(RetractConstants.kMinRetractionInches, RetractConstants.kMaxRetractionInches, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar); //arm ext to ff output
 
     /** Motor + Solenoidfor the intake**/
     public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
@@ -77,14 +86,9 @@ public class Arm extends SubsystemBase {
     public static final double MIN_ANGLE = 0; //temp values
     
     //Constants for PIDS
-    public double kRetractP =0.0;
-    public double kRetractI =0.0;
-    public double kRetractD =0.0;
-
-
-    public double kArmP =0.0;
-    public double kArmI =0.0;
-    public double kArmD =0.0;
+    // public double kRetractP =0.0;
+    // public double kRetractI =0.0;
+    // public double kRetractD =0.0;
 
 
     //Angle from analog encoder
@@ -92,6 +96,7 @@ public class Arm extends SubsystemBase {
     
     //integer for intake toggle
     public boolean intakeToggle = false;
+
     /**
      * Parameters for L16-R Actuonix Linear Actuators
      *
@@ -102,10 +107,10 @@ public class Arm extends SubsystemBase {
     public Arm() {
       /** Note: this JUST FOR PRACTICE BOT!! */
       armMotor.restoreFactoryDefaults();
-      armAbsEncoder.setDistancePerRotation(90/(0.34-0.09));
+      armAbsEncoder.setDistancePerRotation(ArmConstants.kAbsoluteAngleDistancePerRotation);
       
       //Invert the intake
-      intakeMotor.setInverted(true);
+      intakeMotor.setInverted(IntakeConstants.kIntakeMotorInverted);
       
       armMotor.setIdleMode(IdleMode.kBrake);
       retractMotor.setIdleMode(IdleMode.kBrake);
@@ -117,32 +122,31 @@ public class Arm extends SubsystemBase {
 
       retractMotor.setSmartCurrentLimit(80);
 
-      intakeMotor.setSmartCurrentLimit(18, 25);
+      intakeMotor.setSmartCurrentLimit(IntakeConstants.kCurrentLimitStall, IntakeConstants.kCurrentLimitFree);
 
       //PIDS
-
-      armPID.setP(kArmP);
-      armPID.setI(kArmI);
-      armPID.setD(kArmD);
+      armPID.setP(ArmConstants.kPNear);
+      armPID.setI(ArmConstants.kINear);
+      armPID.setD(ArmConstants.kDNear);
       armPID.setFF(0);
 
-      retractPID.setP(kRetractP);
-      retractPID.setI(kRetractI);
-      retractPID.setD(kRetractD);
+      retractPID.setP(RetractConstants.kPNear);
+      retractPID.setI(RetractConstants.kPNear);
+      retractPID.setD(RetractConstants.kPNear);
       retractPID.setFF(0);
 
       /** Set the bounds for thwe wrist */
       wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
-      armMotor.setSoftLimit(SoftLimitDirection.kReverse, -30);
+      armMotor.setSoftLimit(SoftLimitDirection.kReverse, ArmConstants.kSoftLimitReverseNear);
       armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
-      armMotor.setSoftLimit(SoftLimitDirection.kForward, 90);
+      armMotor.setSoftLimit(SoftLimitDirection.kForward, ArmConstants.kSoftLimitForwardNear);
       armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
       armMotor.setInverted(true);
-      armMotor.getEncoder().setPositionConversionFactor(90/(71.12105560302734-1.4));
+      armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
       armMotor.getEncoder().setPosition(getAbsoluteEncoderPosition());
 
-      retractMotor.getEncoder().setPositionConversionFactor(1);
+      retractMotor.getEncoder().setPositionConversionFactor(1); //Set to use rotations for base unit
       retractMotor.setSoftLimit(SoftLimitDirection.kForward, 48);
       retractMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
       retractMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
@@ -151,13 +155,16 @@ public class Arm extends SubsystemBase {
       
       
       setWristAngle(0);
-      setRetractBrake(retractSolenoidPosition.DISENGAGED);
+      setRetractBrake(RetractSolenoidPosition.DISENGAGED);
+      setIntake(IntakeSolenoidPosition.CLOSED);
 
       /**  */
     }
-    //Set solenoid for brake using constants table
-    public void setRetractBrake(retractSolenoidPosition mode){
-      if(mode == retractSolenoidPosition.ENGAGED){
+
+
+    public void setRetractBrake(RetractSolenoidPosition mode){
+      this.retractSolenoidPosition = mode;
+      if(mode == RetractSolenoidPosition.ENGAGED){
         brakeSolenoid.set(RetractConstants.ENGAGED);
       }
       else{
@@ -173,16 +180,17 @@ public class Arm extends SubsystemBase {
     public double getArmAngle() {
         return armMotor.getEncoder().getPosition();
     }
-    public boolean isOnTarget(double tolerance) {
+    public boolean isArmAngleOnTarget(double tolerance) {
         return Clamp.bounded(getArmAngle(), targetArmPos - tolerance, targetArmPos + tolerance);
     }
+
     public void configSetArmEncoderPosition(double angle) {
         armMotor.getEncoder().setPosition((int)armAnalogLerp.getReverse(angle));
     }
 
     public double getRetractLength(){
       double rotations = retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor();
-      var id = Constants.RetractConstants.kInnerDiameter;
+      var id = RetractConstants.kInnerDiameter;
       var strapwidth = RetractConstants.kStrapWidth;
       var od = 2*rotations*strapwidth + id ; 
       var area = Math.PI/4.0*od*od - Math.PI/4.0*id*id;
@@ -195,13 +203,13 @@ public class Arm extends SubsystemBase {
     }
 
     public void testRetractPID(double setpoint){
-      retractPID.setP(0.05);
+      retractPID.setP(RetractConstants.kPNear);
       retractPID.setIZone( 0.1 / retractPID.getI());
       var retractFF = Lerp.lerp(getRetractRotations(), 0, 48, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
       retractPID.setReference(setpoint, ControlType.kPosition, 0, retractFF, ArbFFUnits.kVoltage);
     }
     public void testArmPID(double setpoint){
-      armPID.setP(0.05);
+      armPID.setP(ArmConstants.kPNear);
       var armFF =Lerp.lerp(getRetractRotations(), 0, 48, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
       armPID.setReference(setpoint, ControlType.kPosition, 0, armFF, ArbFFUnits.kVoltage);
     }
@@ -231,23 +239,23 @@ public class Arm extends SubsystemBase {
     }
   
     /**Hand Methods*/
-    public void setIntake(retractSolenoidPosition solenoidPosition){
-      if(solenoidPosition == solenoidPosition.ENGAGED){
-        brakeSolenoid.set(RetractConstants.ENGAGED);
+    public void setIntake(IntakeSolenoidPosition handPosition){
+      this.intakeSolenoidPosition=handPosition;
+      if(handPosition == IntakeSolenoidPosition.CLOSED){
+        brakeSolenoid.set(IntakeConstants.kClosedBoolean);
       }
       else{
-        brakeSolenoid.set(RetractConstants.DISENGAGED);
+        brakeSolenoid.set(IntakeConstants.kOpenBoolean);
       }
     }
 
     /** set angle relative to ground  */
     public Arm setWristAngle(double angle) {
+      this.wristAngleTarget = angle;
       angle = angle-getArmAngle();
       SmartDashboard.putNumber("servo/angle", angle);
-      wristAngleTarget = angle;
       wristAngleEstimate.calculate(angle);
-      
-      double servoOut = Lerp.lerp(angle,10,-45,0,1);
+      double servoOut = Lerp.lerp(angle,WristConstants.kMinAngle,WristConstants.kMaxAngle,0,1);
       wristServo.set(servoOut);
       return this;
     }
@@ -257,9 +265,8 @@ public class Arm extends SubsystemBase {
       return wristAngleEstimate.calculate(wristAngleTarget);
     }
     
-    public boolean intakeSelector(){
-      intakeToggle = !intakeToggle;
-      return intakeToggle;
+    public IntakeSolenoidPosition getIntakePosition(){
+      return this.intakeSolenoidPosition;
     }
 
     @Override

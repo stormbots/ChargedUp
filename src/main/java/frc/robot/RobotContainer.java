@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -20,10 +21,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Arm.retractSolenoidPosition;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -50,8 +51,6 @@ public class RobotContainer {
   //Commands
   SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-
-
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(){
    
@@ -59,12 +58,22 @@ public class RobotContainer {
     //compressor.clearStickyFaults();
     navx.reset();
     //SmartDashboard.putNumber("PCH #", compressor.getModuleNumber());
+
+    // Configure the trigger bindings
+    configureDefaultCommands();
+    configureDriverBindings();
+    configureOperatorBindings();
+  }
+
+
+  private void configureDefaultCommands(){
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
       new RunCommand(
         ()->{chassis.arcadeDrive( driver.getRawAxis(1), driver.getRawAxis(2) *.75);}
         ,chassis)
       );
+
       //These values for the controller, these is joystick and will have to be adjusted
       arm.setDefaultCommand(new RunCommand(
         ()->{
@@ -74,9 +83,18 @@ public class RobotContainer {
           //arm.setWristAngle(Lerp.lerp(operator.getRawAxis(3), -1, 1, 45,10));
         },arm
       ));
+  }
 
-    // Configure the trigger bindings
-    configureBindings();
+
+  private void configureDriverBindings(){
+    //DRIVER
+    driver.button(6)
+    .whileTrue(new RunCommand(()->{
+      chassis.setShifter(Gear.LOW);
+    }))
+    .onFalse(new RunCommand (()->{
+      chassis.setShifter(Gear.HIGH);
+    }));
   }
 
   /**
@@ -88,16 +106,7 @@ public class RobotContainer {
    * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  private void configureBindings(){
-    //DRIVER
-    driver.button(6).whileTrue(new RunCommand(()->{
-      chassis.setShifter(Gear.LOW);
-    })); 
-    driver.button(6).onFalse(new RunCommand (()->{
-      chassis.setShifter(Gear.HIGH);
-    }));
-    //CONTROLLER
-  
+  private void configureOperatorBindings(){
     operator.button(7).whileTrue(new RunCommand(()->{
       //Pickup from double substation
       arm.testRetractPID(8.2);
@@ -143,9 +152,9 @@ public class RobotContainer {
     operator.povCenter().whileFalse(new InstantCommand(()->arm.intakeMotor.set(1.0)));
     //CUBE/CONE SELECTOR
     operator.button(1).onTrue(new ConditionalCommand(
-      new InstantCommand(()->arm.setIntake(retractSolenoidPosition.ENGAGED)), 
-      new InstantCommand(()->arm.setIntake(retractSolenoidPosition.DISENGAGED)),
-      ()->arm.intakeSelector()
+      new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)), 
+      new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)),
+      ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED
     ));
    
     //Debug for boom encoder

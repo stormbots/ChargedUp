@@ -34,7 +34,7 @@ public class Chassis extends SubsystemBase {
   private RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
   Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
-
+  
   DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
 
   /** Creates a new Chassis. */
@@ -51,7 +51,7 @@ public class Chassis extends SubsystemBase {
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();
       //Restricts each motor to a max of 60 amps
-      m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current li.mit to chassis
+      m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current limit to chassis
     }
     //Set motors to follow the same side
     leftFollower.follow(leftLeader);
