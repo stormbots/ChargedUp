@@ -6,8 +6,7 @@ package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.SPI.Port;
@@ -32,7 +31,7 @@ import frc.robot.subsystems.Vision;
 public class RobotContainer {
   //NavX Gyroscope and Accellerometer
   public AHRS navx = new AHRS(Port.kMXP);
-  Compressor compressor = new Compressor(1, PneumaticsModuleType.REVPH);
+  PneumaticHub PCH = new PneumaticHub(1);
   public PowerDistribution pdp = new PowerDistribution(21,ModuleType.kRev);
 
   // The robot's subsystems and commands are defined here...
@@ -58,8 +57,9 @@ public class RobotContainer {
     // .whileTrue(()->{})
     // .onFalse(()->{});
 
-
+    PCH.enableCompressorAnalog(80, 110);
    
+    
     //compressor.clearStickyFaults();
     navx.reset();
     //SmartDashboard.putNumber("PCH #", compressor.getModuleNumber());

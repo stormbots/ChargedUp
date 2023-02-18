@@ -138,19 +138,19 @@ public class Arm extends SubsystemBase {
       /** Set the bounds for thwe wrist */
       wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
       armMotor.setSoftLimit(SoftLimitDirection.kReverse, ArmConstants.kSoftLimitReverseNear);
-      armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+      armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
 
       armMotor.setSoftLimit(SoftLimitDirection.kForward, ArmConstants.kSoftLimitForwardNear);
-      armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+      armMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
       armMotor.setInverted(true);
       armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
       armMotor.getEncoder().setPosition(getAbsoluteEncoderPosition());
 
       retractMotor.getEncoder().setPositionConversionFactor(1); //Set to use rotations for base unit
       retractMotor.setSoftLimit(SoftLimitDirection.kForward, 48);
-      retractMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+      retractMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
       retractMotor.setSoftLimit(SoftLimitDirection.kReverse, 0);
-      retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+      retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
       SmartDashboard.putData("arm/ResetAbsEncoder",new InstantCommand(()->armAbsEncoder.reset()));
       
       
@@ -226,13 +226,15 @@ public class Arm extends SubsystemBase {
         power=0.0;
       }
       //FF
-      var retractFF = Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse, 
-      RetractConstants.kRetractSoftLimitForward, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
+      var retractFF = 0;
+      //Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse, 
+      //RetractConstants.kRetractSoftLimitForward, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
       retractMotor.set(power + retractFF);
     }
     public void driveArm(double power){
-      armMotor.set(power/2.0 + Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse,
-       RetractConstants.kRetractSoftLimitForward, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0);
+      armMotor.set(power/2.0 + 0);
+      //Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse,
+      //RetractConstants.kRetractSoftLimitForward, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0
     }
     public void driveServo(double power){
       wristServo.set(Lerp.lerp(power,-1,1,0,1));

@@ -56,7 +56,7 @@ public final class Constants {
     public static double kWheelSpacing=28;//TODO estimated
     public static double kWheelDiameter=6;//TODO estimated, and possibly not even useful
 
-    public static boolean kShiftHigh=false; //TODO
+    public static boolean kShiftHigh=true; //TODO
     public static boolean kShiftLow=!kShiftHigh; //TODO
 
     public static boolean kLeftInverted = true;
@@ -107,7 +107,7 @@ public final class Constants {
     public static double kMinRetractionInches=0;
     public static double kMaxRetractionInches=30;
     public static double kRetractSoftLimitReverse = 0;
-    public static double kRetractSoftLimitForward = 48;
+    public static double kRetractSoftLimitForward = 56.12;
   
     public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;
