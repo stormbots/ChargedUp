@@ -32,14 +32,14 @@ public final class Constants {
     // public static int kChassisBrakeSolenoid=3; //Potential hardware, undecided
     
     // Arm inputs
-    public static int kArmMotor=6;
+    public static int kArmMotor=5;
     public static int kRetractMotor=7;
-    public static int kRetractBrakeSolenoid=0;//freaking out
+    public static int kRetractBrakeSolenoid=3;//freaking out
     public static int kArmAnalogEncoderChannel=0;
 
     //Hand+wrist
     public static int kWristServoChannel=8;
-    public static int kIntakeSolenoid=3;
+    public static int kIntakeSolenoid=4;
     public static int kIntakeMotor=9;
 
   
@@ -106,7 +106,9 @@ public final class Constants {
     public static double kMaxRetractionRotations=40;
     public static double kMinRetractionInches=0;
     public static double kMaxRetractionInches=30;
-
+    public static double kRetractSoftLimitReverse = 0;
+    public static double kRetractSoftLimitForward = 48;
+  
     public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;
     public static double kGeartrain=5.56;

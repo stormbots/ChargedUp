@@ -205,24 +205,34 @@ public class Arm extends SubsystemBase {
     public void testRetractPID(double setpoint){
       retractPID.setP(RetractConstants.kPNear);
       retractPID.setIZone( 0.1 / retractPID.getI());
-      var retractFF = Lerp.lerp(getRetractRotations(), 0, 48, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
+      //FF
+      var retractFF = Lerp.lerp(getRetractRotations(), 
+      RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
+      RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
+      //PID
       retractPID.setReference(setpoint, ControlType.kPosition, 0, retractFF, ArbFFUnits.kVoltage);
     }
     public void testArmPID(double setpoint){
       armPID.setP(ArmConstants.kPNear);
-      var armFF =Lerp.lerp(getRetractRotations(), 0, 48, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
+      //FF
+      var armFF =Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse, 
+      RetractConstants.kRetractSoftLimitForward, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
+      //PID
       armPID.setReference(setpoint, ControlType.kPosition, 0, armFF, ArbFFUnits.kVoltage);
     }
       
     public void driveRetract(double power){
-      if (power < 0.05 && power > -0.01){
+      if (power < 0.05 && power > -0.05){
         power=0.0;
       }
-      var retractFF = Lerp.lerp(getRetractRotations(), 0, 48, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
+      //FF
+      var retractFF = Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse, 
+      RetractConstants.kRetractSoftLimitForward, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
       retractMotor.set(power + retractFF);
     }
     public void driveArm(double power){
-      armMotor.set(power/2.0 + Lerp.lerp(getRetractRotations(), 0, 48, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0);
+      armMotor.set(power/2.0 + Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse,
+       RetractConstants.kRetractSoftLimitForward, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0);
     }
     public void driveServo(double power){
       wristServo.set(Lerp.lerp(power,-1,1,0,1));
