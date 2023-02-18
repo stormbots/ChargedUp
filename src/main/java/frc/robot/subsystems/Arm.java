@@ -256,7 +256,7 @@ public class Arm extends SubsystemBase {
       SmartDashboard.putNumber("servo/angle", angle);
       wristAngleEstimate.calculate(angle);
       double servoOut = Lerp.lerp(angle,WristConstants.kMinAngle,WristConstants.kMaxAngle,0,1);
-      wristServo.set(servoOut);
+      // wristServo.set(servoOut);
       return this;
     }
 

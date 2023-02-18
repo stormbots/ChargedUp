@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.ChassisBalance;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Chassis;
@@ -42,6 +43,7 @@ public class RobotContainer {
   public Chassis chassis = new Chassis();
   public Arm arm = new Arm();
   public Vision vision = new Vision();
+  
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick driver = new CommandJoystick(0);
@@ -69,11 +71,11 @@ public class RobotContainer {
   private void configureDefaultCommands(){
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
-      new RunCommand(
-        ()->{chassis.arcadeDrive( driver.getRawAxis(1), driver.getRawAxis(2) *.75);}
+       new RunCommand(
+        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2) *.75);}
         ,chassis)
-      );
-
+       );
+      
       //These values for the controller, these is joystick and will have to be adjusted
       arm.setDefaultCommand(new RunCommand(
         ()->{
@@ -95,6 +97,9 @@ public class RobotContainer {
     .onFalse(new RunCommand (()->{
       chassis.setShifter(Gear.HIGH);
     }));
+    driver.button(3).whileTrue(
+      new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()->driver.getRawAxis(2)/2.0, chassis, navx)
+    );
   }
 
   /**

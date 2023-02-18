@@ -7,8 +7,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Chassis.Gear;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -63,11 +65,14 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    SmartDashboard.putNumber("pdh/Voltage", robotContainer.pdp.getVoltage());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit(){
+    robotContainer.chassis.setShifter(Gear.LOW);
   }
 
   @Override
@@ -84,6 +89,8 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.schedule();
     }
+    
+    robotContainer.chassis.setShifter(Gear.HIGH);
   }
 
   /** This function is called periodically during autonomous. */
@@ -103,7 +110,7 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-    
+    robotContainer.chassis.setShifter(Gear.HIGH);
   }
 
   /** This function is called periodically during operator control. */

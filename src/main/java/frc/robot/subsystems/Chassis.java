@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -60,27 +61,44 @@ public class Chassis extends SubsystemBase {
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
 
-    setShifter(Gear.HIGH);
+    leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
+    rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
+
+    //Hardware defaults to low; Make sure encoders/hardware matches
+    //shift high is done in robot.java
+    setShifter(Gear.LOW);
+
   }
 
   public void setShifter(Gear gear){
+    var positionLeft = leftEncoder.getPosition();
+    var positionRight = rightEncoder.getPosition();
     if(gear == Gear.HIGH){
       shifter.set(ChassisConstants.kShiftHigh);
+      leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorHigh);
+      rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorHigh);
     }
     else{
+      leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
+      rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
       shifter.set(ChassisConstants.kShiftLow);
     }
+    leftEncoder.setPosition(positionLeft);
+    rightEncoder.setPosition(positionRight);
   }
   public void arcadeDrive(double power, double turn) {
     driveTrain.arcadeDrive(power,turn);
   }
 
  
-
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
+    // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
+    SmartDashboard.putNumber("chassis/voltLeftOutput", leftLeader.getAppliedOutput()/leftLeader.getBusVoltage());
+    SmartDashboard.putNumber("chassis/voltRightOutput", leftLeader.getAppliedOutput()/rightLeader.getBusVoltage());
+    SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
+    SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
+
   }
 }

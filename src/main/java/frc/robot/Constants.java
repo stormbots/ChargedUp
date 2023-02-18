@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.stormbots.Lerp;
 
+import edu.wpi.first.math.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -54,13 +56,21 @@ public final class Constants {
     public static double kGeartrainHigh=16.36;
     public static double kGeartrainLow=4.49;
     public static double kWheelSpacing=28;//TODO estimated
-    public static double kWheelDiameter=6;//TODO estimated, and possibly not even useful
+    public static double kWheelDiameter=Units.inchesToMeters(6.1);//TODO estimated, and possibly not even useful
+    public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
+    public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
 
     public static boolean kShiftHigh=false; //TODO
     public static boolean kShiftLow=!kShiftHigh; //TODO
 
-    public static boolean kLeftInverted = true;
-    public static boolean kRightInverted = !kLeftInverted;
+    public static boolean kLeftInverted = false;
+    public static boolean kRightInverted = !kLeftInverted;    
+
+    public static double kDriveStaticFF = 0.0;
+    public static double kDrivekP = 0.0;
+    public static double kDrivekD = 0.0;
+    public static double kturnStaticFF = 0.0;
+    public static double kturnStatiP = 0.0;
   }
 
   public  static class VisionConstants{
@@ -152,6 +162,10 @@ public final class Constants {
    * 
    */
   public static void SetPracticebotValues(){
+
+    ChassisConstants.kLeftInverted = false;
+    ChassisConstants.kRightInverted = !ChassisConstants.kLeftInverted;    
+
 
     //Hardware IDs
     HardwareID.kChassisMotorLeft=1;
