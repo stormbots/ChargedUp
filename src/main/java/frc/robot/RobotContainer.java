@@ -21,8 +21,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakePosition;
+import frc.robot.subsystems.Lighting.LedPattern;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Lighting;
 import frc.robot.subsystems.Vision;
 
 /**
@@ -51,7 +53,8 @@ public class RobotContainer {
   ExampleCommand exampleCommand = new ExampleCommand(exampleSubsystem);
   SendableChooser<Command> autoChooser = new SendableChooser<>();
 
-
+  //The lighting subsystem
+  private final Lighting lighting = new Lighting();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(){
@@ -116,6 +119,10 @@ public class RobotContainer {
     ,arm
     ));
     operator.button(4).onFalse(stopArm);
+
+    // This are temp values for the lighting
+    operator.button(4).whileTrue(new InstantCommand(()-> {lighting.setColor(LedPattern.NEED_CONE);}));
+    operator.button(5).whileTrue(new InstantCommand(()-> {lighting.setColor(LedPattern.NEED_CUBE);}));
     
     //Release the game piece
     // operator.button(5).whileTrue(new InstantCommand(()->arm.releaseGamePiece()));
