@@ -16,8 +16,10 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
+import frc.robot.subsystems.Arm.PlaceOrExecute;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Vision;
@@ -47,6 +49,7 @@ public class RobotContainer {
   //Commands
   SendableChooser<Command> autoChooser = new SendableChooser<>();
 
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer(){
    
@@ -56,8 +59,16 @@ public class RobotContainer {
     // .and(PlacingTrigger)
     // .whileTrue(()->{})
     // .onFalse(()->{});
+    PCH.clearStickyFaults();
+    pdp.clearStickyFaults();
+    if (Constants.isCompBot){
+      PCH.enableCompressorAnalog(80, 110);
+    }
+    else{
+      
+    }
 
-    PCH.enableCompressorAnalog(80, 110);
+    
    
     
     //compressor.clearStickyFaults();
@@ -86,7 +97,6 @@ public class RobotContainer {
           arm.driveArm(-operator.getRawAxis(1));
           arm.driveRetract(operator.getRawAxis(0));
           arm.wristServo.set(operator.getRawAxis(2));
-          //arm.setWristAngle(Lerp.lerp(operator.getRawAxis(3), -1, 1, 45,10));
         },arm
       ));
   }
@@ -112,103 +122,65 @@ public class RobotContainer {
       new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)),
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED
     ));
-   
+     //PLACE/EXECUTE SELECTOR
+     
     
     //INTAKE MOTORS DRIVE INWARDS
     operator.povCenter().whileFalse((new RunCommand(()->arm.intakeMotor.set(1.0))));
     
-    operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.0)));
+    operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.1)));
    
     //INTAKE MOTOR MANUAL EJECT/
     operator.button(4).whileTrue(new RunCommand (()->{
       arm.intakeMotor.set(-0.1);
     }));
-    operator.button(4).onFalse(new InstantCommand (()->{
+    operator.button(4).onFalse(new RunCommand (()->{
       arm.intakeMotor.set(0.0);
     }));
 
     //POSITION MID LEVEL
-    operator.button(5).onTrue(new RunCommand(()->{
+    operator.button(5).whileTrue(new ConditionalCommand(
+      new ConditionalCommand(
+        new setArm(42, 27, 0, 0.1, arm), 
+        new setArm(35, 27, 0, -0.1, arm),
+        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE) 
+      ,
+      new ConditionalCommand(
+        new setArm(21, 12, 0, 0.1, arm), 
+        new setArm(21, 12, 0, -0.1, arm),
+        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE)
+      ,
+      ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
 
-      /* Psuedo Code */
-      // if(arm.isInConeMode == true){
-      // go to position for cone
-      //}
-      //else(){
-      // go to position for cube
-      //}
-      arm.testArmPID(40.1);
-      if (arm.armMotor.getEncoder().getPosition() >34){
-        arm.testRetractPID(27);
-      }
-      //EXECUTE MID LEVEL
-      operator.button(3).onTrue(new RunCommand(()->{
-        arm.testArmPID(arm.getArmAngle()-3.0);
-        arm.intakeMotor.set(-0.1);
-      }));
-    })); 
-
+    
     //POSITION TOP LEVEL
-    operator.button(6).onTrue(new RunCommand (()->{
-      arm.testArmPID(44.0);
-      if (arm.armMotor.getEncoder().getPosition() >40){
-        arm.testRetractPID(48);
-      }
-      //EXECUTE TOP LEVEL
-      operator.button(3).onTrue(new RunCommand(()->{
-        arm.testArmPID(arm.getArmAngle()-3.0);
-        arm.intakeMotor.set(-0.1);
-      }));
-    }));
+    if (arm.getPlaceOrExecute()==PlaceOrExecute.PLACE){
+      operator.button(6).whileTrue(new setArm(44.0, 46.0, 0, 0.1, arm));
+    }
+    else{
+       //EXECUTE TOP LEVEL
+       operator.button(6).whileTrue(new setArm(33.0, 46.0, -40, -0.1, arm));
+    }
+     
 
     //PICKUP DOUBLE SUBSTATION
-    operator.button(7).onTrue(new RunCommand(()->{
-      arm.intakeMotor.set(1.0);
-      arm.testRetractPID(8.2);
-      arm.testArmPID(61.0);
-    })); 
-    operator.button(7).onFalse(new RunCommand(()->{
-      arm.intakeMotor.set(0.0);
-    })); 
-  
+    operator.button(7).whileTrue(new setArm(65, 11, 1.0, 1.0, arm));
+     
     //PICKUP FROM GROUND/SCORE LOW
-    operator.button(8).onTrue(new RunCommand (()->{
-      arm.intakeMotor.set(1.0);
-      arm.testRetractPID(0);
-      if (arm.retractMotor.getEncoder().getPosition() < 5){
-        arm.testArmPID(-30);
-      }
-    }));
-    // operator.button(8).onFalse(new RunCommand(()->{
-    //   arm.intakeMotor.set(0.0);
-    // })); 
-
-    //MOVE TO CARRY POSITION
-    operator.button(2).whileTrue(new RunCommand(()->{
-      arm.testArmPID(70);
-      arm.testRetractPID(0);
-      //Moving in slightly to keep gamepieces
-      
-    }));
-    //Debug for boom encoder
-    // operator.button(11).whileTrue(new InstantCommand(()->{
-    //   arm.setRetractBrake(retractSolenoidPosition.DISENGAGED);
-    //   arm.retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
-    // })); 
-    // operator.button(11).onFalse(new InstantCommand (()->{
-    //   arm.retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
-    // }));
+    operator.button(8).whileTrue(new ConditionalCommand(
+      new setArm(-35, 0.0, 0, 1.0, arm), 
+      new setArm(-30, 5.0, 0.0, 1.0, arm),
+      ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
+    );
     
+    //MOVE TO CARRY POSITION
+    operator.button(2).whileTrue(new setArm(72, 0, 0, 0.1, arm));
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand(){
-    // An example command will be run in autonomous
 
+  
+  public Command getAutonomousCommand(){
+    
     // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.f
     // return Autos.exampleAuto(exampleSubsystem);
     return autoChooser.getSelected();

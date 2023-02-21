@@ -35,7 +35,7 @@ public final class Constants {
     public static int kArmMotor=5;
     public static int kRetractMotor=7;
     public static int kRetractBrakeSolenoid=3;//freaking out
-    public static int kArmAnalogEncoderChannel=0;
+    public static int kArmAnalogEncoderChannel=9;
 
     //Hand+wrist
     public static int kWristServoChannel=8;
@@ -71,7 +71,7 @@ public final class Constants {
 
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
-    public static double kAbsoluteAngleOffset=0;
+    public static double kAbsoluteAngleOffset=-90.25;
     public static double kAbsoluteAngleDistancePerRotation=90/(0.34-0.09);
     public static double kMotorEncoderConversionFactor = 90/(71.12105560302734-1.4);
 
@@ -85,7 +85,7 @@ public final class Constants {
     public static double kaFFNear = 0;
     public static double kaFFFar = 0;
 
-    public static double kPNear = 0.05;
+    public static double kPNear = 0.03;
     public static double kINear = 0; 
     public static double kDNear = 0;
 
@@ -93,7 +93,7 @@ public final class Constants {
     public static double kIFar = 0; 
     public static double kDFar = 0;
 
-    public static float kSoftLimitReverseNear = -30;
+    public static float kSoftLimitReverseNear = -37;
     public static float kSoftLimitForwardNear = 90;
     public static float kSoftLimitReverseFar = -10;
     public static float kSoftLimitForwardFar = 90;
@@ -103,11 +103,11 @@ public final class Constants {
   public static class RetractConstants{
     //Measured from center of turret mounting to center of wrist axis
     public static double kMinRetractionRotations=0;
-    public static double kMaxRetractionRotations=40;
+    public static double kMaxRetractionRotations= 57;
     public static double kMinRetractionInches=0;
-    public static double kMaxRetractionInches=30;
-    public static double kRetractSoftLimitReverse = 0;
-    public static double kRetractSoftLimitForward = 56.12;
+    public static double kMaxRetractionInches=46;
+    public static float kRetractSoftLimitReverse = 0;
+    public static float kRetractSoftLimitForward = 57;
   
     public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;
@@ -123,7 +123,7 @@ public final class Constants {
     public static double kaFFNear = 0;
     public static double kaFFFar = 0;
 
-    public static double kPNear = 0.05;
+    public static double kPNear = 0.2;
     public static double kINear = 0; 
     public static double kDNear = 0;
 
@@ -135,7 +135,7 @@ public final class Constants {
 
   public static class WristConstants{
     public static double kMinAngle=0; 
-    public static double kMaxAngle=0; 
+    public static double kMaxAngle=-40; 
     public static double kMinRotations=0; 
     public static double kMaxRotations=10;
     public static double kConversionFactor=(kMaxAngle-kMinAngle)/(kMaxRotations-kMinRotations);
