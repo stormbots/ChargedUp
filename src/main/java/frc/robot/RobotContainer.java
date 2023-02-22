@@ -123,7 +123,11 @@ public class RobotContainer {
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED
     ));
      //PLACE/EXECUTE SELECTOR
-     
+    operator.button(3).onTrue(new ConditionalCommand(
+      new InstantCommand(()->arm.setPlaceOrExecute(PlaceOrExecute.EXECUTE)), 
+      new InstantCommand(()->arm.setPlaceOrExecute(PlaceOrExecute.PLACE)), 
+      ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE
+    ));
     
     //INTAKE MOTORS DRIVE INWARDS
     operator.povCenter().whileFalse((new RunCommand(()->arm.intakeMotor.set(1.0))));
@@ -153,15 +157,22 @@ public class RobotContainer {
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
 
     
+    
     //POSITION TOP LEVEL
-    if (arm.getPlaceOrExecute()==PlaceOrExecute.PLACE){
-      operator.button(6).whileTrue(new setArm(44.0, 46.0, 0, 0.1, arm));
-    }
-    else{
-       //EXECUTE TOP LEVEL
-       operator.button(6).whileTrue(new setArm(33.0, 46.0, -40, -0.1, arm));
-    }
-     
+    operator.button(5).whileTrue(new ConditionalCommand(
+      new ConditionalCommand(
+        new setArm(44.0, 46.0, 0, 0.1, arm), 
+        new setArm(33.0, 46.0, 0, -0.1, arm),
+        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE) 
+      ,
+      new ConditionalCommand(
+        new setArm(44.0, 46.0, 0, 0.1, arm), 
+        new setArm(44.0, 46.0, 0, -0.1, arm),
+        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE)
+      ,
+      ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
+
+    
 
     //PICKUP DOUBLE SUBSTATION
     operator.button(7).whileTrue(new setArm(65, 11, 1.0, 1.0, arm));

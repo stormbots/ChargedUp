@@ -240,7 +240,6 @@ public class Arm extends SubsystemBase {
         }
     }
   
-    /**Hand Methods*/
     public void setIntake(IntakeSolenoidPosition handPosition){
       this.intakeSolenoidPosition=handPosition;
       if(handPosition == IntakeSolenoidPosition.CLOSED){
@@ -251,12 +250,10 @@ public class Arm extends SubsystemBase {
       }
     }
 
-    /** set angle relative to ground  */
-    public Arm setWristAngle(double angle) {
-      //double servoOut = Lerp.lerp(angle,WristConstants.kMinAngle,WristConstants.kMaxAngle,0,1);
-      wristServo.set(angle);
-      return this;
+    public void setPlaceOrExecute(PlaceOrExecute selection){
+      this.placeOrExecute=selection;
     }
+    /** set angle relative to ground  */
     
     public IntakeSolenoidPosition getIntakePosition(){
       return this.intakeSolenoidPosition;
@@ -289,6 +286,7 @@ public class Arm extends SubsystemBase {
       // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
       SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
       SmartDashboard.putString("intakeState",getIntakePosition().toString());
+      SmartDashboard.putString("executeToggle", getPlaceOrExecute().toString());
     }
     
     @Override
