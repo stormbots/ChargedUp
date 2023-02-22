@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -20,7 +22,7 @@ import frc.robot.subsystems.Chassis.Gear;
  */
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
-  // UsbCamera camera1;
+  UsbCamera camera1;
   // UsbCamera camera2;
   private RobotContainer robotContainer;
   
@@ -33,9 +35,9 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     LiveWindow.enableAllTelemetry();
-    
+    camera1 = CameraServer.startAutomaticCapture();
     String key = "/bot/isCompBot";
-    Constants.isCompBot = Preferences.getBoolean(key,true);
+    Constants.isCompBot = Preferences.getBoolean(key,false);
     if(! Preferences.containsKey(key)){
       System.err.println("ROBOT COMP STATE NOT DEFINED:");
       System.err.println("Assuming COMP for safety: View Preferences to change");
@@ -84,6 +86,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
+    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getAbsoluteEncoderPosition());
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -111,6 +114,8 @@ public class Robot extends TimedRobot {
       autonomousCommand.cancel();
     }
     robotContainer.chassis.setShifter(Gear.HIGH);
+    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getAbsoluteEncoderPosition());
+
   }
 
   /** This function is called periodically during operator control. */
