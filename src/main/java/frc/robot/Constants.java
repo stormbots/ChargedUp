@@ -71,6 +71,8 @@ public final class Constants {
     public static double kDrivekD = 0.0;
     public static double kturnStaticFF = 0.0;
     public static double kturnStatiP = 0.0;
+
+    public static double kNavxRollInvert=-1;
   }
 
   public  static class VisionConstants{
@@ -165,7 +167,7 @@ public final class Constants {
 
     ChassisConstants.kLeftInverted = false;
     ChassisConstants.kRightInverted = !ChassisConstants.kLeftInverted;    
-
+    ChassisConstants.kNavxRollInvert= 1;
 
     //Hardware IDs
     HardwareID.kChassisMotorLeft=1;
