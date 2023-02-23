@@ -74,14 +74,15 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic(){
-
+    //The absolute encoders occasionally fail to set the arm position on boot; So, do it here just in case
+    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getArmAngleAbsolute());
+    // robotContainer.arm.wristMotor.getEncoder().setPosition(robotContainer.arm.getWristAngleAbsolute());
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
-    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getAbsoluteEncoderPosition());
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
@@ -106,7 +107,6 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
-    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getAbsoluteEncoderPosition());
 
     
   }

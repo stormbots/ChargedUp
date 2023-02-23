@@ -38,15 +38,17 @@ public final class Constants {
     public static int kArmAnalogEncoderChannel=9;
 
     //Hand+wrist
-    public static int kWristServoChannel=8;
+    public static int kWristMotorID=13;
+    // public static int kWristServoChannel=8;
     public static int kIntakeSolenoid=4;
     public static int kIntakeMotor=9;
+    public static int kWristAnalogEncoderChannel=8;
 
   
     //Vision and driver stuff
     public static int kCameraFrontID=0;
     public static int kCameraRearID=1;
-    public static String kLimelightIP="192.28.11.100";
+    public static String kLimelightIP="10.28.11.100";
 
   }
 
@@ -72,7 +74,7 @@ public final class Constants {
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
     public static double kAbsoluteAngleOffset=-90.25;
-    public static double kAbsoluteAngleDistancePerRotation=90/(0.34-0.09);
+    public static double kAbsoluteAngleDistancePerRotation=360;
     public static double kMotorEncoderConversionFactor = 90/(71.12105560302734-1.4);
 
     //All FFs are in volts
@@ -138,8 +140,15 @@ public final class Constants {
     public static double kMaxAngle=-40; 
     public static double kMinRotations=0; 
     public static double kMaxRotations=10;
-    public static double kConversionFactor=(kMaxAngle-kMinAngle)/(kMaxRotations-kMinRotations);
+    public static double kConversionFactor= 1/(63/1 * 5/4);
     public static boolean kReverseMotor=false;
+    public static double kAbsoluteAngleOffset=0;
+    public static double kFFCos=0.05;
+    public static double kP=0.1/90.0;
+    public static double kI=0;
+    public static double kD=0;
+    public static double kAbsoluteAngleDistancePerRotation=360;
+
   }
 
   public static class IntakeConstants{
@@ -165,7 +174,8 @@ public final class Constants {
     HardwareID.kRetractMotor=7;
     HardwareID.kRetractBrakeSolenoid=0;//freaking out
     HardwareID.kArmAnalogEncoderChannel=0;
-    HardwareID.kWristServoChannel=8;
+    // HardwareID.kWristServoChannel=8;
+    HardwareID.kWristMotorID=13;
     HardwareID.kIntakeSolenoid=3;
     HardwareID.kIntakeMotor=9;
 

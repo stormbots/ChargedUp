@@ -96,7 +96,7 @@ public class RobotContainer {
         ()->{
           arm.driveArm(-operator.getRawAxis(1));
           arm.driveRetract(operator.getRawAxis(0));
-          arm.wristServo.set(operator.getRawAxis(2));
+          arm.driveWrist(operator.getRawAxis(2));
         },arm
       ));
   }

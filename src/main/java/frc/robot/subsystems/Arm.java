@@ -11,19 +11,17 @@ import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
-import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.HardwareID;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.RetractConstants;
 import frc.robot.Constants.WristConstants;
@@ -68,8 +66,10 @@ public class Arm extends SubsystemBase {
    
     
     //Wrist Servo for up/down
-    public Servo wristServo = new Servo(Constants.HardwareID.kWristServoChannel);
-   
+    // public Servo wristServo = new Servo(Constants.HardwareID.kWristMotorID);
+    public CANSparkMax wristMotor = new CANSparkMax(HardwareID.kWristMotorID, MotorType.kBrushless);
+    public DutyCycleEncoder wristAbsEncoder = new DutyCycleEncoder(HardwareID.kWristAnalogEncoderChannel);
+
     //Wrist variables
     SlewRateLimiter wristAngleEstimate = new SlewRateLimiter(2);
     double wristAngleTarget = 0.0;
@@ -110,7 +110,6 @@ public class Arm extends SubsystemBase {
     public Arm() {
       /** Note: this JUST FOR PRACTICE BOT!! */
       // armMotor.restoreFactoryDefaults();
-      armAbsEncoder.setDistancePerRotation(ArmConstants.kAbsoluteAngleDistancePerRotation);
       
       //Invert the intake
       intakeMotor.setInverted(IntakeConstants.kIntakeMotorInverted);
@@ -138,8 +137,13 @@ public class Arm extends SubsystemBase {
       retractPID.setD(RetractConstants.kDNear);
       retractPID.setFF(0);
 
+      wristMotor.getPIDController().setP(WristConstants.kP);
+      wristMotor.getPIDController().setI(WristConstants.kI);
+      wristMotor.getPIDController().setD(WristConstants.kD);
+      wristMotor.getPIDController().setFF(0);
+
       /** Set the bounds for thwe wrist */
-      wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
+      // wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
       armMotor.setSoftLimit(SoftLimitDirection.kReverse, ArmConstants.kSoftLimitReverseNear);
       armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
 
@@ -147,20 +151,33 @@ public class Arm extends SubsystemBase {
       armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
       armMotor.setInverted(true);
       armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
+      armMotor.getEncoder().setPosition(getArmAngleAbsolute());
+
       
       retractMotor.getEncoder().setPositionConversionFactor(1); //Set to use rotations for base unit
       retractMotor.setSoftLimit(SoftLimitDirection.kForward, RetractConstants.kRetractSoftLimitForward);
       retractMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
       retractMotor.setSoftLimit(SoftLimitDirection.kReverse, RetractConstants.kRetractSoftLimitReverse);
       retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
-      SmartDashboard.putData("arm/ResetAbsEncoder",new InstantCommand(()->armAbsEncoder.reset()));
       
       
-      //setWristAngle(0);
+      wristMotor.setIdleMode(IdleMode.kCoast);
+      wristMotor.setSmartCurrentLimit(30,30);
+      wristMotor.setInverted(WristConstants.kReverseMotor);
+      wristMotor.getEncoder().setPositionConversionFactor(WristConstants.kConversionFactor);
+      wristMotor.setSoftLimit(SoftLimitDirection.kForward, 90); 
+      wristMotor.setSoftLimit(SoftLimitDirection.kReverse, -90); 
+      wristMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+      wristMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+      wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+
+      
       setRetractBrake(RetractSolenoidPosition.DISENGAGED);
       setIntake(IntakeSolenoidPosition.CLOSED);
 
-      /**  */
+      //NOTE: We also re-set arm and wrist angles from the abs encoder in Robot.disabledPeriodic()
+      // This is due to alleged boot up issues where the values from angle encoder are not 
+      // properly scaled, resulting in incorrect angle readings.
     }
 
 
@@ -177,11 +194,7 @@ public class Arm extends SubsystemBase {
     public double getArmAngle() {
         return armMotor.getEncoder().getPosition();
     }
-    
-    public double getRetractPosition(){
-      return retractMotor.getEncoder().getPosition();
-    }
-  
+     
     // public double getRetractLength(){
     //   double rotations = retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor();
     //   var id = RetractConstants.kInnerDiameter;
@@ -196,49 +209,76 @@ public class Arm extends SubsystemBase {
       return retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor();
     }
 
-    public void testRetractPID(double setpoint){
+    public void setRetractPID(double setpoint){
       retractPID.setP(RetractConstants.kPNear);
       retractPID.setIZone( 0.1 / retractPID.getI());
-      //FF
       var retractFF = Lerp.lerp(getRetractRotations(), 
-      RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
-      RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
-      //PID
+        RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
+        RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
       retractPID.setReference(setpoint, ControlType.kPosition, 0, retractFF, ArbFFUnits.kVoltage);
     }
-    public void testArmPID(double setpoint){
+
+    public void setArmPID(double setpoint){
       armPID.setP(ArmConstants.kPNear);
-      //FF
-      var armFF =Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse, 
-      RetractConstants.kRetractSoftLimitForward, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
-      //PID
+      var armFF =Lerp.lerp(getRetractRotations(),
+        RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
+        ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
       armPID.setReference(setpoint, ControlType.kPosition, 0, armFF, ArbFFUnits.kVoltage);
     }
-      
+
     public void driveRetract(double power){
       //FF
       var retractFF = Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse, 
       RetractConstants.kRetractSoftLimitForward, RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
       retractMotor.set(power + retractFF);
     }
+
     public void driveArm(double power){
-      
-      var armFF = Lerp.lerp(getRetractRotations(), RetractConstants.kRetractSoftLimitReverse,
-      RetractConstants.kRetractSoftLimitForward, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
+      var armFF = Lerp.lerp(getRetractRotations(), 
+        RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward,
+        ArmConstants.kCosFFNear, ArmConstants.kCosFFFar) /12.0;
       armMotor.set(power/2.0 + armFF);
     }
-    public void driveServo(double power){
+    
+    public void driveWrist(double power){
       //wristServo.set(Lerp.lerp(power,-1,1,0,1));
+      var ff = WristConstants.kFFCos/12.0;
+      ff *= Math.cos(Math.toRadians(getWristAngle()));
+      wristMotor.set(power + ff );
     }
-   
-    public double getAbsoluteEncoderPosition(){
+       
+    public double getArmAngleAbsolute(){
       var angle = armAbsEncoder.getAbsolutePosition()*360-Constants.ArmConstants.kAbsoluteAngleOffset;
-      if( angle >180 ){ return angle -360; }
-
-        else{
-          return angle;
-        }
+      if( angle >180 ){ 
+        return angle -360; 
+      }
+      return angle;
     }
+
+    /** Set wrist angle relative to ground/horizon*/
+    public void setWristPID(double angle){
+      //wristServo.set(Lerp.lerp(power,-1,1,0,1));
+      angle -= getArmAngle();
+      var ff = WristConstants.kFFCos/12.0;
+      ff *= Math.cos(Math.toRadians(getWristAngle()));
+      wristMotor.getPIDController().setReference(angle, ControlType.kPosition, 0, ff, ArbFFUnits.kVoltage);
+    }
+
+    /** Returns wrist angle relative to the arm using absolute encoder */
+    public double getWristAngleAbsolute(){
+      var angle = wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset;
+      if( angle >180 ){
+        return angle -360;
+      }
+      return angle;
+      }
+
+    /**returns wrist angle relative to ground/horizon*/
+    public double getWristAngle(){
+      var angle = getArmAngle()+wristMotor.getEncoder().getPosition();
+      return angle;
+    }
+
   
     public void setIntake(IntakeSolenoidPosition handPosition){
       this.intakeSolenoidPosition=handPosition;
@@ -250,19 +290,17 @@ public class Arm extends SubsystemBase {
       }
     }
 
-    public void setPlaceOrExecute(PlaceOrExecute selection){
-      this.placeOrExecute=selection;
-    }
-    /** set angle relative to ground  */
-    
     public IntakeSolenoidPosition getIntakePosition(){
       return this.intakeSolenoidPosition;
     }
 
+    public void setPlaceOrExecute(PlaceOrExecute selection){
+      this.placeOrExecute=selection;
+    }
+    
     public PlaceOrExecute getPlaceOrExecute(){
       return this.placeOrExecute;
     }
-    
     
 
     @Override
@@ -271,7 +309,7 @@ public class Arm extends SubsystemBase {
 
       SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
       SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
-      SmartDashboard.putNumber("arm/armangle/absoluteAdjusted", getAbsoluteEncoderPosition()); //??
+      SmartDashboard.putNumber("arm/armangle/absoluteAdjusted", getArmAngleAbsolute()); //??
       SmartDashboard.putNumber("arm/armangle/absoluteRaw", armAbsEncoder.getAbsolutePosition()); //??
 
       SmartDashboard.putNumber("arm/intake/intakeVolts", intakeMotor.getAppliedOutput()*intakeMotor.getBusVoltage());
@@ -283,8 +321,14 @@ public class Arm extends SubsystemBase {
      
       SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
+      SmartDashboard.putNumber("arm/wrist/angleAbs", getWristAngleAbsolute());
+      SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
+      SmartDashboard.putNumber("arm/wrist/angleHorizon", getWristAngle());
+      SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
+      SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
+
       // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
-      SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
+      // SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
       SmartDashboard.putString("intakeState",getIntakePosition().toString());
       SmartDashboard.putString("executeToggle", getPlaceOrExecute().toString());
     }
