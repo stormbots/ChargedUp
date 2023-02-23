@@ -13,6 +13,7 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import com.stormbots.Lerp;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -39,7 +40,7 @@ public class Arm extends SubsystemBase {
     PLACE,
     EXECUTE
   }
-  
+
   private RetractSolenoidPosition retractSolenoidPosition = RetractSolenoidPosition.DISENGAGED;
   private IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
   private PlaceOrExecute placeOrExecute  = PlaceOrExecute.PLACE;
@@ -169,16 +170,34 @@ public class Arm extends SubsystemBase {
     return retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor();
   }
 
-  // public double getRetractLength(){
-  //   double rotations = retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor();
+  public double getRetractLengthIn(){
+    double rotations = getRetractRotations();
+    var id = RetractConstants.kInnerDiameter;
+    var strapwidth = RetractConstants.kStrapWidth;
+    var od = 2*rotations*strapwidth + id ; 
+    var area = Math.PI/4.0*od*od - Math.PI/4.0*id*id;
+    var length = area/strapwidth;
+    return length;
+  }
+
+  public double getRetractLengthM(){
+    return Units.inchesToMeters(getRetractLengthIn());
+  }
+
+  //TODO: Before using, verify math and measurements/calibration of system
+  // public void setRetractLengthIn(double length){
+  //   //This is just getRetractLength, backwards, solving for rotations
   //   var id = RetractConstants.kInnerDiameter;
   //   var strapwidth = RetractConstants.kStrapWidth;
-  //   var od = 2*rotations*strapwidth + id ; 
-  //   var area = Math.PI/4.0*od*od - Math.PI/4.0*id*id;
-  //   var length = area/strapwidth;
-  //   return length;
+  //   var area = length*strapwidth;
+  //   var od = Math.sqrt( (area + Math.PI/4.0*id*id ) / (Math.PI/4.0) ); 
+  //   var rotations = ( od-id )/(2*strapwidth);
+  //   setRetractPID(rotations);
   // }
 
+  // public void setRetractLengthM(double meters){
+  //   setRetractLengthIn(Units.metersToInches(meters));
+  // }
 
   ///////////////////////////////////////////
   /// Arm Angular functions
@@ -210,9 +229,6 @@ public class Arm extends SubsystemBase {
   public double getArmAngle() {
     return armMotor.getEncoder().getPosition();
   }
-
-
-
 
 
   ///////////////////////////////////////////
@@ -299,6 +315,8 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("arm/poseData/retractEncoderRotations", retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor());
     SmartDashboard.putNumber("arm/retract/retractOutput", retractMotor.getAppliedOutput()*retractMotor.getBusVoltage());
     SmartDashboard.putNumber("arm/retract/retractamps", retractMotor.getOutputCurrent());
+    SmartDashboard.putNumber("arm/retract/lengthIn", getRetractLengthIn() );
+    SmartDashboard.putNumber("arm/retract/lengthM", getRetractLengthM() );
     
     SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
