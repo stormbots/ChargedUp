@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
@@ -89,7 +90,7 @@ public class Arm extends SubsystemBase {
     
     //Prepare Arm control
     // armMotor.restoreFactoryDefaults(); //CAN/ID jank should be fixed, this can be removed.
-    armMotor.setIdleMode(IdleMode.kBrake);
+    armMotor.setIdleMode(IdleMode.kCoast);
     armMotor.setSmartCurrentLimit(80);
     armMotor.setInverted(true);
     armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
@@ -101,12 +102,12 @@ public class Arm extends SubsystemBase {
 
     //Prepare wrist control
     wristMotor.setIdleMode(IdleMode.kCoast);
-    wristMotor.setSmartCurrentLimit(30,30);
+    wristMotor.setSmartCurrentLimit(12,15);
     wristMotor.setInverted(WristConstants.kReverseMotor);
     wristMotor.getEncoder().setPositionConversionFactor(WristConstants.kConversionFactor);
     wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
-    wristMotor.setSoftLimit(SoftLimitDirection.kForward, 90); 
-    wristMotor.setSoftLimit(SoftLimitDirection.kReverse, -90); 
+    wristMotor.setSoftLimit(SoftLimitDirection.kForward, WristConstants.kMaxAngle); 
+    wristMotor.setSoftLimit(SoftLimitDirection.kReverse, WristConstants.kMinAngle); 
     wristMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
     wristMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
     // wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0); //Keeping in case we have to hack in wrist for practice bot
@@ -133,6 +134,8 @@ public class Arm extends SubsystemBase {
     setRetractBrake(RetractSolenoidPosition.DISENGAGED);
     setIntake(IntakeSolenoidPosition.CLOSED);
 
+    SmartDashboard.putData("arm/retract/Reset Encoder",
+      new InstantCommand(()-> retractMotor.getEncoder().setPosition(0)));
     //NOTE: We also re-set arm and wrist angles from the abs encoder in Robot.disabledPeriodic()
     // This is due to alleged boot up issues where the values from angle encoder are not 
     // properly scaled, resulting in incorrect angle readings.
@@ -303,6 +306,7 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     //setWristAngle(wristAngleTarget);
+    if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
 
     SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
     SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
@@ -313,18 +317,21 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("arm/intake/intakeAmps", intakeMotor.getOutputCurrent());
 
     SmartDashboard.putNumber("arm/poseData/retractEncoderRotations", retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor());
-    SmartDashboard.putNumber("arm/retract/retractOutput", retractMotor.getAppliedOutput()*retractMotor.getBusVoltage());
+    SmartDashboard.putNumber("arm/retract/retractVoltage", retractMotor.getAppliedOutput()*retractMotor.getBusVoltage());
+    SmartDashboard.putNumber("arm/retract/retractOutput", retractMotor.getAppliedOutput());
     SmartDashboard.putNumber("arm/retract/retractamps", retractMotor.getOutputCurrent());
     SmartDashboard.putNumber("arm/retract/lengthIn", getRetractLengthIn() );
     SmartDashboard.putNumber("arm/retract/lengthM", getRetractLengthM() );
     
     SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
+    SmartDashboard.putNumber("arm/poseData/angleHorizon", getWristAngle());
     SmartDashboard.putNumber("arm/wrist/angleAbs", getWristAngleAbsolute());
     SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
     SmartDashboard.putNumber("arm/wrist/angleHorizon", getWristAngle());
     SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
     SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
+    SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
 
     // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
     // SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());

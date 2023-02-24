@@ -64,6 +64,16 @@ public class setArm extends CommandBase {
     var intakeSpeed = this.intakeSpeed.getAsDouble();
     var wristAngle = this.wristAngle.getAsDouble();
 
+
+    //TODO: We need to be mindful of extend poses
+    // but current set up does not work
+    // Only execute extending poses from carry
+    arm.setRetractPID(extension);
+    arm.setWristPID(wristAngle);
+    arm.intakeMotor.set(intakeSpeed);
+    arm.setArmPID(angle);
+
+    if(true)return;
     //Check if arm is extended, if extended, retract before moving up/down
     //Might need to change to inches
     if(arm.getRetractRotations() >= RetractConstants.kMaxRetractionRotations/8.0){
@@ -83,6 +93,7 @@ public class setArm extends CommandBase {
         arm.setRetractPID(extension);
       }
     }
+
   }
 
   // Called once the command ends or is interrupted.

@@ -132,7 +132,7 @@ public class RobotContainer {
     //INTAKE MOTORS DRIVE INWARDS
     operator.povCenter().whileFalse((new RunCommand(()->arm.intakeMotor.set(1.0))));
     
-    operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.1)));
+    operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.2)));
    
     //INTAKE MOTOR MANUAL EJECT/
     operator.button(4).whileTrue(new RunCommand (()->{
@@ -142,34 +142,38 @@ public class RobotContainer {
       arm.intakeMotor.set(0.0);
     }));
 
-    //POSITION MID LEVEL
+    //POSITION TOP LEVEL
     operator.button(5).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
-        new setArm(42, 27, 0, 0.1, arm), 
-        new setArm(35, 27, 0, -0.1, arm),
-        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE) 
+        new setArm(46, 45, 46, 0.2, arm), 
+        new setArm(34.5, 45, 43, 0.2, arm)
+          .withTimeout(1)
+          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE)
       ,
       new ConditionalCommand(
-        new setArm(21, 12, 0, 0.1, arm), 
-        new setArm(21, 12, 0, -0.1, arm),
+        new setArm(21, 12, 45, 0.2, arm), 
+        new setArm(21, 12, 0, -0.1, arm).withTimeout(1)
+          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
         ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE)
       ,
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
 
     
-    
-    //POSITION TOP LEVEL
-    operator.button(5).whileTrue(new ConditionalCommand(
+    //POSITION MID LEVEL
+    operator.button(6).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
-        new setArm(44.0, 46.0, 0, 0.1, arm), 
-        new setArm(33.0, 46.0, 0, -0.1, arm),
-        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE) 
-      ,
-      new ConditionalCommand(
-        new setArm(44.0, 46.0, 0, 0.1, arm), 
-        new setArm(44.0, 46.0, 0, -0.1, arm),
+        new setArm(44.0, 29.0, 44, 0.2, arm), 
+        new setArm(32.0, 29.0, 18, 0.2, arm).withTimeout(1)
+          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
         ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE)
       ,
+      new ConditionalCommand(
+        new setArm(44.0, 29.0, 45, 0.2, arm), 
+        new setArm(32.0, 29.0, 18, 0.2, arm),
+        ()->arm.getPlaceOrExecute()==PlaceOrExecute.PLACE)
+      ,
+      //The actual condition
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
 
     
@@ -179,13 +183,13 @@ public class RobotContainer {
      
     //PICKUP FROM GROUND/SCORE LOW
     operator.button(8).whileTrue(new ConditionalCommand(
-      new setArm(-35, 0.0, 0, 1.0, arm), 
-      new setArm(-30, 5.0, 0.0, 1.0, arm),
+      new setArm(-50, 4.5, 0, 1.0, arm), //cone
+      new setArm(-30, 2.5, -15, 1.0, arm), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
     );
     
     //MOVE TO CARRY POSITION
-    operator.button(2).whileTrue(new setArm(72, 0, 0, 0.1, arm));
+    operator.button(2).whileTrue(new setArm(85, 0, 125, 0.1, arm));
   }
 
 

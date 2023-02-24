@@ -42,7 +42,7 @@ public final class Constants {
     // public static int kWristServoChannel=8;
     public static int kIntakeSolenoid=4;
     public static int kIntakeMotor=9;
-    public static int kWristAnalogEncoderChannel=8;
+    public static int kWristAnalogEncoderChannel=0;
 
   
     //Vision and driver stuff
@@ -95,7 +95,7 @@ public final class Constants {
     public static double kIFar = 0; 
     public static double kDFar = 0;
 
-    public static float kSoftLimitReverseNear = -37;
+    public static float kSoftLimitReverseNear = -50;
     public static float kSoftLimitForwardNear = 90;
     public static float kSoftLimitReverseFar = -10;
     public static float kSoftLimitForwardFar = 90;
@@ -121,7 +121,7 @@ public final class Constants {
     public static double ksFFNear = -0.65; //volts at 0 rotatons, changes based on whether we are extending or retracting
     public static double ksFFFar = -.05; //volts at 40.880 rotations
     public static double kvFFNear = 0;
-    public static double kvFFFar = 0;
+    public static double kvFFFar = 0; //-1.9 -.25
     public static double kaFFNear = 0;
     public static double kaFFFar = 0;
 
@@ -136,15 +136,15 @@ public final class Constants {
   }
 
   public static class WristConstants{
-    public static double kMinAngle=0; 
-    public static double kMaxAngle=-40; 
-    public static double kMinRotations=0; 
+    public static float kMinAngle=-75; 
+    public static float kMaxAngle=43; 
+    public static double kMinRotations=-75; 
     public static double kMaxRotations=10;
-    public static double kConversionFactor= 1/(63/1 * 5/4);
+    public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=0;
-    public static double kFFCos=0.05;
-    public static double kP=0.1/90.0;
+    public static double kAbsoluteAngleOffset=-140.493235;
+    public static double kFFCos=0.042*12;
+    public static double kP=1/90.0;
     public static double kI=0;
     public static double kD=0;
     public static double kAbsoluteAngleDistancePerRotation=360;
