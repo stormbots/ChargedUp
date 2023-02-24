@@ -7,21 +7,35 @@ package frc.robot.commands;
 import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.stormbots.Lerp;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.ChassisConstants;
 import frc.robot.subsystems.Chassis;
+import frc.robot.subsystems.Chassis.Gear;
 
 public class ChassisBalance extends CommandBase {
   AHRS navx;
   private Chassis chassis;
   
   LinearFilter filter = LinearFilter.singlePoleIIR(0.1, 0.02);
-  
-  DoubleSupplier driverForward;
-  DoubleSupplier driverTurn;
+  //measured practice bot values
+  // Lerp driveFFLerpHigh = new Lerp(0, 12.5,  0.03, 0.24);//just %out
+  // Lerp driveFFLerpLow = new Lerp(0, 12.5, 0.11, 0); //not done
+
+  //comp bot values
+    // fflow = 0.09
+  // fftlow = .2
+  // ramplow = .17
+
+  // Lerp driveFFLerpHigh = new Lerp(0, 12.5,  0.03, 0.24);
+  Lerp driveFFLerpLow = new Lerp(0, 12.5,  .02, 0.17);
+  private DoubleSupplier driverForward;
+  private DoubleSupplier driverTurn;
+
   /** Creates a new ChassisBalance. */
   public ChassisBalance(DoubleSupplier forward, DoubleSupplier turn, Chassis chassis, AHRS navx) {
     // Use addRequirements() here to declare subsystem dependencies.
@@ -36,37 +50,32 @@ public class ChassisBalance extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    chassis.setShifter(Gear.LOW);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
 
   @Override
   public void execute() {
-//highff = .0027
-//lowff = .0017
-//hightff = .003
-//lowtff = .0015
-//highrampff = .005
-//LOWRAMPFF = .OO15
-    double drivekp = 0.028/12.0; //proportional 
-    double drivekd = 0.06/24.0; //derivatve 
-    double turnkp = (0.01/10.0); // turn proportional 
+    double drivekp = 0.14/12.0; //proportional 
+    double drivekd = 0.3/24.0; //derivatve 
+    double turnkp = (0.15/10.0); // turn proportional 
     double ki = 0; //integral
   
-    double driveksff = 0.0027; //feed forward
     double turnksff = 0.003;
     
 
-    double error = (0- navx.getRoll());
-    double feedforward = driveksff*Math.signum(error);
+    //Balance stuff
+    double error = ChassisConstants.kNavxRollInvert*navx.getRoll();
+    double feedforward = driveFFLerpHigh.get(Math.abs(error))*Math.signum(error);
+
     double delta = navx.getRawGyroX();
     delta = filter.calculate(delta);
     double doutput = delta * drivekd;
     doutput *= Math.signum(error);
     double output = error*drivekp + feedforward - doutput; 
 
-    
+    //turning left/right stuff
     double targetAngle = 0;
     double angle =  -navx.getAngle() % 180; // negative to account for navx rotation relative to chassis
     if( angle <-90){
@@ -75,28 +84,25 @@ public class ChassisBalance extends CommandBase {
     else if( angle > 90){
       targetAngle = 180;
     }
-
     double angleError = targetAngle - angle;
-
-
     SmartDashboard.putNumber("balance/error%", angleError);
-
     SmartDashboard.putNumber("balance/error%adjusted", angleError);
-
     double turnoutput = angleError * turnkp + turnksff*Math.signum(angleError); 
 
 
     output += driverForward.getAsDouble();
     turnoutput += driverTurn.getAsDouble();
-  
-
-    chassis.arcadeDrive(output,-turnoutput);
+    output = driverForward.getAsDouble()*.5;
+    turnoutput = driverTurn.getAsDouble()*.5;
+    chassis.arcadeDrive(output,turnoutput);
 
     SmartDashboard.putNumber("balance/angle", -navx.getAngle());
     SmartDashboard.putNumber("balance/turnoutput(noninverted)", turnoutput);
     SmartDashboard.putNumber("balance/output", output);
     SmartDashboard.putNumber("balance/modangleE", angleError);
     SmartDashboard.putNumber("balance/targetAngle", targetAngle);
+    SmartDashboard.putNumber("balance/rollangle", error);
+    SmartDashboard.putNumber("balance/driveksff", feedforward);
   
 
   }
