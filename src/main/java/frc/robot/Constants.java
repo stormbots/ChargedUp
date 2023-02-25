@@ -66,13 +66,29 @@ public final class Constants {
     public static boolean kLeftInverted = false;
     public static boolean kRightInverted = !kLeftInverted;    
 
-    public static double kDriveStaticFF = 0.0;
-    public static double kDrivekP = 0.0;
-    public static double kDrivekD = 0.0;
-    public static double kturnStaticFF = 0.0;
-    public static double kturnStatiP = 0.0;
+    //basic chassis constants for levelling and proportional turning
+    public static double kDriveLowKSLevel = 0.0;
+    public static double kDriveLowKSTilted = 0.0; //for use only when driving up a tilted ramp
+    public static double kDriveHighKSLevel = 0.0;
+    public static double kDriveHighKSTilted = 0.0; //for use only when driving up a tilted ramp
+    
+    public static double kDriveLowKPTilt = 0.14/12.0; //proportional
+    public static double kDriveLowKDTilt = 0.15/12.0; //proportional
+        
+    public static double kTurnLowKS = 0.003; //proportional
+    public static double kTurnLowKP = 0.15/10.0; //proportional
 
-    public static double kNavxRollInvert=-1;
+    //Constants for use with distance measures/pathfinding
+    public static double kDriveLowKP = 0.0;
+    public static double kDriveLowKI = 0.0;
+    public static double kDriveLowKD = 0.0;
+
+    public static double kDriveHighKP = 0.0;
+    public static double kDriveHighKI = 0.0;
+    public static double kDriveHighKD = 0.0;
+
+
+    public static double kNavxRollPositive=-1;
   }
 
   public  static class VisionConstants{
@@ -169,7 +185,7 @@ public final class Constants {
 
     ChassisConstants.kLeftInverted = false;
     ChassisConstants.kRightInverted = !ChassisConstants.kLeftInverted;    
-    ChassisConstants.kNavxRollInvert= 1;
+    ChassisConstants.kNavxRollPositive= -1;
 
     //Hardware IDs
     HardwareID.kChassisMotorLeft=1;

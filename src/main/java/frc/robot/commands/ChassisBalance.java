@@ -21,18 +21,10 @@ public class ChassisBalance extends CommandBase {
   AHRS navx;
   private Chassis chassis;
   
-  LinearFilter filter = LinearFilter.singlePoleIIR(0.1, 0.02);
-  //measured practice bot values
-  // Lerp driveFFLerpHigh = new Lerp(0, 12.5,  0.03, 0.24);//just %out
-  // Lerp driveFFLerpLow = new Lerp(0, 12.5, 0.11, 0); //not done
+  double lastTilt = 0;
+  LinearFilter tiltDeltaFilter = LinearFilter.singlePoleIIR(0.2, 0.02);
 
-  //comp bot values
-    // fflow = 0.09
-  // fftlow = .2
-  // ramplow = .17
-
-  // Lerp driveFFLerpHigh = new Lerp(0, 12.5,  0.03, 0.24);
-  Lerp driveFFLerpLow = new Lerp(0, 12.5,  .02, 0.17);
+  Lerp driveFFLerpLow = new Lerp(0, 12.5,  ChassisConstants.kDriveLowKSLevel, ChassisConstants.kDriveLowKSLevel);
   private DoubleSupplier driverForward;
   private DoubleSupplier driverTurn;
 
@@ -51,29 +43,34 @@ public class ChassisBalance extends CommandBase {
   @Override
   public void initialize() {
     chassis.setShifter(Gear.LOW);
+    tiltDeltaFilter.reset();
+    lastTilt = ChassisConstants.kNavxRollPositive*navx.getRoll();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
-
   @Override
   public void execute() {
-    double drivekp = 0.14/12.0; //proportional 
-    double drivekd = 0.3/24.0; //derivatve 
-    double turnkp = (0.15/10.0); // turn proportional 
-    double ki = 0; //integral
-  
-    double turnksff = 0.003;
-    
 
-    //Balance stuff
-    double error = ChassisConstants.kNavxRollInvert*navx.getRoll();
-    double feedforward = driveFFLerpHigh.get(Math.abs(error))*Math.signum(error);
+    //Get our Tilt system inputs
+    var targetTilt = 0.0;
+    var tilt = ChassisConstants.kNavxRollPositive*navx.getRoll();
+    var tiltError = targetTilt - tilt;
+    tiltError*=-1; //Unusual step of inverting error; this accounts for a positive system response (forward) correcting a negative error (tilted upward).
+    var tiltDelta = tiltDeltaFilter.calculate(tilt-lastTilt);
+    lastTilt = tilt;
+    //Generate closed loop outputs
+    var tiltOutP = tiltError*ChassisConstants.kDriveLowKPTilt;
+    var tiltoutD = tiltDelta*ChassisConstants.kDriveLowKDTilt;
+    var tiltOutput =  tiltOutP + tiltoutD;
 
-    double delta = navx.getRawGyroX();
-    delta = filter.calculate(delta);
-    double doutput = delta * drivekd;
-    doutput *= Math.signum(error);
-    double output = error*drivekp + feedforward - doutput; 
+    //Apply our FF in the direction our system wants to move to make the correction
+    var tiltOutFF = driveFFLerpLow.get(Math.abs(tilt))*Math.signum(tiltOutput);
+    tiltOutput += tiltOutFF;
+
+    //Optionally, restrict our system response to avoid excess power
+    var max=0.5;
+    MathUtil.clamp(tiltoutD, -max, max); 
+
 
     //turning left/right stuff
     double targetAngle = 0;
@@ -85,24 +82,30 @@ public class ChassisBalance extends CommandBase {
       targetAngle = 180;
     }
     double angleError = targetAngle - angle;
-    SmartDashboard.putNumber("balance/error%", angleError);
-    SmartDashboard.putNumber("balance/error%adjusted", angleError);
-    double turnoutput = angleError * turnkp + turnksff*Math.signum(angleError); 
+    double turnoutput = angleError*ChassisConstants.kTurnLowKP;
+    turnoutput += ChassisConstants.kTurnLowKS*Math.signum(turnoutput); 
 
-
-    output += driverForward.getAsDouble();
+    // Add manual, generate output
+    tiltOutput += driverForward.getAsDouble();
     turnoutput += driverTurn.getAsDouble();
-    output = driverForward.getAsDouble()*.5;
-    turnoutput = driverTurn.getAsDouble()*.5;
-    chassis.arcadeDrive(output,turnoutput);
+    // tiltOutput = driverForward.getAsDouble()*.5;
+    // turnoutput = driverTurn.getAsDouble()*.5;
+    // chassis.arcadeDrive(output,turnoutput);
+    chassis.arcadeDrive(0,0);
 
-    SmartDashboard.putNumber("balance/angle", -navx.getAngle());
-    SmartDashboard.putNumber("balance/turnoutput(noninverted)", turnoutput);
-    SmartDashboard.putNumber("balance/output", output);
-    SmartDashboard.putNumber("balance/modangleE", angleError);
-    SmartDashboard.putNumber("balance/targetAngle", targetAngle);
-    SmartDashboard.putNumber("balance/rollangle", error);
-    SmartDashboard.putNumber("balance/driveksff", feedforward);
+    // SmartDashboard.putNumber("balance/angle", -navx.getAngle());
+    // SmartDashboard.putNumber("balance/turnoutput(noninverted)", turnoutput);
+    // SmartDashboard.putNumber("balance/output", output);
+    // SmartDashboard.putNumber("balance/angelError", angleError);
+    // SmartDashboard.putNumber("balance/targetAngle", targetAngle);
+    SmartDashboard.putNumber("balance/Roll", navx.getRoll());
+    SmartDashboard.putNumber("balance/tilt", tilt);
+    SmartDashboard.putNumber("balance/tiltError", tiltError);
+    SmartDashboard.putNumber("balance/tiltDelta", tiltDelta);
+    SmartDashboard.putNumber("balance/tiltOutP", tiltOutP);
+    SmartDashboard.putNumber("balance/tiltOutD", tiltoutD);
+    SmartDashboard.putNumber("balance/tiltOutput", tiltOutput);
+    // SmartDashboard.putNumber("balance/driveksff", feedforward);
   
 
   }
