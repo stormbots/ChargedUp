@@ -31,5 +31,6 @@
   "editor.autoClosingOvertype": "never",
   "editor.autoClosingQuotes": "never",
   "editor.autoSurround": "never",
-  "wpilib.autoStartRioLog": false
+  "wpilib.autoStartRioLog": false,
+  "editor.inlayHints.enabled": "offUnlessPressed"
 }

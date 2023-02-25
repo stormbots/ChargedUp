@@ -4,243 +4,343 @@
 
 package frc.robot.subsystems;
 
-import java.nio.channels.ClosedByInterruptException;
-
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
-import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.estimator.AngleStatistics;
-import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.HardwareID;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.RetractConstants;
+import frc.robot.Constants.WristConstants;
 
 public class Arm extends SubsystemBase {
-  public static enum IntakePosition{
-    /** Utility enum to provide named values for intake solenoid states 
-    * This helps keep consistent types and umambiguous functions
-    */
-    OPEN(true, true),
-    CLOSED(false, false);
-    private boolean compbot,practicebot;
-    IntakePosition(boolean compbot, boolean practicebot){
-      this.compbot = compbot;
-      this.practicebot = practicebot;
-    }
-    public boolean bool(){return Constants.isCompBot ? this.compbot : this.practicebot;};
+  
+  public static enum RetractSolenoidPosition{
+    ENGAGED,DISENGAGED
+  }
+  
+  public static enum IntakeSolenoidPosition{
+    OPEN,CLOSED
   }
 
+  public static enum PlaceOrExecute{
+    PLACE,
+    EXECUTE
+  }
+
+  private RetractSolenoidPosition retractSolenoidPosition = RetractSolenoidPosition.DISENGAGED;
+  private IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
+  private PlaceOrExecute placeOrExecute  = PlaceOrExecute.PLACE;
+
   
-    //-Motors to move the arm up and down
-    public CANSparkMax armMotor = new CANSparkMax(Constants.HardwareID.kArmMotor, MotorType.kBrushless);
-    //public CANSparkMax armMotorA = new CANSparkMax(Constants.HardwareID.kArmMotorFollower, MotorType.kBrushless);
-    private SparkMaxPIDController armPID = armMotor.getPIDController();
+  // Angular motors
+  public CANSparkMax armMotor = new CANSparkMax(Constants.HardwareID.kArmMotor, MotorType.kBrushless);
+  private SparkMaxPIDController armPID = armMotor.getPIDController();
+  public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
+  public DutyCycleEncoder armAbsEncoder = new DutyCycleEncoder(Constants.HardwareID.kArmAnalogEncoderChannel);
+  Lerp armksFFLerp = new Lerp(RetractConstants.kMinRetractionInches, RetractConstants.kMaxRetractionInches, ArmConstants.ksFFNear, ArmConstants.ksFFFar);
+  Lerp armkCosFFLerp = new Lerp(RetractConstants.kMinRetractionInches, RetractConstants.kMaxRetractionInches, ArmConstants.kCosFFNear, ArmConstants.kCosFFFar);
 
-    //-Motor to move the arm in and out
-    public CANSparkMax boomMotor = new CANSparkMax(Constants.HardwareID.kRetractMotor, MotorType.kBrushless);
-    private SparkMaxPIDController boomPID = boomMotor.getPIDController();
-    //Analog Encoder
-    public DutyCycleEncoder armAbsEncoder = new DutyCycleEncoder(Constants.HardwareID.kArmAnalogEncoderChannel);//This is the DIO port on the roborio this is plugged into
 
-    public Lerp armAnalogLerp = new Lerp(0, 93, -90, 90); //GET GEAR RATIO!!, this for 54:18 gear ratio
+  //Extension and retraction
+  public CANSparkMax retractMotor = new CANSparkMax(Constants.HardwareID.kRetractMotor, MotorType.kBrushless);
+  private SparkMaxPIDController retractPID = retractMotor.getPIDController();
+  Lerp retractFFLerp = new Lerp(0, 30, RetractConstants.ksFFNear, RetractConstants.ksFFFar); //inches/rotations to ff output
 
-    /** Motor + Solenoidfor the intake**/
-    public CANSparkMax handMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
-    Solenoid wristSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); //temp value
-    // public RelativeEncoder encoderRotateMotor = rotateMotor.getEncoder();
+
+  // Intake Actuation
+  public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
+  public Solenoid intakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); 
+  public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid);//temp value
+  
+  
+  // Wrist Actuation
+  // public Servo wristServo = new Servo(Constants.HardwareID.kWristMotorID);
+  public CANSparkMax wristMotor = new CANSparkMax(HardwareID.kWristMotorID, MotorType.kBrushless);
+  public DutyCycleEncoder wristAbsEncoder = new DutyCycleEncoder(HardwareID.kWristAnalogEncoderChannel);
+
+  public Arm() {
+    //Prepare the intake
+    intakeMotor.setInverted(IntakeConstants.kIntakeMotorInverted);
+    intakeMotor.setIdleMode(IdleMode.kCoast);
+    intakeMotor.setSmartCurrentLimit(IntakeConstants.kCurrentLimitStall, IntakeConstants.kCurrentLimitFree);
+
+    //Prepare extension motors
+    retractMotor.setIdleMode(IdleMode.kBrake);
+    retractMotor.setSmartCurrentLimit(80);
+    retractMotor.getEncoder().setPositionConversionFactor(1); //Set to use rotations for base unit
+    retractMotor.setSoftLimit(SoftLimitDirection.kForward, RetractConstants.kRetractSoftLimitForward);
+    retractMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    retractMotor.setSoftLimit(SoftLimitDirection.kReverse, RetractConstants.kRetractSoftLimitReverse);
+    retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
     
-    //Wrist Servo for up/down
-    Servo wristServo = new Servo(Constants.HardwareID.kWristServoChannel);
-   
-    //Wrist variables
-    SlewRateLimiter wristAngleEstimate = new SlewRateLimiter(2);
-    double wristAngleTarget = 0.0;
+    //Prepare Arm control
+    // armMotor.restoreFactoryDefaults(); //CAN/ID jank should be fixed, this can be removed.
+    armMotor.setIdleMode(IdleMode.kCoast);
+    armMotor.setSmartCurrentLimit(80);
+    armMotor.setInverted(true);
+    armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
+    armMotor.getEncoder().setPosition(getArmAngleAbsolute());
+    armMotor.setSoftLimit(SoftLimitDirection.kForward, ArmConstants.kSoftLimitForwardNear);
+    armMotor.setSoftLimit(SoftLimitDirection.kReverse, ArmConstants.kSoftLimitReverseNear);
+    armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+
+    //Prepare wrist control
+    wristMotor.setIdleMode(IdleMode.kCoast);
+    wristMotor.setSmartCurrentLimit(12,15);
+    wristMotor.setInverted(WristConstants.kReverseMotor);
+    wristMotor.getEncoder().setPositionConversionFactor(WristConstants.kConversionFactor);
+    wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    wristMotor.setSoftLimit(SoftLimitDirection.kForward, WristConstants.kMaxAngle); 
+    wristMotor.setSoftLimit(SoftLimitDirection.kReverse, WristConstants.kMinAngle); 
+    wristMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    wristMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+    // wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0); //Keeping in case we have to hack in wrist for practice bot
 
 
-    /** Variables for the arm */
-    double targetArmPos = 0.0;
-    double currentArmPos = 0.0;
-    double armPower = 0.0;
+    //Set all the PIDS
+    armPID.setP(ArmConstants.kPNear);
+    armPID.setI(ArmConstants.kINear);
+    armPID.setD(ArmConstants.kDNear);
+    armPID.setFF(0);
 
+    retractPID.setP(RetractConstants.kPNear);
+    retractPID.setI(RetractConstants.kINear);
+    retractPID.setD(RetractConstants.kDNear);
+    retractPID.setIZone( 0.1 / retractPID.getI()); // If we use an I term, constrain to 10% output
+    retractPID.setFF(0);
+
+    wristMotor.getPIDController().setP(WristConstants.kP);
+    wristMotor.getPIDController().setI(WristConstants.kI);
+    wristMotor.getPIDController().setD(WristConstants.kD);
+    wristMotor.getPIDController().setFF(0);
+
+    //Set initial positions/recalibrations
+    setRetractBrake(RetractSolenoidPosition.DISENGAGED);
+    setIntake(IntakeSolenoidPosition.CLOSED);
+
+    SmartDashboard.putData("arm/retract/Reset Encoder",
+      new InstantCommand(()-> retractMotor.getEncoder().setPosition(0)));
+    //NOTE: We also re-set arm and wrist angles from the abs encoder in Robot.disabledPeriodic()
+    // This is due to alleged boot up issues where the values from angle encoder are not 
+    // properly scaled, resulting in incorrect angle readings.
+  }
+
+  ///////////////////////////////////////////
+  /// Extension/Retraction functions
+  ///////////////////////////////////////////
+
+  public void setRetractBrake(RetractSolenoidPosition mode){
+    this.retractSolenoidPosition = mode;
+    if(mode == RetractSolenoidPosition.ENGAGED){
+      brakeSolenoid.set(RetractConstants.ENGAGED);
+    }
+    else{
+      brakeSolenoid.set(RetractConstants.DISENGAGED);
+    }
+  }
+
+  public void setRetractPID(double setpoint){
+    var retractFF = Lerp.lerp(getRetractRotations(), 
+      RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
+      RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
+    retractPID.setReference(setpoint, ControlType.kPosition, 0, retractFF, ArbFFUnits.kVoltage);
+  }
+
+  public void driveRetract(double power){
+    var retractFF = Lerp.lerp(getRetractRotations(), 
+      RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
+      RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
+    retractMotor.set(power + retractFF);
+  }
+
+  public double getRetractRotations(){
+    return retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor();
+  }
+
+  public double getRetractLengthIn(){
+    double rotations = getRetractRotations();
+    var id = RetractConstants.kInnerDiameter;
+    var strapwidth = RetractConstants.kStrapWidth;
+    var od = 2*rotations*strapwidth + id ; 
+    var area = Math.PI/4.0*od*od - Math.PI/4.0*id*id;
+    var length = area/strapwidth;
+    return length;
+  }
+
+  public double getRetractLengthM(){
+    return Units.inchesToMeters(getRetractLengthIn());
+  }
+
+  //TODO: Before using, verify math and measurements/calibration of system
+  // public void setRetractLengthIn(double length){
+  //   //This is just getRetractLength, backwards, solving for rotations
+  //   var id = RetractConstants.kInnerDiameter;
+  //   var strapwidth = RetractConstants.kStrapWidth;
+  //   var area = length*strapwidth;
+  //   var od = Math.sqrt( (area + Math.PI/4.0*id*id ) / (Math.PI/4.0) ); 
+  //   var rotations = ( od-id )/(2*strapwidth);
+  //   setRetractPID(rotations);
+  // }
+
+  // public void setRetractLengthM(double meters){
+  //   setRetractLengthIn(Units.metersToInches(meters));
+  // }
+
+  ///////////////////////////////////////////
+  /// Arm Angular functions
+  ///////////////////////////////////////////
+  public void driveArm(double power){
+    var armFF = Lerp.lerp(getRetractRotations(), 
+      RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward,
+      ArmConstants.kCosFFNear, ArmConstants.kCosFFFar) /12.0;
+    armMotor.set(power/2.0 + armFF);
+  }
+
+
+  public void setArmPID(double setpoint){
+    var armFF =Lerp.lerp(getRetractRotations(),
+      RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
+      ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
+    armPID.setReference(setpoint, ControlType.kPosition, 0, armFF, ArbFFUnits.kVoltage);
+  }
+
+
+  public double getArmAngleAbsolute(){
+    var angle = armAbsEncoder.getAbsolutePosition()*360-Constants.ArmConstants.kAbsoluteAngleOffset;
+    if( angle >180 ){ 
+      return angle -360; 
+    }
+    return angle;
+  }
+
+  public double getArmAngle() {
+    return armMotor.getEncoder().getPosition();
+  }
+
+
+  ///////////////////////////////////////////
+  /// Wrist functions
+  ///////////////////////////////////////////
+  public void driveWrist(double power){
+    //wristServo.set(Lerp.lerp(power,-1,1,0,1));
+    var ff = WristConstants.kFFCos/12.0;
+    ff *= Math.cos(Math.toRadians(getWristAngle()));
+    wristMotor.set(power + ff );
+  }
+
+  /** Set wrist angle relative to ground/horizon*/
+  public void setWristPID(double angle){
+    //wristServo.set(Lerp.lerp(power,-1,1,0,1));
+    angle -= getArmAngle();
+    var ff = WristConstants.kFFCos/12.0;
+    ff *= Math.cos(Math.toRadians(getWristAngle()));
+    wristMotor.getPIDController().setReference(angle, ControlType.kPosition, 0, ff, ArbFFUnits.kVoltage);
+  }
+
+  /** Returns wrist angle relative to the arm using absolute encoder */
+  public double getWristAngleAbsolute(){
+    var angle = wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset;
+    if( angle >180 ){
+      return angle -360;
+    }
+    return angle;
+  }
+
+  /**returns wrist angle relative to ground/horizon*/
+  public double getWristAngle(){
+    var angle = getArmAngle()+wristMotor.getEncoder().getPosition();
+    return angle;
+  }
+
+  ///////////////////////////////////////////
+  /// Intake Functions
+  ///////////////////////////////////////////
+
+  public void setIntake(IntakeSolenoidPosition handPosition){
+    this.intakeSolenoidPosition=handPosition;
+    if(handPosition == IntakeSolenoidPosition.CLOSED){
+      intakeSolenoid.set(IntakeConstants.kClosedBoolean);
+    }
+    else{
+      intakeSolenoid.set(IntakeConstants.kOpenBoolean);
+    }
+  }
+
+  public IntakeSolenoidPosition getIntakePosition(){
+    return this.intakeSolenoidPosition;
+  }
+
+  ///////////////////////////////////////////
+  /// Misc Functions
+  ///////////////////////////////////////////
+
+  public void setPlaceOrExecute(PlaceOrExecute selection){
+    this.placeOrExecute=selection;
+  }
+  
+  public PlaceOrExecute getPlaceOrExecute(){
+    return this.placeOrExecute;
+  }
     
-    /** Variables for the hand */
-    public double intakeSpeed = 0.3;
-    public boolean isOpen;
 
-    /** Arm Max and Min values for angles */
-    public static final double MAX_ANGLE = 90; //temp values
-    public static final double MIN_ANGLE = 0; //temp values
+  ///////////////////////////////////////////
+  /// Periodic 
+  ///////////////////////////////////////////
+
+  @Override
+  public void periodic() {
+    //setWristAngle(wristAngleTarget);
+    if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
+
+    SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
+    SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
+    SmartDashboard.putNumber("arm/armangle/absoluteAdjusted", getArmAngleAbsolute()); //??
+    SmartDashboard.putNumber("arm/armangle/absoluteRaw", armAbsEncoder.getAbsolutePosition()); //??
+
+    SmartDashboard.putNumber("arm/intake/intakeVolts", intakeMotor.getAppliedOutput()*intakeMotor.getBusVoltage());
+    SmartDashboard.putNumber("arm/intake/intakeAmps", intakeMotor.getOutputCurrent());
+
+    SmartDashboard.putNumber("arm/poseData/retractEncoderRotations", retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor());
+    SmartDashboard.putNumber("arm/retract/retractVoltage", retractMotor.getAppliedOutput()*retractMotor.getBusVoltage());
+    SmartDashboard.putNumber("arm/retract/retractOutput", retractMotor.getAppliedOutput());
+    SmartDashboard.putNumber("arm/retract/retractamps", retractMotor.getOutputCurrent());
+    SmartDashboard.putNumber("arm/retract/lengthIn", getRetractLengthIn() );
+    SmartDashboard.putNumber("arm/retract/lengthM", getRetractLengthM() );
     
-    //Constants for PIDS
-    public double kBoomP =0.0;
-    public double kBoomI =0.0;
-    public double kBoomD =0.0;
+    SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
+    SmartDashboard.putNumber("arm/poseData/angleHorizon", getWristAngle());
+    SmartDashboard.putNumber("arm/wrist/angleAbs", getWristAngleAbsolute());
+    SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
+    SmartDashboard.putNumber("arm/wrist/angleHorizon", getWristAngle());
+    SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
+    SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
+    SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
 
-    public double kArmP =0.0;
-    public double kArmI =0.0;
-    public double kArmD =0.0;
-
-
-    //Angle from analog encoder
-    public double armAngle =0.0;
-    
-    /**
-     * Parameters for L16-R Actuonix Linear Actuators
-     *
-     * @param channel PWM channel used to control the servo
-     * @param length max length of the servo [mm]
-     * @param speed max speed of the servo [mm/second]
-    */
-    public Arm() {
-      /** Note: this JUST FOR PRACTICE BOT!! */
-      handMotor.setInverted(true); //Double check this!
-      armMotor.setIdleMode(IdleMode.kBrake);
-      // armMotorA.setIdleMode(IdleMode.kBrake);
-      boomMotor.setIdleMode(IdleMode.kBrake);
-      handMotor.setIdleMode(IdleMode.kBrake);
-
-
-      //Current Limits, Arbitrary
-      armMotor.setSmartCurrentLimit(10);
-      //armMotorA.setSmartCurrentLimit(10);
-
-      boomMotor.setSmartCurrentLimit(10);
-
-      handMotor.setSmartCurrentLimit(10);
-
-      //armMotorA.follow(armMotorA,true);
-      
-      //PIDS
-
-      armPID.setP(kArmP);
-      armPID.setI(kArmI);
-      armPID.setD(kArmD);
-      armPID.setFF(0);
-
-      boomPID.setP(kBoomP);
-      boomPID.setI(kBoomI);
-      boomPID.setD(kBoomD);
-      boomPID.setFF(0);
-
-      /** Set the bounds for thwe wrist */
-      wristServo.setBounds(2.0, 1.8, 1.5, 1.2, 1.0);
-      
-      armAbsEncoder.reset();
-      /**  */
-    }
-
-    public Arm setAngle(double pos) {
-        targetArmPos = pos;
-        return this;
-    }
-    public double getArmAngle() {
-        return armMotor.getEncoder().getPosition();
-    }
-    public boolean isOnTarget(double tolerance) {
-        return Clamp.bounded(getArmAngle(), targetArmPos - tolerance, targetArmPos + tolerance);
-    }
-    public void configSetArmEncoderPosition(double angle) {
-        armMotor.getEncoder().setPosition((int)armAnalogLerp.getReverse(angle));
-    }
-
-
-    public void setBoomLength(double length) { //Do this later
-        boomPID.setReference(0, ControlType.kPosition, 0, 0, ArbFFUnits.kVoltage);
-    }
-    public double getBoomLength(){
-      double rotations = boomMotor.getEncoder().getPosition()/boomMotor.getEncoder().getPositionConversionFactor();
-      double id = .5;
-      double strapwidth = 0.03;
-      double od = 2*rotations*strapwidth + id;
-      double area = Math.PI*od - Math.PI*id;
-      double length =0 ;
-      /* this is wrong and done quickly from memory*/
-      return 0;
-    }
-
-    public void driveBoom(double power){
-      boomMotor.set(power/4);
-    }
-    public void driveArm(double power){
-      armMotor.set(power/4);
-    }
-
-
-    /**Hand Methods*/
-    public Arm setHand(IntakePosition intake){
-      wristSolenoid.set(intake.bool());
-      return this;
-    }
-    public Arm setIntake(double power){
-      handMotor.set(power);
-      return this;
-    }
-
-    /** This for the wrist */
-    // Run this method in any periodic function to update the position estimation of your servo
-    public Arm setWristAngle(double angle) {
-      angle = angle-getArmAngle();
-      wristAngleTarget = angle;
-      wristAngleEstimate.calculate(angle);
-      double servoOut = Lerp.lerp(angle,0,40,0,1);
-      wristServo.set(MathUtil.clamp(servoOut, 0, 1));
-      return this;
-    }
-
-    //* Current position of the servo, must be calling {@link #updateCurPos() updateCurPos()} periodically 
-    public double getWristAngle() {
-      return wristAngleEstimate.calculate(wristAngleTarget);
-    }
-    //Checks if the servo is at its target position, must be calling {@link #updateCurPos() updateCurPos()} periodically @return true when servo is at its target
-    // public boolean isFinished() {
-    //   return curPos == setPos;
-    // }
-
-    
-    @Override
-    public void periodic() {
-
-      
-        // This method will be called once per scheduler run
-        /** SmartDashboard for the arm */
-        SmartDashboard.getNumber("arm/ArmAngle", armMotor.getEncoder().getPosition());
-
-        //arm/open/wrist SmartDashboard stuff
-        SmartDashboard.getNumber("arm/openwrist/targetWristPos", targetArmPos);
-        // SmartDashboard.getBoolean("arm/wrist/OpenOrClosed", setHand(IntakePosition.CLOSED));
-        SmartDashboard.getNumber("arm/wrist/intakeVoltage", handMotor.getAppliedOutput()*handMotor.getBusVoltage());
-
-        //arm/boom SmartDashboard stuff
-        SmartDashboard.getNumber("arm/boom/rotations", getArmAngle()); //Not sure
-        // SmartDashboard.getNumber("arm/boom/targetLength", setBoomLength(length));
-        // SmartDashboard.getNumber("arm/boom/actualLength", defaultValue);
-        SmartDashboard.getNumber("arm/boom/boomOutput", boomMotor.getAppliedOutput()*boomMotor.getBusVoltage());
-
-        //arm/angle
-        // SmartDashboard.getNumber("arm/boom/rotations", getArmAngle()); //Not sure how this would work
-        SmartDashboard.getNumber("arm/angle/targetAngle", armAngle);
-        SmartDashboard.getNumber("arm/angle/encoderAngle", armMotor.getEncoder().getPosition());
-        SmartDashboard.getNumber("arm/mesuredAbsoluteEnconderAngle", armAbsEncoder.getAbsolutePosition()); //??
-        SmartDashboard.getNumber("arm/angle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
-
-    }
-    
-    @Override
-    public void simulationPeriodic() {
-        // This method will be called once per scheduler run during simulation
-    }
+    // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
+    // SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
+    SmartDashboard.putString("intakeState",getIntakePosition().toString());
+    SmartDashboard.putString("executeToggle", getPlaceOrExecute().toString());
+  }
+  
+  @Override
+  public void simulationPeriodic() {
+      // This method will be called once per scheduler run during simulation
+  }
 }

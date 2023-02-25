@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
   UsbCamera camera1;
-  UsbCamera camera2;
+  // UsbCamera camera2;
   private RobotContainer robotContainer;
   
   /**
@@ -32,10 +32,10 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    LiveWindow.disableAllTelemetry();
-
+    LiveWindow.enableAllTelemetry();
+    camera1 = CameraServer.startAutomaticCapture();
     String key = "/bot/isCompBot";
-    Constants.isCompBot = Preferences.getBoolean(key,true);
+    Constants.isCompBot = Preferences.getBoolean(key,false);
     if(! Preferences.containsKey(key)){
       System.err.println("ROBOT COMP STATE NOT DEFINED:");
       System.err.println("Assuming COMP for safety: View Preferences to change");
@@ -74,7 +74,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic(){
-
+    //The absolute encoders occasionally fail to set the arm position on boot; So, do it here just in case
+    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getArmAngleAbsolute());
+    // robotContainer.arm.wristMotor.getEncoder().setPosition(robotContainer.arm.getWristAngleAbsolute());
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -96,8 +98,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit(){
-    if(camera1 == null) {camera1 = CameraServer.startAutomaticCapture(0);}
-    if(camera2 ==null)  {camera2 = CameraServer.startAutomaticCapture(2);}
+    // if(camera1 == null) {camera1 = CameraServer.startAutomaticCapture(0);}
+    // if(camera2 ==null)  {camera2 = CameraServer.startAutomaticCapture(2);}
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -105,6 +107,8 @@ public class Robot extends TimedRobot {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
+
+    
   }
 
   /** This function is called periodically during operator control. */

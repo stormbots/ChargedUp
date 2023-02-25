@@ -12,6 +12,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ChassisConstants;
@@ -20,18 +21,7 @@ import frc.robot.Constants.HardwareID;
 public class Chassis extends SubsystemBase {
   
   public static enum Gear{
-    /** Utility enum to provide named values for shifted gear states 
-    * This helps keep consistent types and umanbiguous functions
-    */
-
-    HIGH(true, true),
-    LOW(false, false);
-    private boolean compbot,practicebot;
-    Gear(boolean compbot, boolean practicebot){
-      this.compbot = compbot;
-      this.practicebot = practicebot;
-    }
-    public boolean bool(){return Constants.isCompBot ? this.compbot : this.practicebot;};
+    LOW,HIGH
   }
 
   //CAN ID's are placeholders
@@ -43,15 +33,12 @@ public class Chassis extends SubsystemBase {
   private RelativeEncoder leftEncoder = leftLeader.getEncoder();
   private RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
-  Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);;
-
+  Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
+  
   DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
 
   /** Creates a new Chassis. */
   public Chassis() {
-
-
-    
     //Reset Encoders
     leftEncoder.setPosition(0);
     rightEncoder.setPosition(0);
@@ -61,8 +48,8 @@ public class Chassis extends SubsystemBase {
 
       //m.setOpenLoopRampRate(0.2);
 
-      m.setIdleMode(IdleMode.kCoast);
-
+      m.setIdleMode(IdleMode.kBrake);
+      m.clearFaults();
       //Restricts each motor to a max of 60 amps
       m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current limit to chassis
     }
@@ -73,20 +60,27 @@ public class Chassis extends SubsystemBase {
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
 
-    shiftManual(Gear.LOW);
+    setShifter(Gear.HIGH);
   }
-  
+
+  public void setShifter(Gear gear){
+    if(gear == Gear.HIGH){
+      shifter.set(ChassisConstants.kShiftHigh);
+    }
+    else{
+      shifter.set(ChassisConstants.kShiftLow);
+    }
+  }
   public void arcadeDrive(double power, double turn) {
     driveTrain.arcadeDrive(power,turn);
   }
 
-  public void shiftManual(Gear gear){
-    shifter.set(gear.bool());
-  }
+ 
 
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
   }
 }
