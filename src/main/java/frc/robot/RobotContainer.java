@@ -120,7 +120,7 @@ public class RobotContainer {
     ));
     operator.button(4).onFalse(stopArm);
 
-    // This are temp values for the lighting
+    // This are temp values for the lighting, switch to trigger later
     operator.button(4).whileTrue(new InstantCommand(()-> {lighting.setColor(LedPattern.NEED_CONE);}));
     operator.button(5).whileTrue(new InstantCommand(()-> {lighting.setColor(LedPattern.NEED_CUBE);}));
     

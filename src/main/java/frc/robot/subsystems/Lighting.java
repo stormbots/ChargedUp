@@ -28,6 +28,7 @@ public class Lighting extends SubsystemBase {
     switch(DriverStation.getAlliance()) {
       case Blue: allianceColor = BlinkenPattern.CODE_BLUE; break;
       case Red: allianceColor = BlinkenPattern.CODE_RED; break;
+      default:
     }
     leds.set(allianceColor.pwm()); 
   }
@@ -38,11 +39,12 @@ public class Lighting extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // leds.set(BlinkenPattern.BLINKING_RAINBOW.pwm()); // Test function
     BlinkenPattern newpattern = BlinkenPattern.CODE_BLUE;
     // This method will be called once per scheduler run
     switch(pattern){
-      case BLUE: newpattern = BlinkenPattern.CODE_BLUE; break;
-      case RED: newpattern = BlinkenPattern.CODE_RED; break;
+      // case BLUE: newpattern = BlinkenPattern.CODE_BLUE; break;
+      // case RED: newpattern = BlinkenPattern.CODE_RED; break;
       case NEED_CONE: newpattern = BlinkenPattern.YELLOW_LARSON; break;
       case NEED_CUBE: newpattern = BlinkenPattern.SOLID_VIOLET; break;
     }
