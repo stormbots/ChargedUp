@@ -43,8 +43,8 @@ public class Arm extends SubsystemBase {
   }
 
   private RetractSolenoidPosition retractSolenoidPosition = RetractSolenoidPosition.DISENGAGED;
-  private IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
-  private PlaceOrExecute placeOrExecute  = PlaceOrExecute.PLACE;
+  public IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
+  public PlaceOrExecute placeOrExecute  = PlaceOrExecute.PLACE;
 
   
   // Angular motors

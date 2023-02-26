@@ -22,6 +22,7 @@ import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Arm.PlaceOrExecute;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
+import frc.robot.subsystems.Lighting.LedPattern;
 import frc.robot.subsystems.Lighting;
 import frc.robot.subsystems.Vision;
 
@@ -101,6 +102,16 @@ public class RobotContainer {
           arm.driveWrist(operator.getRawAxis(2));
         },arm
       ));
+
+
+      lighting.setDefaultCommand(new RunCommand(()->{
+        if(arm.intakeSolenoidPosition==IntakeSolenoidPosition.OPEN){
+          lighting.setColor(LedPattern.NEED_CUBE);
+        }
+        else{
+          lighting.setColor(LedPattern.NEED_CONE);
+        }  
+      }, lighting));
   }
 
 

@@ -14,7 +14,10 @@ public class Lighting extends SubsystemBase {
   Spark leds = new Spark(9);
 
   public enum LedPattern{
-    BLUE,RED,NEED_CONE,HAVE_CONE,NEED_CUBE,HAVE_CUBE,READY
+    BLUE,RED,
+    NEED_CONE,HAVE_CONE,
+    NEED_CUBE,HAVE_CUBE,
+    POSITION,EXECUTE
     // Note to Dan: 
     // - I was told that NEED_CUBE and NEED_CONE aren't needed 
     // - READY will be the team alliance color
@@ -45,8 +48,15 @@ public class Lighting extends SubsystemBase {
     switch(pattern){
       // case BLUE: newpattern = BlinkenPattern.CODE_BLUE; break;
       // case RED: newpattern = BlinkenPattern.CODE_RED; break;
-      case NEED_CONE: newpattern = BlinkenPattern.YELLOW_LARSON; break;
-      case NEED_CUBE: newpattern = BlinkenPattern.SOLID_VIOLET; break;
+      case NEED_CONE: 
+      case HAVE_CONE:
+        newpattern = BlinkenPattern.YELLOW_LARSON; 
+        break;
+      case NEED_CUBE: 
+      case HAVE_CUBE: 
+        newpattern = BlinkenPattern.SOLID_VIOLET;
+        break;
+      default:
     }
     leds.set(newpattern.pwm());
   }
