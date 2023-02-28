@@ -29,12 +29,12 @@ public final class Constants {
     public static int kChassisMotorRight=3;
     public static int kChassisMotorRightFollower=4;
     public static int kShifterSolenoid=1;
-    // public static int kChassisBrakeSolenoid=3; //Potential hardware, undecided
+    
     
     // Arm inputs
     public static int kArmMotor=5;
     public static int kRetractMotor=7;
-    public static int kRetractBrakeSolenoid=3;//freaking out
+    public static int kRetractBrakeSolenoid=6;//freaking out
     public static int kArmAnalogEncoderChannel=9;
 
     //Hand+wrist
@@ -61,9 +61,10 @@ public final class Constants {
     public static boolean kShiftHigh=true; //TODO
     public static boolean kShiftLow=!kShiftHigh; //TODO
 
-    public static boolean kLeftInverted = true;
+    public static boolean kLeftInverted = false;
     public static boolean kRightInverted = !kLeftInverted;
   }
+
 
   public  static class VisionConstants{
     public static double kLimelightAngle=15;

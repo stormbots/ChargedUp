@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Arm.RetractSolenoidPosition;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -70,12 +71,13 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit(){
+    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getArmAngleAbsolute());
   }
 
   @Override
   public void disabledPeriodic(){
     //The absolute encoders occasionally fail to set the arm position on boot; So, do it here just in case
-    robotContainer.arm.armMotor.getEncoder().setPosition(robotContainer.arm.getArmAngleAbsolute());
+   
     // robotContainer.arm.wristMotor.getEncoder().setPosition(robotContainer.arm.getWristAngleAbsolute());
   }
 
@@ -120,11 +122,12 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-
+    robotContainer.chassis.arcadeDrive(0.5, 0);
   }
 }

@@ -37,14 +37,14 @@ public class Arm extends SubsystemBase {
     OPEN,CLOSED
   }
 
-  public static enum PlaceOrExecute{
-    PLACE,
+  public static enum PrepareOrExecute{
+    PREPARE,
     EXECUTE
   }
 
   private RetractSolenoidPosition retractSolenoidPosition = RetractSolenoidPosition.DISENGAGED;
   private IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
-  private PlaceOrExecute placeOrExecute  = PlaceOrExecute.PLACE;
+  private PrepareOrExecute prepareOrExecute  = PrepareOrExecute.PREPARE;
 
   
   // Angular motors
@@ -87,10 +87,12 @@ public class Arm extends SubsystemBase {
     retractMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
     retractMotor.setSoftLimit(SoftLimitDirection.kReverse, RetractConstants.kRetractSoftLimitReverse);
     retractMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
-    
+    retractMotor.setClosedLoopRampRate(0.02);
+    retractMotor.setOpenLoopRampRate(0.02);
+
     //Prepare Arm control
     // armMotor.restoreFactoryDefaults(); //CAN/ID jank should be fixed, this can be removed.
-    armMotor.setIdleMode(IdleMode.kCoast);
+    armMotor.setIdleMode(IdleMode.kBrake);
     armMotor.setSmartCurrentLimit(80);
     armMotor.setInverted(true);
     armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
@@ -139,6 +141,8 @@ public class Arm extends SubsystemBase {
     //NOTE: We also re-set arm and wrist angles from the abs encoder in Robot.disabledPeriodic()
     // This is due to alleged boot up issues where the values from angle encoder are not 
     // properly scaled, resulting in incorrect angle readings.
+
+    
   }
 
   ///////////////////////////////////////////
@@ -246,7 +250,6 @@ public class Arm extends SubsystemBase {
 
   /** Set wrist angle relative to ground/horizon*/
   public void setWristPID(double angle){
-    //wristServo.set(Lerp.lerp(power,-1,1,0,1));
     angle -= getArmAngle();
     var ff = WristConstants.kFFCos/12.0;
     ff *= Math.cos(Math.toRadians(getWristAngle()));
@@ -290,14 +293,15 @@ public class Arm extends SubsystemBase {
   /// Misc Functions
   ///////////////////////////////////////////
 
-  public void setPlaceOrExecute(PlaceOrExecute selection){
-    this.placeOrExecute=selection;
+  public void setPrepareOrExecute(PrepareOrExecute selection){
+    this.prepareOrExecute=selection;
   }
   
-  public PlaceOrExecute getPlaceOrExecute(){
-    return this.placeOrExecute;
+  public PrepareOrExecute getPrepareOrExecute(){
+    return this.prepareOrExecute;
   }
     
+  
 
   ///////////////////////////////////////////
   /// Periodic 
@@ -307,6 +311,8 @@ public class Arm extends SubsystemBase {
   public void periodic() {
     //setWristAngle(wristAngleTarget);
     if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
+
+    armMotor.getEncoder().setPosition(getArmAngleAbsolute());
 
     SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
     SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
@@ -325,10 +331,9 @@ public class Arm extends SubsystemBase {
     
     SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
-    SmartDashboard.putNumber("arm/poseData/angleHorizon", getWristAngle());
+    SmartDashboard.putNumber("arm/poseData/wristAngleHorizon", getWristAngle());
     SmartDashboard.putNumber("arm/wrist/angleAbs", getWristAngleAbsolute());
     SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
-    SmartDashboard.putNumber("arm/wrist/angleHorizon", getWristAngle());
     SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
     SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
     SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
@@ -336,7 +341,8 @@ public class Arm extends SubsystemBase {
     // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
     // SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
     SmartDashboard.putString("intakeState",getIntakePosition().toString());
-    SmartDashboard.putString("executeToggle", getPlaceOrExecute().toString());
+    SmartDashboard.putString("executeToggle", getPrepareOrExecute().toString());
+    SmartDashboard.putString("brakeOn/Off", getPrepareOrExecute().toString());
   }
   
   @Override

@@ -79,8 +79,13 @@ public class Chassis extends SubsystemBase {
 
 
   @Override
+
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
+    SmartDashboard.putNumber("LeftAmps", leftLeader.getOutputCurrent());
+    SmartDashboard.putNumber("RightAmps", rightLeader.getOutputCurrent());
+    SmartDashboard.putNumber("LeftFAmps", leftFollower.getOutputCurrent());
+    SmartDashboard.putNumber("RightFAmps", rightFollower.getOutputCurrent());
   }
 }
