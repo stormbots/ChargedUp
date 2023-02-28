@@ -16,9 +16,8 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ChassisBalance;
+import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
@@ -94,7 +93,7 @@ public class RobotContainer {
         ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2) *.75);}
         ,chassis)
        );
-      
+
       //These values for the controller, these is joystick and will have to be adjusted
       arm.setDefaultCommand(new RunCommand(
         ()->{
@@ -190,6 +189,8 @@ public class RobotContainer {
     
     // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.f
     // return Autos.exampleAuto(exampleSubsystem);
+
+    // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
     return autoChooser.getSelected();
   }
 }

@@ -31,8 +31,8 @@ public class Chassis extends SubsystemBase {
   private CANSparkMax rightLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorRight,MotorType.kBrushless);
   private CANSparkMax rightFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorRightFollower,MotorType.kBrushless);
   
-  private RelativeEncoder leftEncoder = leftLeader.getEncoder();
-  private RelativeEncoder rightEncoder = rightLeader.getEncoder();
+  public RelativeEncoder leftEncoder = leftLeader.getEncoder();
+  public RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
   Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
   

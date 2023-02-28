@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import com.stormbots.Lerp;
-
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -67,16 +65,18 @@ public final class Constants {
     public static boolean kRightInverted = !kLeftInverted;    
 
     //basic chassis constants for levelling and proportional turning
-    public static double kDriveLowKSLevel = 0.0;
-    public static double kDriveLowKSTilted = 0.0; //for use only when driving up a tilted ramp
-    public static double kDriveHighKSLevel = 0.0;
+    public static double kDriveLowKSLevel = 0.12;
+    public static double kDriveLowKSTilted = 0.22; //for use only when driving up a tilted ramp
+    public static double kDriveHighKSLevel = 0.2;
     public static double kDriveHighKSTilted = 0.0; //for use only when driving up a tilted ramp
     
-    public static double kDriveLowKPTilt = 0.14/12.0; //proportional
-    public static double kDriveLowKDTilt = 0.15/12.0; //proportional
+    public static double kDriveLowKPTilt = 0.16/12.0; //proportional
+    public static double kDriveLowKDTilt = 0;//0.15/12.0; //proportional
         
-    public static double kTurnLowKS = 0.003; //proportional
+    public static double kTurnLowKS = 0.16; //proportional
+    public static double kTurnHighKS = 0.31; //proportional
     public static double kTurnLowKP = 0.15/10.0; //proportional
+    public static double kTurnHighKP = 0.02; //proportional
 
     //Constants for use with distance measures/pathfinding
     public static double kDriveLowKP = 0.0;
