@@ -6,83 +6,89 @@ package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.SPI.Port;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.DrivetrainVisionTargeting;
 import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Chassis;
+import frc.robot.commands.VisionTurnToTargetPose;
+import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Vision;
-import frc.robot.subsystems.Wrist;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
+ * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  //NavX Gyroscope and Accellerometer
-  public AHRS navx = new AHRS(Port.kMXP);
-  Compressor compressor = new Compressor(PneumaticsModuleType.REVPH);
-
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
-  public Chassis chassis = new Chassis();
-  public Arm arm = new Arm();
-  public Wrist wrist = new Wrist();
-  public Vision vision = new Vision();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandJoystick driver = new CommandJoystick(0);
-  private final CommandJoystick operator = new CommandJoystick(1);
+  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  public Field2d field = new Field2d();
+  public AHRS navx = new AHRS(Port.kMXP);
+  public DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(0.3048);;
+  public DifferentialDrivePoseEstimator pe =  new DifferentialDrivePoseEstimator(
+    kinematics, navx.getRotation2d(),
+    0, 0,
+    new Pose2d(0,0, new Rotation2d())
+  );
 
-  //Commands
-  ExampleCommand exampleCommand = new ExampleCommand(exampleSubsystem);
-  SendableChooser<Command> autoChooser = new SendableChooser<>();
+  public Drivetrain drivetrain = new Drivetrain(pe, navx, field);
+  public Vision vision = new Vision(pe, navx, field);
 
+  public Joystick driver = new Joystick(0);
+  JoystickButton aimButton = new JoystickButton(driver, 8);
 
+  
+  private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  public RobotContainer(){
-    navx.reset();
+  public RobotContainer() {
+    SmartDashboard.putData(field);
 
-    chassis.setDefaultCommand(
-      // this one's really basic, but needed to get systems moving right away.
-      new RunCommand(
-        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2) );}
-        ,chassis)
-      );
+    // Configure the button bindings
+    configureButtonBindings();
+    aimButton.whileTrue(new VisionTurnToTargetPose(drivetrain, vision));
+    //.whileHeld(new DrivetrainVisionTargeting(driver.getRawAxis(1),driver.getRawAxis(2),drivetrain, vision, navx));
+    
 
+    var cube1mid = field.getObject("cube1mid");
+    cube1mid.setPose(14.73, 3, new Rotation2d(Math.PI));
 
-    // Configure the trigger bindings
-    configureBindings();
+    drivetrain.setDefaultCommand(new RunCommand(
+      ()->{
+        drivetrain.arcadeDrive(-driver.getRawAxis(1)/2.0, driver.getRawAxis(2)/2.0);
+      },drivetrain));
+
+  }
+
+  public AHRS getNavx() {
+    return navx;
   }
 
   /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
+   * Use this method to define your button->command mappings. Buttons can be created by
+   * instantiating a {@link GenericHID} or one of its subclasses ({@link
+   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
+   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private void configureBindings(){
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(exampleSubsystem));
-
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    driver.button(0).whileTrue(exampleSubsystem.exampleMethodCommand());
+  private void configureButtonBindings() {
+    // drivetrain.setDefaultCommand(
+    //   new DrivetrainVisionTargeting(-driver.getRawAxis(1),driver.getRawAxis(2),drivetrain, vision, navx)
+    //   );
+  
   }
 
   /**
@@ -90,11 +96,8 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand(){
-    // An example command will be run in autonomous
-
-    // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.
-    // return Autos.exampleAuto(exampleSubsystem);
-    return autoChooser.getSelected();
+  public Command getAutonomousCommand() {
+    // An ExampleCommand will run in autonomous
+    return m_autoCommand;
   }
 }
