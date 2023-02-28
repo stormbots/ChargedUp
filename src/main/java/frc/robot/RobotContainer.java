@@ -22,6 +22,8 @@ import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Arm.PrepareOrExecute;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
+import frc.robot.subsystems.Lighting.LedPattern;
+import frc.robot.subsystems.Lighting;
 import frc.robot.subsystems.Vision;
 
 /**
@@ -40,6 +42,7 @@ public class RobotContainer {
   public Chassis chassis = new Chassis();
   public Arm arm = new Arm();
   public Vision vision = new Vision();
+  private final Lighting lighting = new Lighting();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick driver = new CommandJoystick(0);
@@ -99,6 +102,16 @@ public class RobotContainer {
           arm.driveWrist(operator.getRawAxis(2));
         },arm
       ));
+
+
+      lighting.setDefaultCommand(new RunCommand(()->{
+        if(arm.intakeSolenoidPosition==IntakeSolenoidPosition.OPEN){
+          lighting.setColor(LedPattern.NEED_CUBE);
+        }
+        else{
+          lighting.setColor(LedPattern.NEED_CONE);
+        }  
+      }, lighting));
   }
 
 
