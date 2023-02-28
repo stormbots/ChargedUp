@@ -55,7 +55,7 @@ public final class Constants {
   public  static class ChassisConstants{
     public static double kGeartrainHigh=16.36;
     public static double kGeartrainLow=4.49;
-    public static double kWheelSpacing=28;//TODO estimated
+    public static double kWheelSpacing=Units.inchesToMeters(28);//TODO estimated
     public static double kWheelDiameter=Units.inchesToMeters(6.1);
     public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
     public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
