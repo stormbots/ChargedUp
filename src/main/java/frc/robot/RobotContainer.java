@@ -105,7 +105,10 @@ public class RobotContainer {
 
 
       lighting.setDefaultCommand(new RunCommand(()->{
-        if(arm.intakeSolenoidPosition==IntakeSolenoidPosition.OPEN){
+        if(arm.prepareOrExecute==PrepareOrExecute.EXECUTE){
+          lighting.setColor(LedPattern.RED);
+        }
+        else if(arm.intakeSolenoidPosition==IntakeSolenoidPosition.OPEN){
           lighting.setColor(LedPattern.NEED_CUBE);
         }
         else{
