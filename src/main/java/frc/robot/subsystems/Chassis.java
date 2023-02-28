@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -30,8 +31,8 @@ public class Chassis extends SubsystemBase {
   private CANSparkMax rightLeader = new CANSparkMax(Constants.HardwareID.kChassisMotorRight,MotorType.kBrushless);
   private CANSparkMax rightFollower = new CANSparkMax(Constants.HardwareID.kChassisMotorRightFollower,MotorType.kBrushless);
   
-  private RelativeEncoder leftEncoder = leftLeader.getEncoder();
-  private RelativeEncoder rightEncoder = rightLeader.getEncoder();
+  public RelativeEncoder leftEncoder = leftLeader.getEncoder();
+  public RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
   Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
   
@@ -45,7 +46,6 @@ public class Chassis extends SubsystemBase {
 
     for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
       //Set limits for motors
-
       m.setOpenLoopRampRate(0.02);
 
       m.setIdleMode(IdleMode.kBrake);
@@ -60,26 +60,34 @@ public class Chassis extends SubsystemBase {
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
 
+    leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
+    rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
     setShifter(Gear.HIGH);
   }
 
   public void setShifter(Gear gear){
+    var positionLeft = leftEncoder.getPosition();
+    var positionRight = rightEncoder.getPosition();
     if(gear == Gear.HIGH){
       shifter.set(ChassisConstants.kShiftHigh);
+      leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorHigh);
+      rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorHigh);
     }
     else{
+      leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
+      rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
       shifter.set(ChassisConstants.kShiftLow);
     }
+    leftEncoder.setPosition(positionLeft);
+    rightEncoder.setPosition(positionRight);
   }
+
   public void arcadeDrive(double power, double turn) {
     driveTrain.arcadeDrive(power,turn);
   }
 
  
-
-
   @Override
-
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
@@ -87,5 +95,10 @@ public class Chassis extends SubsystemBase {
     SmartDashboard.putNumber("RightAmps", rightLeader.getOutputCurrent());
     SmartDashboard.putNumber("LeftFAmps", leftFollower.getOutputCurrent());
     SmartDashboard.putNumber("RightFAmps", rightFollower.getOutputCurrent());
+    // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
+    SmartDashboard.putNumber("chassis/voltLeftOutput", leftLeader.getAppliedOutput()/leftLeader.getBusVoltage());
+    SmartDashboard.putNumber("chassis/voltRightOutput", rightLeader.getAppliedOutput()/rightLeader.getBusVoltage());
+    SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
+    SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
   }
 }

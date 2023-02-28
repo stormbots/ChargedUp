@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import frc.robot.commands.ChassisBalance;
+import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
@@ -82,17 +84,16 @@ public class RobotContainer {
     configureDefaultCommands();
     configureDriverBindings();
     configureOperatorBindings();
-  
   }
 
 
   private void configureDefaultCommands(){
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
-      new RunCommand(
-        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
+       new RunCommand(
+        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2));}
         ,chassis)
-      );
+       );
 
       //These values for the controller, these is joystick and will have to be adjusted
       arm.setDefaultCommand(new RunCommand(
@@ -127,6 +128,9 @@ public class RobotContainer {
     .onFalse(new RunCommand (()->{
       chassis.setShifter(Gear.HIGH);
     }));
+    driver.button(3).whileTrue(
+      new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()->driver.getRawAxis(2)/2.0, chassis, navx)
+    );
   }
 
 
@@ -238,6 +242,9 @@ public class RobotContainer {
     
     // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.f
     // return Autos.exampleAuto(exampleSubsystem);
-    return autoChooser.getSelected();
+
+    return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
+    // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
+    // return autoChooser.getSelected();
   }
 }

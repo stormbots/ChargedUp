@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-import com.stormbots.Lerp;
+import edu.wpi.first.math.util.Units;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -56,13 +56,41 @@ public final class Constants {
     public static double kGeartrainHigh=16.36;
     public static double kGeartrainLow=4.49;
     public static double kWheelSpacing=28;//TODO estimated
-    public static double kWheelDiameter=6;//TODO estimated, and possibly not even useful
+    public static double kWheelDiameter=Units.inchesToMeters(6.1);
+    public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
+    public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
 
     public static boolean kShiftHigh=true; //TODO
     public static boolean kShiftLow=!kShiftHigh; //TODO
 
     public static boolean kLeftInverted = false;
     public static boolean kRightInverted = !kLeftInverted;
+
+    //basic chassis constants for levelling and proportional turning
+    public static double kDriveLowKSLevel = 0.12;
+    public static double kDriveLowKSTilted = 0.22; //for use only when driving up a tilted ramp
+    public static double kDriveHighKSLevel = 0.2;
+    public static double kDriveHighKSTilted = 0.0; //for use only when driving up a tilted ramp
+    
+    public static double kDriveLowKPTilt = 0.16/12.0; //proportional
+    public static double kDriveLowKDTilt = 0;//0.15/12.0; //proportional
+        
+    public static double kTurnLowKS = 0.16; //proportional
+    public static double kTurnHighKS = 0.31; //proportional
+    public static double kTurnLowKP = 0.15/10.0; //proportional
+    public static double kTurnHighKP = 0.02; //proportional
+
+    //Constants for use with distance measures/pathfinding
+    public static double kDriveLowKP = 0.0;
+    public static double kDriveLowKI = 0.0;
+    public static double kDriveLowKD = 0.0;
+
+    public static double kDriveHighKP = 0.0;
+    public static double kDriveHighKI = 0.0;
+    public static double kDriveHighKD = 0.0;
+
+
+    public static double kNavxRollPositive=-1;
   }
 
 
@@ -165,6 +193,10 @@ public final class Constants {
    * 
    */
   public static void SetPracticebotValues(){
+
+    ChassisConstants.kLeftInverted = false;
+    ChassisConstants.kRightInverted = !ChassisConstants.kLeftInverted;    
+    ChassisConstants.kNavxRollPositive= -1;
 
     //Hardware IDs
     HardwareID.kChassisMotorLeft=1;
