@@ -6,8 +6,10 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.RetractConstants;
+import frc.robot.Constants.WristConstants;
 import frc.robot.subsystems.Arm;
 
 public class setArm extends CommandBase {
@@ -16,7 +18,10 @@ public class setArm extends CommandBase {
   private DoubleSupplier extension;
   private DoubleSupplier intakeSpeed;
   private DoubleSupplier wristAngle;
-
+  // SlewRateLimiter retractRateLimiter = new SlewRateLimiter(
+  //   RetractConstants.kMaxRetractionRotations*2.0, -RetractConstants.kMaxRetractionRotations*2.0, 0);
+  // SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
+  //   WristConstants.kMaxRotations*2.0, -WristConstants.kMaxRotations*2.0, 0);
 
 
   /** Moves arm to a pose. */
@@ -49,7 +54,8 @@ public class setArm extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    // wristRateLimiter.reset(arm.getWristAngle());
+    // retractRateLimiter.reset(arm.getRetractRotations());
   }
 
 
@@ -99,7 +105,7 @@ public class setArm extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    arm.armMotor.set(0.0);
+    arm.armMotor.set(0.2);
     arm.retractMotor.set(0.0);
     arm.intakeMotor.set(0.0);
   }

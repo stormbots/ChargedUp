@@ -46,12 +46,12 @@ public class Chassis extends SubsystemBase {
     for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
       //Set limits for motors
 
-      //m.setOpenLoopRampRate(0.2);
+      m.setOpenLoopRampRate(0.02);
 
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();
       //Restricts each motor to a max of 60 amps
-      m.setSmartCurrentLimit(240/4, 240/4);//240 is sensible current limit to chassis
+      m.setSmartCurrentLimit(200/4, 200/4);//240 is sensible current limit to chassis, but causing brownouts
     }
     //Set motors to follow the same side
     leftFollower.follow(leftLeader);

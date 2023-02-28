@@ -87,7 +87,7 @@ public class RobotContainer {
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
       new RunCommand(
-        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2) *.75);}
+        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
         ,chassis)
       );
 
@@ -190,21 +190,21 @@ public class RobotContainer {
     
 
     //PICKUP DOUBLE SUBSTATION
-    operator.button(9).whileTrue(new setArm(65, 11, 1.0, 1.0, arm));
+    operator.button(9).whileTrue(new setArm(65, 30, 0, 1.0, arm));
 
     //PICKUP SINGLE SUBSTATION
-    operator.button(7).whileTrue(new setArm(65, 11, 0, 1.0, arm));
+    //operator.button(7).whileTrue(new setArm(65, 11, 0, 1.0, arm));
     //PLACEHOLDER GET ACTUAL VALUES 2/25/2023
      
     //PICKUP FROM GROUND/SCORE LOW
     operator.button(8).whileTrue(new ConditionalCommand(
-      new setArm(-50, 4.5, 0, 1.0, arm), //cone
-      new setArm(-38, 6, -4, 1.0, arm), //cube
+      new setArm(-50, 1, -10, 1.0, arm), //cone
+      new setArm(-41, 6, -5, 1.0, arm), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
     );
     
     //MOVE TO CARRY POSITION
-    operator.button(2).whileTrue(new setArm(85, 0, 125, 0.2, arm));
+    operator.button(2).whileTrue(new setArm(90, 0, 150, 0.3, arm));
     operator.button(2).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
     //TEST SHOOTING CUBES
     operator.button(12).whileTrue(new RunCommand (()->{

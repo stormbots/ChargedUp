@@ -213,6 +213,7 @@ public class Arm extends SubsystemBase {
     var armFF = Lerp.lerp(getRetractRotations(), 
       RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward,
       ArmConstants.kCosFFNear, ArmConstants.kCosFFFar) /12.0;
+      armFF*=Math.cos(Math.toRadians(getArmAngle()));
     armMotor.set(power/2.0 + armFF);
   }
 
@@ -221,6 +222,7 @@ public class Arm extends SubsystemBase {
     var armFF =Lerp.lerp(getRetractRotations(),
       RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
       ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
+    armFF*=Math.cos(Math.toRadians(getArmAngle()));
     armPID.setReference(setpoint, ControlType.kPosition, 0, armFF, ArbFFUnits.kVoltage);
   }
 

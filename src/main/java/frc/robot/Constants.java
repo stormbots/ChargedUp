@@ -34,7 +34,7 @@ public final class Constants {
     // Arm inputs
     public static int kArmMotor=5;
     public static int kRetractMotor=7;
-    public static int kRetractBrakeSolenoid=6;//freaking out
+    public static int kRetractBrakeSolenoid=3;//freaking out
     public static int kArmAnalogEncoderChannel=9;
 
     //Hand+wrist
@@ -80,7 +80,7 @@ public final class Constants {
 
     //All FFs are in volts
     public static double kCosFFNear = 0; //feed forward to cause no motion as the arm is rotated around
-    public static double kCosFFFar = 0.33;//In voltage
+    public static double kCosFFFar = 0.7;//In voltage
     public static double ksFFNear = 0; //FF that causes it to move again; Will probably be small
     public static double ksFFFar = 0;
     public static double kvFFNear = 0;
@@ -106,11 +106,11 @@ public final class Constants {
   public static class RetractConstants{
     //Measured from center of turret mounting to center of wrist axis
     public static double kMinRetractionRotations=0;
-    public static double kMaxRetractionRotations= 57;
+    public static double kMaxRetractionRotations= 55;
     public static double kMinRetractionInches=0;
     public static double kMaxRetractionInches=46;
     public static float kRetractSoftLimitReverse = 0;
-    public static float kRetractSoftLimitForward = 57;
+    public static float kRetractSoftLimitForward = 55;
   
     public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;

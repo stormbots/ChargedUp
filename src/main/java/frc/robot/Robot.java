@@ -21,7 +21,7 @@ import frc.robot.subsystems.Arm.RetractSolenoidPosition;
  */
 public class Robot extends TimedRobot {
   private Command autonomousCommand;
-  UsbCamera camera1;
+  //UsbCamera camera1;
   // UsbCamera camera2;
   private RobotContainer robotContainer;
   
@@ -34,7 +34,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     LiveWindow.enableAllTelemetry();
-    camera1 = CameraServer.startAutomaticCapture();
+    //camera1 = CameraServer.startAutomaticCapture();
     String key = "/bot/isCompBot";
     Constants.isCompBot = Preferences.getBoolean(key,false);
     if(! Preferences.containsKey(key)){
