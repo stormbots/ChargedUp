@@ -314,7 +314,7 @@ public class Arm extends SubsystemBase {
     //setWristAngle(wristAngleTarget);
     if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
 
-    armMotor.getEncoder().setPosition(getArmAngleAbsolute());
+    //armMotor.getEncoder().setPosition(getArmAngleAbsolute());
 
     SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
     SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());

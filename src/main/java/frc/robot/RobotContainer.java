@@ -170,10 +170,10 @@ public class RobotContainer {
     operator.button(6).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
         //Place Cones
-        new setArm(44.0, 29.0, 44, 0.2, arm), 
+        new setArm(42.0, 20.0, 20, 0.2, arm), 
         //Execute Cones
-        new setArm(32.0, 29.0, 18, 0.2, arm)
-          .withTimeout(1)
+        new setArm(28.0, 20.0, 20, 0.2, arm)
+          .withTimeout(.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
@@ -190,7 +190,7 @@ public class RobotContainer {
     
 
     //PICKUP DOUBLE SUBSTATION
-    operator.button(9).whileTrue(new setArm(65, 30, 0, 1.0, arm));
+    operator.button(9).whileTrue(new setArm(50, 20, 11, 1.0, arm));
 
     //PICKUP SINGLE SUBSTATION
     //operator.button(7).whileTrue(new setArm(65, 11, 0, 1.0, arm));

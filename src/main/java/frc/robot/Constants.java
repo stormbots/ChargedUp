@@ -76,7 +76,7 @@ public final class Constants {
     public static double kGeartrain = 1/140.0;
     public static double kAbsoluteAngleOffset=-90.25;
     public static double kAbsoluteAngleDistancePerRotation=360;
-    public static double kMotorEncoderConversionFactor = 90/(71.12105560302734-1.4);
+    public static double kMotorEncoderConversionFactor = 90/(30.7-(-4.1));
 
     //All FFs are in volts
     public static double kCosFFNear = 0; //feed forward to cause no motion as the arm is rotated around
@@ -141,6 +141,7 @@ public final class Constants {
     public static float kMaxAngle=43; 
     public static double kMinRotations=-75; 
     public static double kMaxRotations=10;
+    public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
     public static double kAbsoluteAngleOffset=-140.493235;

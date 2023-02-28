@@ -18,10 +18,12 @@ public class setArm extends CommandBase {
   private DoubleSupplier extension;
   private DoubleSupplier intakeSpeed;
   private DoubleSupplier wristAngle;
-  // SlewRateLimiter retractRateLimiter = new SlewRateLimiter(
-  //   RetractConstants.kMaxRetractionRotations*2.0, -RetractConstants.kMaxRetractionRotations*2.0, 0);
-  // SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
-  //   WristConstants.kMaxRotations*2.0, -WristConstants.kMaxRotations*2.0, 0);
+  SlewRateLimiter retractRateLimiter = new SlewRateLimiter(
+    RetractConstants.kMaxRetractionRotations*2.0,
+    -RetractConstants.kMaxRetractionRotations*2.0, 0);
+  SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
+    WristConstants.kMaxRangeOfMotion*2.0, 
+    -WristConstants.kMaxRangeOfMotion*2.0, 0);
 
 
   /** Moves arm to a pose. */
@@ -54,8 +56,8 @@ public class setArm extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // wristRateLimiter.reset(arm.getWristAngle());
-    // retractRateLimiter.reset(arm.getRetractRotations());
+    wristRateLimiter.reset(arm.getWristAngle());
+    retractRateLimiter.reset(arm.getRetractRotations());
   }
 
 
@@ -74,8 +76,8 @@ public class setArm extends CommandBase {
     //TODO: We need to be mindful of extend poses
     // but current set up does not work
     // Only execute extending poses from carry
-    arm.setRetractPID(extension);
-    arm.setWristPID(wristAngle);
+    arm.setRetractPID(retractRateLimiter.calculate(extension));
+    arm.setWristPID(wristRateLimiter.calculate(wristAngle));
     arm.intakeMotor.set(intakeSpeed);
     arm.setArmPID(angle);
 
