@@ -8,29 +8,29 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Vision;
 
-public class DrivetrainVisionTargeting extends CommandBase {
-  Drivetrain drivetrain;
+public class ChassisVisionTargeting extends CommandBase {
+  Chassis chassis;
   Vision vision;
   AHRS gyro;
   double x;
   double y;
   double fwdPower;
   double turnpower;
-  /** Creates a new DrivetrainVisionTargeting. */
-  public DrivetrainVisionTargeting(double fwdPower, double turnpower, Drivetrain drivetrain, Vision vision, AHRS gyro) {
+  /** Creates a new ChassisVisionTargeting. */
+  public ChassisVisionTargeting(double fwdPower, double turnpower, Chassis chassis, Vision vision, AHRS gyro) {
     this.fwdPower = fwdPower;
     this.turnpower = turnpower;
-    this.drivetrain = drivetrain;
+    this.chassis = chassis;
     this.vision = vision;
     this.gyro = gyro;
     x = vision.getX();
     y = vision.getY();
     // Use addRequirements() here to declare subsystem dependencies.
 
-    addRequirements(drivetrain);
+    addRequirements(chassis);
   }
 
   // Called when the command is initially scheduled.
@@ -45,12 +45,12 @@ public class DrivetrainVisionTargeting extends CommandBase {
     double outputTurn = turnpower;
 
     if (vision.hasValidTarget() == false){
-      drivetrain.arcadeDrive(forward,outputTurn);
+      chassis.arcadeDrive(forward,outputTurn);
       return;
     }
     else{
       outputTurn = vision.pidTurn.getOutput(0, vision.getX());
-      drivetrain.arcadeDrive(forward, outputTurn);
+      chassis.arcadeDrive(forward, outputTurn);
     }
     
   }

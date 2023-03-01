@@ -25,5 +25,13 @@
       }
     },
   ],
-  "java.test.defaultConfig": "WPIlibUnitTests"
+  "java.test.defaultConfig": "WPIlibUnitTests",
+  "editor.autoClosingBrackets": "never",
+  "editor.autoClosingDelete": "never",
+  "editor.autoClosingOvertype": "never",
+  "editor.autoClosingQuotes": "never",
+  "editor.autoSurround": "never",
+  "wpilib.autoStartRioLog": false,
+  "editor.inlayHints.enabled": "offUnlessPressed",
+  "java.completion.guessMethodArguments": false
 }

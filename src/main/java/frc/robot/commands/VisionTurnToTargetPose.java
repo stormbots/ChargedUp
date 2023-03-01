@@ -8,22 +8,22 @@ import com.stormbots.closedloop.MiniPID;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Vision;
 
 public class VisionTurnToTargetPose extends CommandBase {
-  private Drivetrain drivetrain;
+  private Chassis drivetrain;
   MiniPID turnpid;
   private Vision vision;
 
   /** Creates a new VisionTurnToTargetPose. */
-  public VisionTurnToTargetPose(Drivetrain drivetrain,Vision vision) {
+  public VisionTurnToTargetPose(Chassis chassis,Vision vision) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.drivetrain = drivetrain;
+    this.drivetrain = chassis;
     this.vision = vision;
     turnpid = vision.pidTurn;
 
-    addRequirements(drivetrain);
+    addRequirements(chassis);
     
   }
 
