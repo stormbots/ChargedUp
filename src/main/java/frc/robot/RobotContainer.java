@@ -5,7 +5,9 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
@@ -79,6 +82,8 @@ public class RobotContainer {
     //compressor.clearStickyFaults();
     navx.reset();
     //SmartDashboard.putNumber("PCH #", compressor.getModuleNumber());
+
+    configureAutos();
 
     // Configure the trigger bindings
     configureDefaultCommands();
@@ -230,14 +235,48 @@ public class RobotContainer {
   }
 
 
+  public void configureAutos(){
+
+    var placeMiddleCube = new InstantCommand()
+    .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+    .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
+    .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
+    //place get values
+    .andThen(new setArm(169, 11.0, -90, 0.2, arm))
+    .andThen(new WaitCommand(0.1))
+    //execute get values
+    .andThen(new setArm(179, 11.0, -90, -0.2, arm))
+    //go to cube pickup
+    .andThen(new setArm(-41, 6, -5, 1.0, arm));
+
+    var placeMiddleCone = new RunCommand(()->{},arm);
+
+    var blueLeftCone = placeMiddleCone.andThen(()->{});
+
+
+    var placeLeftCube = placeMiddleCube
+    //drive to gamepiece
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5, Units.inchesToMeters(1), navx, chassis))
+    .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
+    .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
+    ;
+  
+    var testDrive = new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5 , Units.inchesToMeters(1), navx, chassis);
+
+
+
+    autoChooser.addOption("TestNavxDrive",testDrive);
+    autoChooser.addOption("Left Place Cube",placeLeftCube);
+
+  }
   
   public Command getAutonomousCommand(){
     
     // TODO: Move autos to a dedicated holder class and fetch it from there, don't clutter RobotContainer.f
     // return Autos.exampleAuto(exampleSubsystem);
 
-    return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
+    // return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
     // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
-    // return autoChooser.getSelected();
+    return autoChooser.getSelected();
   }
 }
