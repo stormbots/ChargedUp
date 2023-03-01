@@ -6,13 +6,11 @@ package frc.robot.subsystems;
 
 import com.stormbots.devices.BlinkenPattern;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Lighting extends SubsystemBase {
-  Spark leds = new Spark(9);
-
+  Spark leds = new Spark(0);
   public enum LedPattern{
     BLUE,RED,
     NEED_CONE,HAVE_CONE,

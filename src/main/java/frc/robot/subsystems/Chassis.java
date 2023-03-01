@@ -46,7 +46,7 @@ public class Chassis extends SubsystemBase {
 
     for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
       //Set limits for motors
-      m.setOpenLoopRampRate(0.02);
+      m.setOpenLoopRampRate(0.08);
 
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();

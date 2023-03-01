@@ -91,7 +91,7 @@ public class RobotContainer {
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
        new RunCommand(
-        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), driver.getRawAxis(2));}
+        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
         ,chassis)
        );
 
@@ -121,14 +121,14 @@ public class RobotContainer {
 
   private void configureDriverBindings(){
     //DRIVER
-    driver.button(6)
+    driver.button(8)
     .whileTrue(new RunCommand(()->{
       chassis.setShifter(Gear.LOW);
     }))
     .onFalse(new RunCommand (()->{
       chassis.setShifter(Gear.HIGH);
     }));
-    driver.button(3).whileTrue(
+    driver.button(7).whileTrue(
       new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()->driver.getRawAxis(2)/2.0, chassis, navx)
     );
   }
@@ -142,17 +142,10 @@ public class RobotContainer {
       new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)),
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED
     ));
-     //PLACE/EXECUTE SELECTOR
-    // operator.button(3).onTrue(new ConditionalCommand(
-    //   new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.EXECUTE)), 
-    //   new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)), 
-    //   ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE
-    // ));
     operator.button(3).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.EXECUTE)));
     operator.button(3).onFalse(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
     //INTAKE MOTORS DRIVE INWARDS
     operator.povCenter().whileFalse((new RunCommand(()->arm.intakeMotor.set(1.0))));
-    
     operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.2)));
    
     //INTAKE MOTOR MANUAL EJECT/
