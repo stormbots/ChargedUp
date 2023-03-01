@@ -10,11 +10,10 @@ import java.util.List;
 import com.kauailabs.navx.frc.AHRS;
 import com.stormbots.closedloop.MiniPID;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.networktables.DoubleArrayEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -22,97 +21,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FieldPosition;
+import frc.robot.FieldPosition.TargetType;
 
 
 public class Vision extends SubsystemBase {
 
-  public enum Color{RED,BLUE}
-
-  //example of an enum
-  public enum VisionTargets{
-    k1(Color.BLUE,0,0,0),
-    k2(Color.BLUE, 0,0,0),
-    k3(Color.BLUE, 0,0,0),
-    ;
-
-    public  double x;
-    public double y;
-    public double z;
-    public Color color;
-
-    VisionTargets(Color color, double x, double y, double z){
-      this.color = color;
-      this.x = x; 
-      this.y = y; 
-      this.z = z;
-    }
-  }
-
-
-  /** Set field position in meters of various objects */
-  public enum ScoringTarget{
-    k1LeftConeMid(Color.RED,14.73,2,0),
-    k1LeftConeHigh(Color.RED, 15.26,2,0),
-    k1CubeMid(Color.RED, 14.73,1.5,0),
-    k1CubeHigh(Color.RED, 15.26,1.5,0),
-    k1RightConeMid(Color.RED, 14.73,0.945,0),
-    k1RightConeHigh(Color.RED, 15.26,0.945,0),
-    k2LeftConeMid(Color.RED,14.73,3.463,0),
-    k2LeftConeHigh(Color.RED, 15.26,3.463,0),
-    k2CubeMid(Color.RED, 14.73,3,0),
-    k2CubeHigh(Color.RED, 15.26,3,0),
-    k2RightConeMid(Color.RED, 14.73,2.463,0),
-    k2RightConeHigh(Color.RED, 15.26,2.463,0),
-    k3LeftConeMid(Color.RED,14.73,5,0),
-    k3LeftConeHigh(Color.RED, 15.26,5,0),
-    k3CubeMid(Color.RED, 14.73,4.481,0),
-    k3CubeHigh(Color.RED, 15.26,4.481,0),
-    k3RightConeMid(Color.RED, 14.73,4,0),
-    k3RightConeHigh(Color.RED, 15.26,4,0),
-    k4LoadingZone(Color.RED, 15.23,6.573,0),
-
-
-
-
-    k5LeftConeMid(Color.BLUE,1.289,0.926,0),
-    k5LeftConeHigh(Color.BLUE, 0.955,0.926,0),
-    k5CubeMid(Color.BLUE, 1.289,1.445,0),
-    k5CubeHigh(Color.BLUE, 0.955,1.445,0),
-    k5RightConeMid(Color.BLUE, 1.289,1.985,0),
-    k5RightConeHigh(Color.BLUE, 0.955,1.985,0),
-    k6LeftConeMid(Color.BLUE,1.289,0,0),
-    k6LeftConeHigh(Color.BLUE, 0.955,0,0),
-    k6CubeMid(Color.BLUE, 1.289,0,0),
-    k6CubeHigh(Color.BLUE, 0.955,0,0),
-    k6RightConeMid(Color.BLUE, 1.289,0,0),
-    k6RightConeHigh(Color.BLUE, 0.955,0,0),
-    k7LeftConeMid(Color.BLUE,1.289,0,0),
-    k7LeftConeHigh(Color.BLUE, 0.955,0,0),
-    k7CubeMid(Color.BLUE, 1.289,0,0),
-    k7CubeHigh(Color.BLUE, 0.955,0,0),
-    k7RightConeMid(Color.BLUE, 1.289,0,0),
-    k7RightConeHigh(Color.BLUE, 0.955,0,0),
-    k8LoadingZone(Color.BLUE, .77,6.573,0),
-    ;
-
-    public Color color;
-    public double x;
-    public double y;
-    public double z;
-
-
-    ScoringTarget(Color color, double x, double y, double z){
-      this.color = color;
-      this.x = x; 
-      this.y = y; 
-      this.z = z;
-    }
-
-    
-
-  }
-
-  
 
   private AHRS gyro;
   public MiniPID pidTurn;
@@ -136,6 +50,8 @@ public class Vision extends SubsystemBase {
   public Pose2d botPose = new Pose2d(0, 0, new Rotation2d(0));
   private DifferentialDrivePoseEstimator poseEstimator;
   Field2d field;
+  public Pose3d target = new Pose3d();
+
 
   /** Creates a new Vision. */
   public Vision(DifferentialDrivePoseEstimator poseEstimator, AHRS gyro, Field2d field) {
@@ -252,17 +168,36 @@ public class Vision extends SubsystemBase {
 
 
 
-  // public double rpm() {
-    
-  //   return 0.0;
-  // }
+  public double getArmAngleToTarget(){
+    //Do the math for arm angle here
+    return 10;
+  }
 
-//  public void armToPole() {
+  public double getArmExtensionToTarget(){
+    //Do the math for arm extension here
+    return 20;
+  }
 
-//   //gets the angle to the pole
-//   double distanceX = ; //distance from 
-//   double distanceY = 0; //unknown rn
-//   double angle = Math.arctan(y/x+distance());  
-//   }
+
+  public void setTarget(TargetType targetType){
+    //TODO: allow passing in offsets for the target, and then add them to the distance and heights to the target
+    List<Pose3d> targetList=FieldPosition.getTargetList(targetType);
+    var botPose = poseEstimator.getEstimatedPosition();
+    //Do the appropriate sorting type
+    switch(targetType){
+    case ConeHigh:
+      target = FieldPosition.getNearestToBearing(botPose,targetList);
+      break; 
+    case PickupSlide:
+      target = targetList.get(0); //nothing to sort for this case
+      break;
+    case PickupDouble:
+      target = FieldPosition.getNearestByX(botPose,targetList);
+      break;
+    default:
+      target = FieldPosition.getNearestByY(botPose,targetList); //what we usually want
+    }
+  }
+  
 }
 

@@ -5,16 +5,14 @@
 package frc.robot;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 /** 
@@ -173,6 +171,37 @@ public class FieldPosition {
     ///////////////////////////
     //Utility Functions
     ///////////////////////////
+
+    public static enum TargetType{CubeMid,CubeHigh,ConeMid,ConeHigh,PickupSlide,PickupDouble}
+
+    public static List<Pose3d> getTargetList(TargetType targetType){
+      Alliance color = DriverStation.getAlliance();
+      switch(targetType){
+      case CubeMid:   return color==Alliance.Red ? FieldPosition.RedConesMid : FieldPosition.BlueConesMid;
+      case CubeHigh:  return color==Alliance.Red ? FieldPosition.RedCubesHigh : FieldPosition.BlueCubesHigh;
+      case ConeMid:   return color==Alliance.Red ? FieldPosition.RedConesMid : FieldPosition.BlueConesMid;
+      case ConeHigh:  return color==Alliance.Red ? FieldPosition.RedConesHigh : FieldPosition.BlueConesHigh;
+      case PickupSlide:  return color==Alliance.Red ? FieldPosition.RedPickupSlide : FieldPosition.BluePickupSlide;
+      case PickupDouble: return color==Alliance.Red ? FieldPosition.RedPickupDouble : FieldPosition.BluePickupDouble;
+      }
+      return new ArrayList<>();
+    }
+    
+    
+    public static Pose3d getNearestByY(Pose2d botpose, List<Pose3d> poses){
+        //put your sorting process here
+        return new Pose3d();
+    }
+    public static Pose3d getNearestByX(Pose2d botpose, List<Pose3d> poses){
+        //put your sorting process here
+        return new Pose3d();
+    }
+    
+    public static Pose3d getNearestToBearing(Pose2d botpose, List<Pose3d> poses){
+        //put your sorting process here
+        return new Pose3d();
+    }
+
 
     /**reference code to demonstrate how to deal with lists*/
     public static List<Pose3d> DemoListFiltering(Pose2d botPose, ArrayList<Pose3d> poses){

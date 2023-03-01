@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import frc.robot.Constants.ChassisConstants;
+import frc.robot.FieldPosition.TargetType;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.VisionTurnToTargetPose;
@@ -105,6 +106,16 @@ public class RobotContainer {
     var cube1mid = field.getObject("cube1mid");
     cube1mid.setPose(14.73, 3, new Rotation2d(Math.PI));
 
+    
+    operator.button(17)
+    .onTrue(new InstantCommand(()->vision.setTarget(TargetType.ConeMid)))
+    // .onTrue(new InstantCommand(()->vision.setTarget(TargetType.ConeMid,-2,+2))) //TODO: Allow setting offsets for the target
+    .whileTrue(new setArm(
+      ()->vision.getArmAngleToTarget(),
+      ()->vision.getArmExtensionToTarget(),
+      ()->arm.getArmAngle(),
+      ()->0.2, arm)
+    );
 
 
 
@@ -303,5 +314,6 @@ public class RobotContainer {
     // return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
     // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
     return autoChooser.getSelected();
+
   }
 }
