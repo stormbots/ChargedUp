@@ -309,7 +309,7 @@ public class RobotContainer {
   }
 
   public void configureAutos(){
-    
+
     SmartDashboard.putData("autos/TurnOffLimit", new InstantCommand( 
       ()-> {
         arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false) ;
@@ -346,10 +346,11 @@ public class RobotContainer {
     autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
     autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
     autoChooser.addOption("Drive Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
+
+    SmartDashboard.putData("autos/Auto Chooser",autoChooser);
   }
   
   public Command getAutonomousCommand(){
-    
     // return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
     // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
     return autoChooser.getSelected();
