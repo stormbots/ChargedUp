@@ -40,7 +40,7 @@ public class Lighting extends SubsystemBase {
         newpattern = BlinkenPattern.SOLID_LIGHT_BLUE; 
         break;
       case RED: 
-        newpattern = BlinkenPattern.SOLID_RED; 
+        newpattern = BlinkenPattern.SOLID_ORANGE; 
       break;
       case NEED_CONE: 
       case HAVE_CONE:

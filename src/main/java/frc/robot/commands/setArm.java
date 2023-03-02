@@ -19,8 +19,8 @@ public class setArm extends CommandBase {
   private DoubleSupplier intakeSpeed;
   private DoubleSupplier wristAngle;
   SlewRateLimiter retractRateLimiter = new SlewRateLimiter(
-    RetractConstants.kMaxRetractionRotations*2.0,
-    -RetractConstants.kMaxRetractionRotations*2.0, 0);
+    RetractConstants.kMaxRetractionRotations*1.5,
+    -RetractConstants.kMaxRetractionRotations*1.5, 0);
   SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
     WristConstants.kMaxRangeOfMotion*2.0, 
     -WristConstants.kMaxRangeOfMotion*2.0, 0);
@@ -80,6 +80,7 @@ public class setArm extends CommandBase {
     arm.setWristPID(wristRateLimiter.calculate(wristAngle));
     arm.intakeMotor.set(intakeSpeed);
     arm.setArmPID(angle);
+
 
     if(true)return;
     //Check if arm is extended, if extended, retract before moving up/down

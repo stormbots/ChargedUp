@@ -26,8 +26,8 @@ public final class Constants {
     // Drive train stuff
     public static int kChassisMotorLeft=1;
     public static int kChassisMotorLeftFollower=2;
-    public static int kChassisMotorRight=3;
-    public static int kChassisMotorRightFollower=4;
+    public static int kChassisMotorRight=4;
+    public static int kChassisMotorRightFollower=3;
     public static int kShifterSolenoid=1;
     
     
@@ -57,7 +57,9 @@ public final class Constants {
     public static double kGeartrainLow=4.49;
     public static double kWheelSpacing=Units.inchesToMeters(28);//TODO estimated
     public static double kWheelDiameter=Units.inchesToMeters(6.1);
-    public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
+    // public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
+    // public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
+    public static double kEncoderConversionFactorLow=Units.inchesToMeters(100/66.66);
     public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
 
     public static boolean kShiftHigh=true; //TODO
@@ -139,7 +141,7 @@ public final class Constants {
     public static double kMaxRetractionInches=46;
     public static float kRetractSoftLimitReverse = 0;
     public static float kRetractSoftLimitForward = 55;
-  
+
     public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;
     public static double kGeartrain=5.56;
@@ -172,7 +174,7 @@ public final class Constants {
     public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=-140.493235;
+    public static double kAbsoluteAngleOffset=-20.493235;
     public static double kFFCos=0.042*12;
     public static double kP=1/90.0;
     public static double kI=0;

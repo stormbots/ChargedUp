@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ChassisConstants;
 import frc.robot.subsystems.Chassis;
+import frc.robot.subsystems.Chassis.Gear;
 
 public class ChassisDriveNavx extends CommandBase {
   private final Chassis chassis;
@@ -34,8 +35,8 @@ public class ChassisDriveNavx extends CommandBase {
   private double distance=0;
 
   
-  SlewRateLimiter speedslew;
-  MiniPID pid = new MiniPID(0, 0, 0);
+  SlewRateLimiter distanceSlew;
+  MiniPID pid = new MiniPID(0.1/12.0, 0, 0);
 
 
   /**
@@ -57,7 +58,7 @@ public class ChassisDriveNavx extends CommandBase {
     this.distanceTolerance = distanceTolerance;
 
 
-    speedslew = new SlewRateLimiter(1, -1, 0);
+    distanceSlew = new SlewRateLimiter(1.5, -1.5, 0);
   }
 
   // Called when the command is initially scheduled.
@@ -73,11 +74,11 @@ public class ChassisDriveNavx extends CommandBase {
     
     targetBearing = targetBearingSupplier.getAsDouble();
 
-
+    distanceSlew.reset(0);
     initialBearing = gyro.getAngle();
     pid.setSetpoint(initialBearing + targetBearing);
 
-
+    chassis.setShifter(Gear.LOW);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -95,7 +96,7 @@ public class ChassisDriveNavx extends CommandBase {
     double turn = pid.getOutput(currentAngle);
     
 
-    double targetDistance = speedslew.calculate(this.targetDistance);
+    double targetDistance = distanceSlew.calculate(this.targetDistance);
 
     double forwardSpeed = FB.fb(targetDistance, distance, 0.5); // TABI 0.4 || PRACTICE 0.4
 
@@ -116,6 +117,8 @@ public class ChassisDriveNavx extends CommandBase {
   @Override
   public void end(final boolean interrupted) {
     chassis.arcadeDrive(0,0);
+    chassis.setShifter(Gear.HIGH);
+
   }
 
   // Returns true when the command should end.
@@ -134,6 +137,6 @@ public class ChassisDriveNavx extends CommandBase {
     return ( Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance)
     && ( Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance) ) );
 
-
+    // return false; 
   }
 }

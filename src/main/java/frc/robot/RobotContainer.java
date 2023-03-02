@@ -231,7 +231,19 @@ public class RobotContainer {
     operator.button(12).onFalse(new RunCommand (()->{
       arm.intakeMotor.set(0.0);
     }));
-
+    //Sync Encoders & Clear Stickies
+    operator.button(11).onTrue(new InstantCommand(()->{
+      arm.armMotor.clearFaults();
+      arm.retractMotor.clearFaults();
+      arm.wristMotor.clearFaults();
+      arm.intakeMotor.clearFaults();
+      arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute());
+      arm.wristMotor.getEncoder().setPosition(arm.getWristAngleAbsolute());
+      chassis.leftLeader.clearFaults();
+      chassis.leftFollower.clearFaults();
+      chassis.rightLeader.clearFaults();
+      chassis.rightFollower.clearFaults();
+    }));
   }
 
 
@@ -242,31 +254,39 @@ public class RobotContainer {
     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
     //place get values
-    .andThen(new setArm(169, 11.0, -90, 0.2, arm))
+    .andThen(new setArm(169, 11.0, -90, 0.2, arm)).until(()->arm.isRobotOnTarget(1, 1, 1))
     .andThen(new WaitCommand(0.1))
     //execute get values
-    .andThen(new setArm(179, 11.0, -90, -0.2, arm))
+    .andThen(new setArm(179, 11.0, -90, -0.2, arm)).until(()->arm.isRobotOnTarget(1, 1, 1))
     //go to cube pickup
-    .andThen(new setArm(-41, 6, -5, 1.0, arm));
+    .andThen(new setArm(-41, 6, -5, 1.0, arm)).until(()->arm.isRobotOnTarget(1, 1, 1))
+    ;
 
     var placeMiddleCone = new RunCommand(()->{},arm);
 
     var blueLeftCone = placeMiddleCone.andThen(()->{});
 
 
-    var placeLeftCube = placeMiddleCube
+    var placeLeftMidCube = //placeMiddleCube
+    new InstantCommand(()->{})
     //drive to gamepiece
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5, Units.inchesToMeters(1), navx, chassis))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(106), ()->0, 5, Units.inchesToMeters(1), navx, chassis))
     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
     ;
   
-    var testDrive = new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5 , Units.inchesToMeters(1), navx, chassis);
+    //correct drive for going out and picking up game piece
+    var driveOutToGamePiece = new ChassisDriveNavx(Units.inchesToMeters(156+24), ()->0, 5 , Units.inchesToMeters(1), navx, chassis);
+    var driveOnPlatform = new ChassisDriveNavx(Units.inchesToMeters(96), ()->0, 5 , Units.inchesToMeters(20), navx, chassis)
+    .withTimeout(4)
+    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
+    ;
 
+    
+    
 
-
-    autoChooser.addOption("TestNavxDrive",testDrive);
-    autoChooser.addOption("Left Place Cube",placeLeftCube);
+    autoChooser.setDefaultOption("TestNavxDrive",driveOnPlatform);
+    autoChooser.addOption("Left Place Cube",placeLeftMidCube);
 
   }
   
