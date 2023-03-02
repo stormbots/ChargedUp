@@ -326,6 +326,8 @@ public class RobotContainer {
     autoChooser.addOption("Red Left Cone",redLeftConePlaceMid);
     autoChooser.addOption("Red Middle Cone Balance",redMiddleConeBalance);
     autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
+    autoChooser.addOption("Drive+Balance Only",driveToPlatformBalance);
+    autoChooser.addOption("Drive Only",driveOutToGamePiece);
 
   }
   
