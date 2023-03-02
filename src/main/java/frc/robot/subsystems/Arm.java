@@ -80,8 +80,9 @@ public class Arm extends SubsystemBase {
   public Arm() {
     //Prepare the intake
     intakeMotor.setInverted(IntakeConstants.kIntakeMotorInverted);
-    intakeMotor.setIdleMode(IdleMode.kCoast);
+    intakeMotor.setIdleMode(IdleMode.kBrake);
     intakeMotor.setSmartCurrentLimit(IntakeConstants.kCurrentLimitStall, IntakeConstants.kCurrentLimitFree);
+    intakeMotor.setOpenLoopRampRate(0.08);
 
     //Prepare extension motors
     retractMotor.setIdleMode(IdleMode.kBrake);

@@ -81,28 +81,6 @@ public class setArm extends CommandBase {
     arm.intakeMotor.set(intakeSpeed);
     arm.setArmPID(angle);
 
-
-    if(true)return;
-    //Check if arm is extended, if extended, retract before moving up/down
-    //Might need to change to inches
-    if(arm.getRetractRotations() >= RetractConstants.kMaxRetractionRotations/8.0){
-      arm.setRetractPID(extension);
-      arm.setWristPID(wristAngle);
-      arm.intakeMotor.set(intakeSpeed);
-      if (arm.getRetractRotations() -5 <= extension && arm.getRetractRotations() +5 >= extension){
-        arm.setArmPID(angle);
-      }
-    }
-    //If arm is not extended rotate before extending
-    else{
-      arm.setArmPID(angle);
-      arm.setWristPID(wristAngle);
-      arm.intakeMotor.set(intakeSpeed);
-      if (arm.getArmAngle() -5 <= angle && arm.getArmAngle() +5 >= angle){
-        arm.setRetractPID(extension);
-      }
-    }
-
   }
 
   // Called once the command ends or is interrupted.

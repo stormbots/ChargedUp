@@ -128,10 +128,10 @@ public class RobotContainer {
   private void configureDriverBindings(){
     //DRIVER
     driver.button(8)
-    .whileTrue(new RunCommand(()->{
+    .whileTrue(new InstantCommand(()->{
       chassis.setShifter(Gear.LOW);
     }))
-    .onFalse(new RunCommand (()->{
+    .onFalse(new InstantCommand (()->{
       chassis.setShifter(Gear.HIGH);
     }));
     driver.button(7).whileTrue(
@@ -266,6 +266,7 @@ public class RobotContainer {
     .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
     ;
     
+    //TODO NOT TESTED YET
     // var placeMiddleCube = new InstantCommand()
     // .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
     // .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
@@ -285,48 +286,54 @@ public class RobotContainer {
     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
     //place get values
-    .andThen(new setArm(169, 11.0, -90, 0.2, arm)).until(()->arm.isRobotOnTarget(3, 1, 3))
-    .andThen(new WaitCommand(0.1))
+    .andThen(new setArm(150, 22, 157, 0.2, arm).withTimeout(2))
+    .andThen(new WaitCommand(1))
     //execute get values
-    .andThen(new setArm(179, 11.0, -90, -0.2, arm)).until(()->arm.isRobotOnTarget(3, 1, 3))
+    .andThen(new setArm(166, 22, 172, -0.2, arm).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(2))
+    .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+    .andThen(new WaitCommand(1))
+    //put arm up somewhere away from posts
+    .andThen(new setArm(90, 0, -5, 1.0, arm).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1))
+    .andThen(new WaitCommand(1))
+
     //go to cube pickup
-    .andThen(new setArm(-41, 6, -5, 1.0, arm)).until(()->arm.isRobotOnTarget(3, 1, 3))
+    .andThen(new setArm(-41, 6, -5, 1.0, arm).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(2))
     .andThen(new WaitCommand(0.1))
     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
     .andThen(()->arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute()))
     ;
 
     //////////////////////////
-    // Red Autos
+    // Autos
     //////////////////////////
 
-    var blueLeftConePlaceMid = placeMiddleCone
-    .andThen(driveOutToGamePiece);
+    // var blueLeftConePlaceMid = placeMiddleCone
+    // .andThen(driveOutToGamePiece);
 
-    var blueMiddleConeBalance = placeMiddleCone
-    .andThen(driveToPlatformBalance);
+    // var blueMiddleConeBalance = placeMiddleCone
+    // .andThen(driveToPlatformBalance);
 
-    var blueRightConePlaceMid = placeMiddleCone
-    .andThen(driveOutToGamePiece);
+    // var blueRightConePlaceMid = placeMiddleCone
+    // .andThen(driveOutToGamePiece);
     
-    var redRightConePlaceMid = placeMiddleCone
-    .andThen(driveOutToGamePiece);
+    // var redRightConePlaceMid = placeMiddleCone
+    // .andThen(driveOutToGamePiece);
 
-    var redMiddleConeBalance = placeMiddleCone
-    .andThen(driveToPlatformBalance);
+    // var redMiddleConeBalance = placeMiddleCone
+    // .andThen(driveToPlatformBalance);
 
-    var redLeftConePlaceMid = placeMiddleCone
-    .andThen(driveOutToGamePiece);
+    // var redLeftConePlaceMid = placeMiddleCone
+    // .andThen(driveOutToGamePiece);
 
 
-    autoChooser.setDefaultOption("Do Nothing",new RunCommand(()->{}));
-    autoChooser.addOption("Blue Left Cone",blueLeftConePlaceMid);
-    autoChooser.addOption("Blue Middle Cone Balance",blueMiddleConeBalance);
-    autoChooser.addOption("Blue Right Cone",blueRightConePlaceMid);
-    autoChooser.addOption("Red Left Cone",redLeftConePlaceMid);
-    autoChooser.addOption("Red Middle Cone Balance",redMiddleConeBalance);
-    autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
-    autoChooser.addOption("Drive+Balance Only",driveToPlatformBalance);
+    autoChooser.addOption("Do Nothing", placeMiddleCone);
+    // autoChooser.addOption("Blue Left Cone",blueLeftConePlaceMid);
+    // autoChooser.addOption("Blue Middle Cone Balance",blueMiddleConeBalance);
+    // autoChooser.addOption("Blue Right Cone",blueRightConePlaceMid);
+    // autoChooser.addOption("Red Left Cone",redLeftConePlaceMid);
+    // autoChooser.addOption("Red Middle Cone Balance",redMiddleConeBalance);
+    // autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
+    autoChooser.setDefaultOption("Drive+Balance Only",driveToPlatformBalance);
     autoChooser.addOption("Drive Only",driveOutToGamePiece);
 
   }
