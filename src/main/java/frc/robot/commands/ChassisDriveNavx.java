@@ -117,7 +117,7 @@ public class ChassisDriveNavx extends CommandBase {
   @Override
   public void end(final boolean interrupted) {
     chassis.arcadeDrive(0,0);
-    chassis.setShifter(Gear.HIGH);
+    // chassis.setShifter(Gear.HIGH); Probably don't want this
 
   }
 
@@ -129,13 +129,17 @@ public class ChassisDriveNavx extends CommandBase {
 
     // SmartDashboard.putNumber("Chassis/angle Error", gyro.getAngle() - (initialBearing + targetBearing) );
     // SmartDashboard.putNumber("Chassis/position Error", chassis.getAverageDistance() - targetDistance);
-    SmartDashboard.putBoolean("Chassis/Exit Total", ( Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance)
-    && ( Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance) ) ));
+
+    var distanceOnTarget=Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance);
+    var angleOnTarget = Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance);
+
+    SmartDashboard.putBoolean("autos/drivenavx/atDistance", distanceOnTarget);
+    SmartDashboard.putBoolean("autos/drivenavx/atAngle", angleOnTarget);
+    SmartDashboard.putBoolean("autos/drivenavx/atBoth", angleOnTarget && distanceOnTarget);
 
     // SmartDashboard.putBoolean("Chassis/Exit Angle", Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance));
 
-    return ( Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance)
-    && ( Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance) ) );
+    return angleOnTarget && distanceOnTarget;
 
     // return false; 
   }
