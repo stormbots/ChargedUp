@@ -16,6 +16,7 @@ import com.stormbots.closedloop.FB;
 import com.stormbots.closedloop.MiniPID;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ChassisConstants;
@@ -70,7 +71,7 @@ public class ChassisDriveNavx extends CommandBase {
 
     chassis.leftEncoder.setPosition(0);
     chassis.rightEncoder.setPosition(0);
-    
+    Timer.delay(0.03);    
     
     targetBearing = targetBearingSupplier.getAsDouble();
 
@@ -98,7 +99,7 @@ public class ChassisDriveNavx extends CommandBase {
 
     double targetDistance = distanceSlew.calculate(this.targetDistance);
 
-    double forwardSpeed = FB.fb(targetDistance, distance, 0.5); // TABI 0.4 || PRACTICE 0.4
+    double forwardSpeed = FB.fb(targetDistance, distance, 0.6); // TABI 0.4 || PRACTICE 0.4
 
 
     turn+= Math.signum(turn)*ChassisConstants.kTurnLowKS; //TODO: fIXME WHEN MINIPID WORKS PROPERLY

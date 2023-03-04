@@ -28,7 +28,7 @@ public class setArm extends CommandBase {
 
 
   /** Moves arm to a pose. */
-  public setArm(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm) {
+  public setArm(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm, Intake intake) {
     this.arm = arm;
     this.angle = ()->armAngle;
     this.extension = ()->extension;
@@ -36,6 +36,7 @@ public class setArm extends CommandBase {
     this.wristAngle = ()->wristAngle;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
+    addRequirements(intake);
   }
 
   public setArm(
