@@ -253,8 +253,8 @@ public class Arm extends SubsystemBase {
 
   public double getArmAngleAbsolute(){
     var angle = armAbsEncoder.getAbsolutePosition()*360-Constants.ArmConstants.kAbsoluteAngleOffset;
-    if( angle >180 ){ 
-      return angle -360; 
+    if( angle < Constants.ArmConstants.kAbsoluteAngleOffset-360 ){ //TODO should be hardcodedd -90, as it's a physical value not related to offset
+      return angle += 360; 
     }
     return angle;
   }
@@ -349,6 +349,10 @@ public class Arm extends SubsystemBase {
 
     //armMotor.getEncoder().setPosition(getArmAngleAbsolute());
     wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    SmartDashboard.putNumber("arm/wrist/absencoder", wristAbsEncoder.getAbsolutePosition()*360);
+    SmartDashboard.putNumber("arm/wrist/absenc+offset", wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset);
+    SmartDashboard.putNumber("arm/wrist/wristAngleAbsolute", getWristAngleAbsolute());
+
     SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
     //SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
     SmartDashboard.putNumber("arm/armangle/absoluteAdjusted", getArmAngleAbsolute()); //??
@@ -367,14 +371,11 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
     SmartDashboard.putNumber("arm/poseData/wristAngleHorizon", getWristAngle());
-    SmartDashboard.putNumber("arm/wrist/angleAbs", getWristAngleAbsolute());
     SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
-    SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
+    // SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
     // SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
-    SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
+    // SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
 
-    // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
-    // SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
     SmartDashboard.putString("intakeState",getIntakePosition().toString());
     SmartDashboard.putString("executeToggle", getPrepareOrExecute().toString());
     SmartDashboard.putString("brakeOn/Off", getPrepareOrExecute().toString());

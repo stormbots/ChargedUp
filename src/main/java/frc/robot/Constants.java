@@ -74,7 +74,7 @@ public final class Constants {
     public static double kDriveHighKSLevel = 0.2;
     public static double kDriveHighKSTilted = 0.0; //for use only when driving up a tilted ramp
     
-    public static double kDriveLowKPTilt = 0.16/12.0; //proportional
+    public static double kDriveLowKPTilt = 0.12/12.0; //proportional
     public static double kDriveLowKDTilt = 0;//0.15/12.0; //proportional
         
     public static double kTurnLowKS = 0.16; //proportional
@@ -104,7 +104,7 @@ public final class Constants {
 
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
-    public static double kAbsoluteAngleOffset=-90.25;
+    public static double kAbsoluteAngleOffset=270;
     public static double kAbsoluteAngleDistancePerRotation=360;
     public static double kMotorEncoderConversionFactor = 90/(30.7-(-4.1));
 
@@ -174,7 +174,7 @@ public final class Constants {
     public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=-20.493235;
+    public static double kAbsoluteAngleOffset=-(360-275); //-275 CORRECT
     public static double kFFCos=0.042*12;
     public static double kP=1/90.0;
     public static double kI=0;

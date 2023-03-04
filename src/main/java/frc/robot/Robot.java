@@ -14,7 +14,9 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Arm.RetractSolenoidPosition;
 import frc.robot.subsystems.Chassis.Gear;
+import frc.robot.subsystems.Lighting.LedPattern;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -103,6 +105,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic(){
+    robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
 
   }
 
@@ -124,12 +127,14 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
   }
 
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    // robotContainer.lighting.setColor(LedPattern.RED);
     
   }
 
