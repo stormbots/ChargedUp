@@ -11,6 +11,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -130,17 +131,20 @@ public class Robot extends TimedRobot {
     robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
   }
 
+  Field2d field = new Field2d();
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
     // robotContainer.lighting.setColor(LedPattern.RED);
+    SmartDashboard.putData(field);
     
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+    SmartDashboard.putNumber("navx/degrees", robotContainer.navx.getRotation2d().getDegrees());
 
   }
 }

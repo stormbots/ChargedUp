@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.lang.constant.DynamicConstantDesc;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
@@ -73,7 +75,7 @@ public class RobotContainer {
     PCH.clearStickyFaults();
     pdp.clearStickyFaults();
     if (Constants.isCompBot){
-      PCH.enableCompressorAnalog(100, 120);
+      PCH.enableCompressorAnalog(80, 120);
     }
     else{
       
@@ -174,9 +176,9 @@ public class RobotContainer {
     operator.button(5).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
         //Place cones
-        new setArm(46, 45, 46, 0.2, arm, intake), 
+        new setArm(48, 45, 48, 0.2, arm, intake), 
         //Execute cones
-        new setArm(34.5, 45, 43, 0.2, arm, intake)
+        new setArm(34.5, 45, 35, 0.2, arm, intake)
           //reduce after verifying
           .withTimeout(0.1)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
@@ -347,14 +349,28 @@ public class RobotContainer {
 
     var balanceCommunity = new InstantCommand()
     .andThen( commandBuilder(CommandSelect.kPlaceConeMidBackwards))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(193), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
     .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
     .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
 
     // .andThen(
-      
             ;
 
+    var targetAngle = 90;
+    var jankyFollowAembotOutOfCommunity= new InstantCommand()
+    .andThen( commandBuilder(CommandSelect.kPlaceConeMidBackwards))
+      //left turn 90
+      .andThen(new ChassisDriveNavx(0, ()->targetAngle, 5, 10, navx, chassis))
+      //go straight some distance
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(48), ()->targetAngle, 5, 10, navx, chassis))
+      //turn right 90
+      .andThen(new ChassisDriveNavx(0, ()->0, 5, 10, navx, chassis))
+      // turn some DynamicConstantDesc
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(193), ()->0, 5, 10, navx, chassis))
+
+
+    ;
+      // new ChassisDriveNavx(targetDistance, targetBearingSupplier, angleTolerance, distanceTolerance, gyro, chassis)
 
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
     autoChooser.addOption("Blue Left Cone",blueLeftConePlaceMid);
@@ -364,8 +380,11 @@ public class RobotContainer {
     autoChooser.addOption("Red Middle Cone Balance",redMiddleConeBalance);
     autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
     autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
+    autoChooser.addOption("Score then do nothing",commandBuilder(CommandSelect.kPlaceConeMidBackwards));
     autoChooser.addOption("Drive Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
     autoChooser.addOption("Community balance",balanceCommunity);
+    autoChooser.addOption("UNTESTED Follow Aembot",jankyFollowAembotOutOfCommunity);
+
 
 
     SmartDashboard.putData("autos/Auto Chooser",autoChooser);
