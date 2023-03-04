@@ -112,6 +112,11 @@ public class RobotContainer {
         },arm
       ));
 
+      // intake.setDefaultCommand(new InstantCommand(
+      //   ()->{
+      //   arm.intakeMotor.set(.20);
+      //   },intake
+      // ));
 
       lighting.setDefaultCommand(new RunCommand(()->{
         if(arm.prepareOrExecute==PrepareOrExecute.EXECUTE){
@@ -124,6 +129,7 @@ public class RobotContainer {
           lighting.setColor(LedPattern.NEED_CONE);
         }  
       }, lighting));
+
   }
 
 
@@ -180,7 +186,7 @@ public class RobotContainer {
         //Place cubes
         new setArm(35, 51, 6, 0.2, arm), 
         //Execute cubes
-        new setArm(35, 51, 6, -0.1, arm).withTimeout(1),
+        new setArm(35, 51, 6, -0.2, arm).withTimeout(1),
 
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
