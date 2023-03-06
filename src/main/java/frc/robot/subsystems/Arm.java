@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
+import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
 import edu.wpi.first.math.util.Units;
@@ -72,12 +73,16 @@ public class Arm extends SubsystemBase {
   // public Servo wristServo = new Servo(Constants.HardwareID.kWristMotorID);
   public CANSparkMax wristMotor = new CANSparkMax(HardwareID.kWristMotorID, MotorType.kBrushless);
   public DutyCycleEncoder wristAbsEncoder = new DutyCycleEncoder(HardwareID.kWristAnalogEncoderChannel);
+  private double wristSetpoint =0.0;
+  private double armSetpoint=0.0;
+  private double retractSetpoint =0.0;
 
   public Arm() {
     //Prepare the intake
     intakeMotor.setInverted(IntakeConstants.kIntakeMotorInverted);
-    intakeMotor.setIdleMode(IdleMode.kCoast);
+    intakeMotor.setIdleMode(IdleMode.kBrake);
     intakeMotor.setSmartCurrentLimit(IntakeConstants.kCurrentLimitStall, IntakeConstants.kCurrentLimitFree);
+    intakeMotor.setOpenLoopRampRate(0.08);
 
     //Prepare extension motors
     retractMotor.setIdleMode(IdleMode.kBrake);
@@ -164,6 +169,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void setRetractPID(double setpoint){
+    this.retractSetpoint =setpoint;
     var retractFF = Lerp.lerp(getRetractRotations(), 
       RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
       RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
@@ -175,6 +181,13 @@ public class Arm extends SubsystemBase {
       RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
       RetractConstants.ksFFNear, RetractConstants.ksFFFar)/12.0;
     retractMotor.set(power + retractFF);
+  }
+ 
+  public boolean isRetractOnTarget(double retractTolerance){
+    return Clamp.bounded(getRetractRotations(),
+    retractSetpoint - retractTolerance, 
+    retractSetpoint + retractTolerance )
+    ;
   }
 
   public double getRetractRotations(){
@@ -223,6 +236,7 @@ public class Arm extends SubsystemBase {
 
 
   public void setArmPID(double setpoint){
+    this.armSetpoint = setpoint;
     var armFF =Lerp.lerp(getRetractRotations(),
       RetractConstants.kRetractSoftLimitReverse, RetractConstants.kRetractSoftLimitForward, 
       ArmConstants.kCosFFNear, ArmConstants.kCosFFFar)/12.0;
@@ -230,11 +244,17 @@ public class Arm extends SubsystemBase {
     armPID.setReference(setpoint, ControlType.kPosition, 0, armFF, ArbFFUnits.kVoltage);
   }
 
+  public boolean isArmOnTarget(double tolerance){
+    return Clamp.bounded(getArmAngle(),
+    armSetpoint-tolerance, 
+    armSetpoint + tolerance )
+    ;
+  }
 
   public double getArmAngleAbsolute(){
     var angle = armAbsEncoder.getAbsolutePosition()*360-Constants.ArmConstants.kAbsoluteAngleOffset;
-    if( angle >180 ){ 
-      return angle -360; 
+    if( angle < Constants.ArmConstants.kAbsoluteAngleOffset-360 ){ //TODO should be hardcodedd -90, as it's a physical value not related to offset
+      return angle += 360; 
     }
     return angle;
   }
@@ -256,6 +276,7 @@ public class Arm extends SubsystemBase {
 
   /** Set wrist angle relative to ground/horizon*/
   public void setWristPID(double angle){
+    this.wristSetpoint = angle;
     angle -= getArmAngle();
     var ff = WristConstants.kFFCos/12.0;
     ff *= Math.cos(Math.toRadians(getWristAngle()));
@@ -271,6 +292,12 @@ public class Arm extends SubsystemBase {
     return angle;
   }
 
+  public boolean isWristOnTarget(double tolerance){
+    return Clamp.bounded(getWristAngle(),
+    wristSetpoint-tolerance, 
+    wristSetpoint + tolerance )
+    ;
+  }
   /**returns wrist angle relative to ground/horizon*/
   public double getWristAngle(){
     var angle = getArmAngle()+wristMotor.getEncoder().getPosition();
@@ -307,7 +334,9 @@ public class Arm extends SubsystemBase {
     return this.prepareOrExecute;
   }
     
-  
+  public Boolean isRobotOnTarget(double armTolerance, double retractTolerance, double wristTolerance ){
+    return isArmOnTarget(armTolerance)  && isRetractOnTarget(retractTolerance) && isWristOnTarget(wristTolerance);
+  }
 
   ///////////////////////////////////////////
   /// Periodic 
@@ -319,6 +348,10 @@ public class Arm extends SubsystemBase {
     if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
 
     //armMotor.getEncoder().setPosition(getArmAngleAbsolute());
+    wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    SmartDashboard.putNumber("arm/wrist/absencoder", wristAbsEncoder.getAbsolutePosition()*360);
+    SmartDashboard.putNumber("arm/wrist/absenc+offset", wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset);
+    SmartDashboard.putNumber("arm/wrist/wristAngleAbsolute", getWristAngleAbsolute());
 
     SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
     //SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
@@ -338,14 +371,11 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
     SmartDashboard.putNumber("arm/poseData/wristAngleHorizon", getWristAngle());
-    // SmartDashboard.putNumber("arm/wrist/angleAbs", getWristAngleAbsolute());
-    // SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
-    SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
+    SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
+    // SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
     // SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
-    SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
+    // SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
 
-    // SmartDashboard.putNumber("arm/poseData/wristAngle", Lerp.lerp(wristServo.getAngle(), 0,1,WristConstants.kMinAngle,WristConstants.kMaxAngle));
-    // SmartDashboard.putNumber("arm/poseData/wristAngle", wristServo.get());
     SmartDashboard.putString("intakeState",getIntakePosition().toString());
     SmartDashboard.putString("executeToggle", getPrepareOrExecute().toString());
     SmartDashboard.putString("brakeOn/Off", getPrepareOrExecute().toString());

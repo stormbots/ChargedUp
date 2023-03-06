@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.RetractConstants;
 import frc.robot.Constants.WristConstants;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Intake;
 
 public class setArm extends CommandBase {
   private final Arm arm;
@@ -19,15 +20,15 @@ public class setArm extends CommandBase {
   private DoubleSupplier intakeSpeed;
   private DoubleSupplier wristAngle;
   SlewRateLimiter retractRateLimiter = new SlewRateLimiter(
-    RetractConstants.kMaxRetractionRotations*2.0,
-    -RetractConstants.kMaxRetractionRotations*2.0, 0);
+    RetractConstants.kMaxRetractionRotations*1.5,
+    -RetractConstants.kMaxRetractionRotations*1.5, 0);
   SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
     WristConstants.kMaxRangeOfMotion*2.0, 
     -WristConstants.kMaxRangeOfMotion*2.0, 0);
 
 
   /** Moves arm to a pose. */
-  public setArm(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm) {
+  public setArm(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm, Intake intake) {
     this.arm = arm;
     this.angle = ()->armAngle;
     this.extension = ()->extension;
@@ -35,6 +36,7 @@ public class setArm extends CommandBase {
     this.wristAngle = ()->wristAngle;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
+    addRequirements(intake);
   }
 
   public setArm(
@@ -80,27 +82,6 @@ public class setArm extends CommandBase {
     arm.setWristPID(wristRateLimiter.calculate(wristAngle));
     arm.intakeMotor.set(intakeSpeed);
     arm.setArmPID(angle);
-
-    if(true)return;
-    //Check if arm is extended, if extended, retract before moving up/down
-    //Might need to change to inches
-    if(arm.getRetractRotations() >= RetractConstants.kMaxRetractionRotations/8.0){
-      arm.setRetractPID(extension);
-      arm.setWristPID(wristAngle);
-      arm.intakeMotor.set(intakeSpeed);
-      if (arm.getRetractRotations() -5 <= extension && arm.getRetractRotations() +5 >= extension){
-        arm.setArmPID(angle);
-      }
-    }
-    //If arm is not extended rotate before extending
-    else{
-      arm.setArmPID(angle);
-      arm.setWristPID(wristAngle);
-      arm.intakeMotor.set(intakeSpeed);
-      if (arm.getArmAngle() -5 <= angle && arm.getArmAngle() +5 >= angle){
-        arm.setRetractPID(extension);
-      }
-    }
 
   }
 

@@ -26,8 +26,8 @@ public final class Constants {
     // Drive train stuff
     public static int kChassisMotorLeft=1;
     public static int kChassisMotorLeftFollower=2;
-    public static int kChassisMotorRight=3;
-    public static int kChassisMotorRightFollower=4;
+    public static int kChassisMotorRight=4;
+    public static int kChassisMotorRightFollower=3;
     public static int kShifterSolenoid=1;
     
     
@@ -57,7 +57,9 @@ public final class Constants {
     public static double kGeartrainLow=4.49;
     public static double kWheelSpacing=Units.inchesToMeters(28);//TODO estimated
     public static double kWheelDiameter=Units.inchesToMeters(6.1);
-    public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
+    // public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
+    // public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
+    public static double kEncoderConversionFactorLow=Units.inchesToMeters(100/66.66);
     public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
 
     public static boolean kShiftHigh=true; //TODO
@@ -72,13 +74,15 @@ public final class Constants {
     public static double kDriveHighKSLevel = 0.2;
     public static double kDriveHighKSTilted = 0.0; //for use only when driving up a tilted ramp
     
-    public static double kDriveLowKPTilt = 0.16/12.0; //proportional
+    public static double kDriveLowKPTilt = 0.12/12.0; //proportional
     public static double kDriveLowKDTilt = 0;//0.15/12.0; //proportional
         
     public static double kTurnLowKS = 0.16; //proportional
     public static double kTurnHighKS = 0.31; //proportional
-    public static double kTurnLowKP = 0.15/10.0; //proportional
-    public static double kTurnHighKP = 0.02; //proportional
+    public static double kTurnLowKP = 0.14/10.0; //proportional
+    public static double kTurnHighKP = 0.03; //proportional 0.14/90/.25*0.02*kp 
+    //ouput = g*= .14/ ( (90/.25) *0.02t )
+    //.14*.25/90/0.02-> gain of 0.019
 
     //Constants for use with distance measures/pathfinding
     public static double kDriveLowKP = 0.0;
@@ -102,7 +106,7 @@ public final class Constants {
 
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
-    public static double kAbsoluteAngleOffset=-90.25;
+    public static double kAbsoluteAngleOffset=270;
     public static double kAbsoluteAngleDistancePerRotation=360;
     public static double kMotorEncoderConversionFactor = 90/(30.7-(-4.1));
 
@@ -139,7 +143,7 @@ public final class Constants {
     public static double kMaxRetractionInches=46;
     public static float kRetractSoftLimitReverse = 0;
     public static float kRetractSoftLimitForward = 55;
-  
+
     public static boolean ENGAGED = false;
     public static boolean DISENGAGED = !ENGAGED;
     public static double kGeartrain=5.56;
@@ -172,7 +176,7 @@ public final class Constants {
     public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=-140.493235;
+    public static double kAbsoluteAngleOffset=-(360-275); //-275 CORRECT
     public static double kFFCos=0.042*12;
     public static double kP=1/90.0;
     public static double kI=0;
