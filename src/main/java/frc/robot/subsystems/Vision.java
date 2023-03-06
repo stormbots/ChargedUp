@@ -181,21 +181,21 @@ public class Vision extends SubsystemBase {
 
   public void setTarget(TargetType targetType){
     //TODO: allow passing in offsets for the target, and then add them to the distance and heights to the target
-    List<Pose3d> targetList=FieldPosition.getTargetList(targetType);
-    var botPose = poseEstimator.getEstimatedPosition();
+    List<Pose3d> targetList=FieldPosition.GetTargetList(targetType);
+    Pose2d botPose = poseEstimator.getEstimatedPosition();
     //Do the appropriate sorting type
     switch(targetType){
     case ConeHigh:
-      target = FieldPosition.getNearestToBearing(botPose,targetList);
+      target = FieldPosition.GetNearestToBearing(botPose,targetList);
       break; 
     case PickupSlide:
       target = targetList.get(0); //nothing to sort for this case
       break;
     case PickupDouble:
-      target = FieldPosition.getNearestByX(botPose,targetList);
+      target = FieldPosition.GetNearestByX(botPose,targetList);
       break;
     default:
-      target = FieldPosition.getNearestByY(botPose,targetList); //what we usually want
+      target = FieldPosition.GetNearestByY(botPose,targetList); //what we usually want
     }
   }
   
