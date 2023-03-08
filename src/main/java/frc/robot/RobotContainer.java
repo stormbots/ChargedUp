@@ -221,9 +221,13 @@ public class RobotContainer {
     //PICKUP DOUBLE SUBSTATION
     operator.button(9).whileTrue(new setArm(50, 21, 11, 1.0, arm, intake));
 
-    //PICKUP SINGLE SUBSTATION
-    //operator.button(7).whileTrue(new setArm(65, 11, 0, 1.0, arm));
-    //PLACEHOLDER GET ACTUAL VALUES 2/25/2023
+    //PICKUP TIPPED CONE
+    operator.button(7).whileTrue(new InstantCommand()
+      .andThen(new setArm(45,0,-90,1.0,arm,intake).withTimeout(2))
+      .andThen(new setArm(-15,0,-90,1.0,arm,intake).withTimeout(1))
+      .andThen(new setArm(45,0, -90, 1.0, arm, intake))
+
+    );
      
     //PICKUP FROM GROUND/SCORE LOW
     operator.button(8).whileTrue( 
