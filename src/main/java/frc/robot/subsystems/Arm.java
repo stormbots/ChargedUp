@@ -15,6 +15,7 @@ import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -65,7 +66,7 @@ public class Arm extends SubsystemBase {
 
   // Intake Actuation
   public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
-  public Solenoid intakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); 
+  public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, 4, 15); 
   public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid);//temp value
   
   
@@ -311,10 +312,10 @@ public class Arm extends SubsystemBase {
   public void setIntake(IntakeSolenoidPosition handPosition){
     this.intakeSolenoidPosition=handPosition;
     if(handPosition == IntakeSolenoidPosition.CLOSED){
-      intakeSolenoid.set(IntakeConstants.kClosedBoolean);
+      intakeSolenoid.set(IntakeConstants.kClosed);
     }
     else{
-      intakeSolenoid.set(IntakeConstants.kOpenBoolean);
+      intakeSolenoid.set(IntakeConstants.kOpen);
     }
   }
 
