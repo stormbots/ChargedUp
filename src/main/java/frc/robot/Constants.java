@@ -188,8 +188,8 @@ public final class Constants {
   }
 
   public static class IntakeConstants{
-    public static Value kClosed=Value.kForward;
-    public static Value kOpen=Value.kReverse;
+    public static Value kClosed=Value.kReverse;
+    public static Value kOpen=Value.kForward;
     public static int kCurrentLimitFree=25;
     public static int kCurrentLimitStall=18;
     public static boolean kIntakeMotorInverted=true;

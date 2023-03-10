@@ -179,9 +179,10 @@ public class RobotContainer {
         new setArm(48, 45, 48, 0.2, arm, intake), 
         //Execute cones
         new setArm(34.5, 45, 35, 0.2, arm, intake)
-          //reduce after verifying
           .withTimeout(0.1)
-          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
+          .withTimeout(0.1)
+          .andThen(new setArm(48, 40, 35, 0.2, arm, intake)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
@@ -223,23 +224,24 @@ public class RobotContainer {
 
     //PICKUP TIPPED CONE
     operator.button(7).whileTrue(new InstantCommand()
-      .andThen(new setArm(0,0,-90,1.0,arm,intake).until(()->arm.isRobotOnTarget(10, 1, 10)))
-      .andThen(new setArm(-15,0,-90,1.0,arm,intake).until(()->arm.isRobotOnTarget(3, 3, 10)).withTimeout(1))
-      .andThen(new setArm(0,0, -90, 1.0, arm, intake))
+      .andThen(new setArm(10,0,-75,0,arm,intake).until(()->arm.isRobotOnTarget(3, 1, 3)))
+      .andThen(new setArm(-12,0,-80,1.0,arm,intake).withTimeout(1))
+      .andThen(new setArm(10,0, -75, 1.0, arm, intake))
     );
      
     //PICKUP FROM GROUND/SCORE LOW
     operator.button(8).whileTrue(new InstantCommand()
-      .andThen(new setArm(()->-40,()->arm.getRetractRotations(),()->0,()->0.2,arm,intake)
-      .until(()->arm.isRobotOnTarget(15, 50, 10)))
+      .andThen(new setArm(()->-25 ,()->6,()->0,()->0.2,arm,intake)
+      .until(()->arm.isRobotOnTarget(20, 50, 7)).withTimeout(0.25))
       .andThen(commandBuilder(CommandSelect.kArmToPickupPosition))
     );
     
     //MOVE TO CARRY POSITION
     operator.button(2).whileTrue(new InstantCommand()
     .andThen(
-      new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake)
-      .until(()->arm.isRobotOnTarget(90, 10, 90))
+      
+      new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
+      //.until(()->arm.isRobotOnTarget(90, 10, 90))
     )
     .andThen(commandBuilder(CommandSelect.kArmToCarryPosition))
     );

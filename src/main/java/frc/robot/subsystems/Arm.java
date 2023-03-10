@@ -294,6 +294,13 @@ public class Arm extends SubsystemBase {
   }
 
   public boolean isWristOnTarget(double tolerance){
+    if(wristSetpoint >= getWristAngle() && getWristAngle() >= WristConstants.kMaxAngle -7 ){
+      return true;
+    }
+    if(wristSetpoint <= getWristAngle() && getWristAngle() <= WristConstants.kMinAngle+7){
+      return true;
+    }
+
     return Clamp.bounded(getWristAngle(),
     wristSetpoint-tolerance, 
     wristSetpoint + tolerance )
