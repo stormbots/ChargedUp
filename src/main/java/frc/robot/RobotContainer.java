@@ -138,7 +138,7 @@ public class RobotContainer {
   private void configureDriverBindings(){
     //DRIVER
     driver.button(8)
-    .whileTrue(new InstantCommand(()->{
+    .onTrue(new InstantCommand(()->{
       chassis.setShifter(Gear.LOW);
     }))
     .onFalse(new InstantCommand (()->{
@@ -166,7 +166,7 @@ public class RobotContainer {
    
     //INTAKE MOTOR MANUAL EJECT/
     operator.button(4).whileTrue(new RunCommand (()->{
-      arm.intakeMotor.set(-0.1);
+      arm.intakeMotor.set(-0.2);
     },intake));
     operator.button(4).onFalse(new InstantCommand (()->{
       arm.intakeMotor.set(0.0);
@@ -176,20 +176,20 @@ public class RobotContainer {
     operator.button(5).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
         //Place cones
-        new setArm(48, 45, 48, 0.2, arm, intake), 
+        new setArm(48, 51, 48, 0.2, arm, intake), 
         //Execute cones
-        new setArm(34.5, 45, 35, 0.2, arm, intake)
-          .withTimeout(0.1)
+        new setArm(34.5, 51, 35, 0.2, arm, intake)
+          .withTimeout(0.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
-          .withTimeout(0.1)
+          .withTimeout(0.25)
           .andThen(new setArm(48, 40, 35, 0.2, arm, intake)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
         //Place cubes
-        new setArm(35, 51, 6, 0.2, arm, intake), 
+        new setArm(35, 48, 6, 0.2, arm, intake), 
         //Execute cubes
-        new setArm(35, 51, 6, -0.2, arm, intake).withTimeout(.1),
+        new setArm(35, 48, 6, -0.1, arm, intake).withTimeout(.1),
 
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
@@ -203,7 +203,7 @@ public class RobotContainer {
         new setArm(45.0, 25.0, 20, 0.2, arm, intake), 
         //Execute Cones
         new setArm(28.0, 25.0, 20, 0.2, arm, intake)
-          .withTimeout(.1)
+          .withTimeout(.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
@@ -212,7 +212,7 @@ public class RobotContainer {
         //Place cubes 
         new setArm(29.0, 11.0, 4.0, 0.2, arm, intake),
         //Execute cubes 
-        new setArm(29.0, 11.0, 4.0, -0.2, arm, intake),
+        new setArm(29.0, 11.0, 4.0, -0.1, arm, intake),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
@@ -289,7 +289,7 @@ public class RobotContainer {
     switch(commandSnippet){
       case kArmToPickupPosition:
       return new ConditionalCommand(
-      new setArm(-45, 1, 10, 1.0, arm, intake), //cone
+      new setArm(-46, 0, -4, 1.0, arm, intake), //cone
       new setArm(-38, 6, -5, 1.0, arm, intake), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
       ;

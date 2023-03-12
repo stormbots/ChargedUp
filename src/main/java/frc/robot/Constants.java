@@ -178,7 +178,7 @@ public final class Constants {
     public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=-(360-275); //-275 CORRECT
+    public static double kAbsoluteAngleOffset=98; //-275 CORRECT
     public static double kFFCos=0.042*12;
     public static double kP=1/90.0;
     public static double kI=0;

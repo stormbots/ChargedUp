@@ -114,7 +114,9 @@ public class Arm extends SubsystemBase {
     wristMotor.setSmartCurrentLimit(12,15);
     wristMotor.setInverted(WristConstants.kReverseMotor);
     wristMotor.getEncoder().setPositionConversionFactor(WristConstants.kConversionFactor);
-    wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    if(wristAbsEncoder.isConnected()){
+      wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    }
     wristMotor.setSoftLimit(SoftLimitDirection.kForward, WristConstants.kMaxAngle); 
     wristMotor.setSoftLimit(SoftLimitDirection.kReverse, WristConstants.kMinAngle); 
     wristMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
@@ -355,8 +357,9 @@ public class Arm extends SubsystemBase {
     //setWristAngle(wristAngleTarget);
     if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
 
-    //armMotor.getEncoder().setPosition(getArmAngleAbsolute());
-    wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    if(wristAbsEncoder.isConnected()){
+      wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    }
     SmartDashboard.putNumber("arm/wrist/absencoder", wristAbsEncoder.getAbsolutePosition()*360);
     SmartDashboard.putNumber("arm/wrist/absenc+offset", wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset);
     SmartDashboard.putNumber("arm/wrist/wristAngleAbsolute", getWristAngleAbsolute());
