@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Chassis.Gear;
 
 public class VisionTurnToTargetPose extends CommandBase {
   private Chassis drivetrain;
@@ -21,7 +22,7 @@ public class VisionTurnToTargetPose extends CommandBase {
     // Use addRequirements() here to declare subsystem dependencies.
     this.drivetrain = chassis;
     this.vision = vision;
-    turnpid = vision.pidTurn;
+    turnpid = chassis.pidTurn;
 
     addRequirements(chassis);
     
@@ -31,6 +32,8 @@ public class VisionTurnToTargetPose extends CommandBase {
   @Override
   public void initialize() {
     turnpid.reset();
+    drivetrain.setShifter(Gear.LOW);
+    vision.setPipeline(Vision.LimelightPipeline.kAprilTag);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

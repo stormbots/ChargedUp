@@ -29,7 +29,6 @@ public class Vision extends SubsystemBase {
 
 
   private AHRS gyro;
-  public MiniPID pidTurn;
 
   NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   
@@ -39,6 +38,9 @@ public class Vision extends SubsystemBase {
   NetworkTableEntry tv = table.getEntry("tv"); //valid target = 1, if target not valid, its equal to 0
   NetworkTableEntry bptable = table.getEntry("botpose"); //gets translation (x, y, z) and rotation (x, y, z) for bot pose
   
+  public enum LimelightPipeline{
+    kNoVision, kMidCone, kHighCone, kAprilTag
+  }
 
   public double camAngle = 45.0; 
   public double camHeight = 7.0; 
@@ -53,18 +55,18 @@ public class Vision extends SubsystemBase {
   public Pose3d target = new Pose3d();
 
 
+
   /** Creates a new Vision. */
   public Vision(DifferentialDrivePoseEstimator poseEstimator, AHRS gyro, Field2d field) {
     this.poseEstimator = poseEstimator;
     this.gyro = gyro;
     this.field = field;
+    
 
-    //this should be in chassis, but here for simplicity temporarily
-    pidTurn = new MiniPID(0,0,0);
-    pidTurn.setSetpointRange(15); 
-    pidTurn.setP(0.003/.2); // GOAL/ACTUAL or 
-    pidTurn.setF((s,a,e)->{return Math.signum(e)*0.05;/*static FeedForward*/ });
 
+
+    // driverPipeline();
+    setPipeline(LimelightPipeline.kNoVision);
 
   }
 
@@ -85,18 +87,17 @@ public class Vision extends SubsystemBase {
     //read values periodically
     boolean hasTargets = tv.getDouble(0) == 1 ? true : false;
     double x = tx.getDouble(0.0);
-    double y = ty.getDouble(0.0);
-    double targetArea = ta.getDouble(0.0);
+    double y = ty.getDouble(0.0); 
+
+    SmartDashboard.putBoolean("vision/TargetValid", hasTargets);
+    SmartDashboard.putNumber("vision/X", x);
+    SmartDashboard.putNumber("vision/Y", y);
+
     double[] bp = bptable.getDoubleArray(bpDefault);
-
-
     if(Array.getLength(bp)<6) return;
         
     //post to smart dashboard periodically
-    SmartDashboard.putBoolean("vision/TargetValid", hasTargets);
-    // SmartDashboard.putNumber("vision/X", x);
-    // SmartDashboard.putNumber("vision/Y", y);
-    SmartDashboard.putNumber("vision/Area", targetArea);
+    // SmartDashboard.putNumber("vision/Area", targetArea);
     SmartDashboard.putNumberArray("vision/Botpose", bp);
     SmartDashboard.putNumber("vision/TargetDistance", distance());
     SmartDashboard.putNumber("vision/DegFromTarget", testGetAngleToTargetTestPose());
@@ -198,6 +199,19 @@ public class Vision extends SubsystemBase {
       target = FieldPosition.getNearestByY(botPose,targetList); //what we usually want
     }
   }
-  
+
+  public void setPipeline(LimelightPipeline pipeline){
+    switch(pipeline){
+      case kNoVision:
+      table.getEntry("pipeline").setNumber(0);
+      break;
+      case kMidCone:
+      table.getEntry("pipeline").setNumber(1);
+      break;
+      case kHighCone:
+      table.getEntry("pipeline").setNumber(2);
+      break;
+      }
+  }
 }
 

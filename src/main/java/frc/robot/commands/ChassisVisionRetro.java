@@ -4,52 +4,60 @@
 
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Chassis.Gear;
+import frc.robot.subsystems.Vision.LimelightPipeline;
 
-public class ChassisVisionTargeting extends CommandBase {
+public class ChassisVisionRetro extends CommandBase {
   Chassis chassis;
   Vision vision;
   AHRS gyro;
   double x;
   double y;
-  double fwdPower;
-  double turnpower;
+  DoubleSupplier fwdPower;
+  DoubleSupplier turnpower;
+  LimelightPipeline pipeline;
+  
   /** Creates a new ChassisVisionTargeting. */
-  public ChassisVisionTargeting(double fwdPower, double turnpower, Chassis chassis, Vision vision, AHRS gyro) {
+  public ChassisVisionRetro(DoubleSupplier fwdPower, DoubleSupplier turnpower, LimelightPipeline pipeline, Chassis chassis, Vision vision, AHRS gyro) {
     this.fwdPower = fwdPower;
     this.turnpower = turnpower;
     this.chassis = chassis;
     this.vision = vision;
     this.gyro = gyro;
-    x = vision.getX();
-    y = vision.getY();
-    // Use addRequirements() here to declare subsystem dependencies.
+    this.pipeline = pipeline;
 
+    // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(chassis);
+    addRequirements(vision);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    chassis.pidTurn.reset();
+    chassis.setShifter(Gear.LOW);
+    vision.setPipeline(pipeline);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double forward = fwdPower;
-    double outputTurn = turnpower;
+    double forward = fwdPower.getAsDouble();
+    double outputTurn = turnpower.getAsDouble();
 
     if (vision.hasValidTarget() == false){
       chassis.arcadeDrive(forward,outputTurn);
       return;
     }
     else{
-      outputTurn = vision.pidTurn.getOutput(0, vision.getX());
+      outputTurn += chassis.pidTurn.getOutput(0, -vision.getX());
       chassis.arcadeDrive(forward, outputTurn);
     }
     
@@ -57,7 +65,11 @@ public class ChassisVisionTargeting extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    vision.setPipeline(LimelightPipeline.kNoVision);
+    chassis.arcadeDrive(0, 0);
+    chassis.setShifter(Gear.HIGH);
+  }
 
   // Returns true when the command should end.
   @Override

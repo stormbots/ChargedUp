@@ -29,6 +29,7 @@ import frc.robot.Constants.ChassisConstants;
 import frc.robot.FieldPosition.TargetType;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
+import frc.robot.commands.ChassisVisionRetro;
 import frc.robot.commands.VisionTurnToTargetPose;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
@@ -38,6 +39,7 @@ import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Lighting;
 import frc.robot.subsystems.Lighting.LedPattern;
+import frc.robot.subsystems.Vision.LimelightPipeline;
 import frc.robot.subsystems.Vision;
 
 /**
@@ -132,7 +134,9 @@ public class RobotContainer {
     chassis.setDefaultCommand(
       // this one's really basic, but needed to get systems moving right away.
        new RunCommand(
-        ()->{chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
+        ()->{
+          SmartDashboard.putNumber("chassis/turnvalue",-driver.getRawAxis(2));
+          chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
         ,chassis)
        );
 
@@ -163,15 +167,23 @@ public class RobotContainer {
   private void configureDriverBindings(){
     //DRIVER
     driver.button(8)
-    .whileTrue(new RunCommand(()->{
+    .onTrue(new InstantCommand(()->{
       chassis.setShifter(Gear.LOW);
     }))
-    .onFalse(new RunCommand (()->{
+    .onFalse(new InstantCommand(()->{
       chassis.setShifter(Gear.HIGH);
     }));
     driver.button(7).whileTrue(
-      new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()->driver.getRawAxis(2)/2.0, chassis, navx)
+      new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()-> driver.getRawAxis(2)/2.0, chassis, navx)
     );
+
+    driver.button(2).whileTrue(
+      new ChassisVisionRetro( ()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kMidCone, chassis, vision, navx)
+    );
+    driver.button(4).whileTrue(
+      new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx)
+    );
+
   }
 
 

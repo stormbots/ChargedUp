@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.stormbots.closedloop.MiniPID;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -42,6 +43,13 @@ public class Chassis extends SubsystemBase {
   private Field2d field;
   private AHRS navx;
   public DifferentialDrivePoseEstimator pe;
+
+      //this should be in chassis, but here for simplicity temporarily
+  public MiniPID pidTurn = new MiniPID(0,0,0)
+  .setSetpointRange(15)
+  .setP(ChassisConstants.kTurnLowKP) // GOAL/ACTUAL or 
+  .setF((s,a,e)->{return Math.signum(e)*ChassisConstants.kTurnLowKS; });
+  
 
   /** Creates a new Chassis. */
   public Chassis(DifferentialDrivePoseEstimator poseEstimator, AHRS navx, Field2d field) {
