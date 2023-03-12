@@ -67,7 +67,7 @@ public class ChassisBalance extends CommandBase {
     tiltOutput += tiltOutFF;
 
     //Optionally, restrict our system response to avoid excess power
-    var max=0.5;
+    var max=0.7;
     MathUtil.clamp(tiltoutD, -max, max); 
 
 

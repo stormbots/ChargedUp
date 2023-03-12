@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -171,10 +172,9 @@ public class FieldPosition {
     ///////////////////////////
     //Utility Functions
     ///////////////////////////
-
     public static enum TargetType{CubeMid,CubeHigh,ConeMid,ConeHigh,PickupSlide,PickupDouble}
 
-    public static List<Pose3d> getTargetList(TargetType targetType){
+    public static List<Pose3d> GetTargetList(TargetType targetType){
       Alliance color = DriverStation.getAlliance();
       switch(targetType){
       case CubeMid:   return color==Alliance.Red ? FieldPosition.RedConesMid : FieldPosition.BlueConesMid;
@@ -186,38 +186,61 @@ public class FieldPosition {
       }
       return new ArrayList<>();
     }
-    
-    
-    public static Pose3d getNearestByY(Pose2d botpose, List<Pose3d> poses){
-        //put your sorting process here
-        return new Pose3d();
-    }
-    public static Pose3d getNearestByX(Pose2d botpose, List<Pose3d> poses){
-        //put your sorting process here
-        return new Pose3d();
-    }
-    
-    public static Pose3d getNearestToBearing(Pose2d botpose, List<Pose3d> poses){
-        //put your sorting process here
-        return new Pose3d();
-    }
 
-
-    /**reference code to demonstrate how to deal with lists*/
-    public static List<Pose3d> DemoListFiltering(Pose2d botPose, ArrayList<Pose3d> poses){
+    public static Pose3d GetNearestToBearing(Pose2d botPose, List<Pose3d> poses){
         var filteredList = poses.stream()
-        //sort by some values
         .sorted((a,b)-> Double.compare(
-            a.getY(),b.getY()
-        ))
-        //select only desired outputs from the target
-        .filter(pose -> pose.getZ() < .6 )
-        //Take a set number of items
+            Math.abs(botPose.getY())- Math.abs(a.getY()),
+            Math.abs(botPose.getY())- Math.abs(b.getY())
+            )
+        )
         .limit(2)
-        .toList()
+        .min((a,b)-> Double.compare(
+            Math.abs(Math.atan2(a.getY(), a.getX())-botPose.getRotation().getDegrees()),
+            Math.abs(Math.atan2(b.getY(), b.getX())-botPose.getRotation().getDegrees())
+        ))
         ;
-        return filteredList;
+        return filteredList.get();
     }
+
+    public static Pose3d GetNearestByX(Pose2d botPose, List<Pose3d> poses){
+        var filteredList = poses.stream()
+        .min((a,b)-> Double.compare(
+            Math.abs(botPose.getX())- Math.abs(a.getX()),
+            Math.abs(botPose.getX())- Math.abs(b.getX())
+            )
+        )
+        ;
+        return filteredList.get();
+    }
+
+    public static Pose3d GetNearestByY(Pose2d botPose, List<Pose3d> poses){
+        var filteredList = poses.stream()
+        .min((a,b)-> Double.compare(
+            Math.abs(botPose.getY())- Math.abs(a.getY()),
+            Math.abs(botPose.getY())- Math.abs(b.getY())
+            )
+        )
+        ;
+        return filteredList.get();
+    }
+    
+    public static double GetArmAngletoPoint(Pose2d botPose, Pose3d targetObject){
+        var armDistance=GetArmDistancetoPoint(botPose,targetObject);
+        double armAngle = Math.acos(Math.sqrt(Math.pow(targetObject.getX(), 2.0) + Math.pow(targetObject.getY(), 2.0))/ armDistance);
+        return armAngle;
+    }
+
+    public static double GetArmDistancetoPoint(Pose2d botPose, Pose3d targetObject){
+        double armDistance = Math.sqrt(Math.pow(targetObject.getX(), 2.0) + Math.pow(targetObject.getY(), 2.0) + Math.pow(targetObject.getZ(), 2.0));
+        return armDistance;
+    }
+
+    public static double GetChassisRotationToPoint(Pose2d botPose, Pose3d targetObject){
+        //TODO
+        return 0;
+    }
+    
 
     public static List<Pose2d> GetPose2dList(ArrayList<Pose3d> poses){
         return poses.stream().map(Pose3d::toPose2d).collect(Collectors.toList());

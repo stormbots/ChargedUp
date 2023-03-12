@@ -16,10 +16,12 @@ import com.stormbots.closedloop.FB;
 import com.stormbots.closedloop.MiniPID;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ChassisConstants;
 import frc.robot.subsystems.Chassis;
+import frc.robot.subsystems.Chassis.Gear;
 
 public class ChassisDriveNavx extends CommandBase {
   private final Chassis chassis;
@@ -34,8 +36,8 @@ public class ChassisDriveNavx extends CommandBase {
   private double distance=0;
 
   
-  SlewRateLimiter speedslew;
-  MiniPID pid = new MiniPID(0, 0, 0);
+  SlewRateLimiter distanceSlew;
+  MiniPID pid = new MiniPID(0.1/12.0, 0, 0);
 
 
   /**
@@ -57,7 +59,7 @@ public class ChassisDriveNavx extends CommandBase {
     this.distanceTolerance = distanceTolerance;
 
 
-    speedslew = new SlewRateLimiter(1, -1, 0);
+    distanceSlew = new SlewRateLimiter(1.5, -1.5, 0);
   }
 
   // Called when the command is initially scheduled.
@@ -69,15 +71,15 @@ public class ChassisDriveNavx extends CommandBase {
 
     chassis.leftEncoder.setPosition(0);
     chassis.rightEncoder.setPosition(0);
-    
+    Timer.delay(0.03);    
     
     targetBearing = targetBearingSupplier.getAsDouble();
 
-
+    distanceSlew.reset(0);
     initialBearing = gyro.getAngle();
     pid.setSetpoint(initialBearing + targetBearing);
 
-
+    chassis.setShifter(Gear.LOW);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -95,9 +97,9 @@ public class ChassisDriveNavx extends CommandBase {
     double turn = pid.getOutput(currentAngle);
     
 
-    double targetDistance = speedslew.calculate(this.targetDistance);
+    double targetDistance = distanceSlew.calculate(this.targetDistance);
 
-    double forwardSpeed = FB.fb(targetDistance, distance, 0.5); // TABI 0.4 || PRACTICE 0.4
+    double forwardSpeed = FB.fb(targetDistance, distance, 0.6); // TABI 0.4 || PRACTICE 0.4
 
 
     turn+= Math.signum(turn)*ChassisConstants.kTurnLowKS; //TODO: fIXME WHEN MINIPID WORKS PROPERLY
@@ -116,6 +118,8 @@ public class ChassisDriveNavx extends CommandBase {
   @Override
   public void end(final boolean interrupted) {
     chassis.arcadeDrive(0,0);
+    // chassis.setShifter(Gear.HIGH); Probably don't want this
+
   }
 
   // Returns true when the command should end.
@@ -126,14 +130,18 @@ public class ChassisDriveNavx extends CommandBase {
 
     // SmartDashboard.putNumber("Chassis/angle Error", gyro.getAngle() - (initialBearing + targetBearing) );
     // SmartDashboard.putNumber("Chassis/position Error", chassis.getAverageDistance() - targetDistance);
-    SmartDashboard.putBoolean("Chassis/Exit Total", ( Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance)
-    && ( Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance) ) ));
+
+    var distanceOnTarget=Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance);
+    var angleOnTarget = Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance);
+
+    SmartDashboard.putBoolean("autos/drivenavx/atDistance", distanceOnTarget);
+    SmartDashboard.putBoolean("autos/drivenavx/atAngle", angleOnTarget);
+    SmartDashboard.putBoolean("autos/drivenavx/atBoth", angleOnTarget && distanceOnTarget);
 
     // SmartDashboard.putBoolean("Chassis/Exit Angle", Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance));
 
-    return ( Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance)
-    && ( Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance) ) );
+    return angleOnTarget && distanceOnTarget;
 
-
+    // return false; 
   }
 }

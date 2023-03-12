@@ -4,15 +4,19 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
+import com.revrobotics.CANSparkMax.IdleMode;
+
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Arm.RetractSolenoidPosition;
+import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Vision.LimelightPipeline;
 
 /**
@@ -35,6 +39,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+    SmartDashboard.putData(CommandScheduler.getInstance());
     LiveWindow.enableAllTelemetry();
     camera1 = CameraServer.startAutomaticCapture();
     String key = "/bot/isCompBot";
@@ -76,17 +81,20 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit(){
     robotContainer.vision.setPipeline(LimelightPipeline.kNoVision); 
-   }
+    robotContainer.chassis.setShifter(Gear.LOW);
+  }
 
   @Override
   public void disabledPeriodic(){
-
+    robotContainer.arm.armMotor.setIdleMode(IdleMode.kBrake);
 
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    robotContainer.navx.reset();
+
     autonomousCommand = robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
@@ -98,7 +106,10 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic(){
+    robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
+
+  }
 
   @Override
   public void teleopInit(){
@@ -112,22 +123,30 @@ public class Robot extends TimedRobot {
       autonomousCommand.cancel();
     }
 
+    robotContainer.chassis.setShifter(Gear.HIGH);
   }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
+  }
 
+  Field2d field = new Field2d();
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    // robotContainer.lighting.setColor(LedPattern.RED);
+    SmartDashboard.putData(field);
     
   }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    SmartDashboard.putNumber("navx/degrees", robotContainer.navx.getRotation2d().getDegrees());
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override
