@@ -31,6 +31,7 @@ import frc.robot.Constants.ChassisConstants;
 import frc.robot.FieldPosition.TargetType;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
+import frc.robot.commands.ChassisTurnGyro;
 import frc.robot.commands.ChassisVisionRetro;
 import frc.robot.commands.VisionTurnToTargetPose;
 import frc.robot.commands.setArm;
@@ -187,11 +188,15 @@ public class RobotContainer {
       new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()-> driver.getRawAxis(2)/2.0, chassis, navx)
     );
 
-    driver.button(2).whileTrue(
-      new ChassisVisionRetro( ()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kMidCone, chassis, vision, navx)
+    driver.button(2).whileTrue(new InstantCommand()
+      .andThen(()->chassis.setShifter(Gear.LOW))
+      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 10, chassis, navx))
+      .andThen( new ChassisVisionRetro( ()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kMidCone, chassis, vision, navx) )
     );
-    driver.button(4).whileTrue(
-      new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx)
+    driver.button(4).whileTrue(new InstantCommand()
+      .andThen(()->chassis.setShifter(Gear.LOW))
+      //.andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
+      .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
     );
 
   }
