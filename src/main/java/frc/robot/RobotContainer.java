@@ -120,7 +120,7 @@ public class RobotContainer {
       ()->vision.getArmAngleToTarget(),
       ()->vision.getArmExtensionToTarget(),
       ()->arm.getArmAngle(),
-      ()->0.2, arm)
+      ()->0.2, arm, intake)
     );
 
 
