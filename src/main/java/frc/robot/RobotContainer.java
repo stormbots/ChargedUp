@@ -101,6 +101,7 @@ public class RobotContainer {
    
     
     //compressor.clearStickyFaults();
+    SmartDashboard.putData("chassis/Reset Navx",new InstantCommand( ()-> navx.reset()));
     navx.reset();
     //SmartDashboard.putNumber("PCH #", compressor.getModuleNumber());
     SmartDashboard.putData(field);
@@ -192,11 +193,14 @@ public class RobotContainer {
       .andThen(()->chassis.setShifter(Gear.LOW))
       .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 10, chassis, navx))
       .andThen( new ChassisVisionRetro( ()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kMidCone, chassis, vision, navx) )
+      .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
+
     driver.button(4).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
       //.andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
       .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
+      .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
   }
