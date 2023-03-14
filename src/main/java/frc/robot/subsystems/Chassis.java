@@ -35,7 +35,7 @@ public class Chassis extends SubsystemBase {
   public RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
   Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
-  
+  public Gear gearPosition = Gear.LOW;
   DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
 
   /** Creates a new Chassis. */
@@ -64,6 +64,7 @@ public class Chassis extends SubsystemBase {
   }
 
   public void setShifter(Gear gear){
+    this.gearPosition = gear;
     var positionLeft = leftEncoder.getPosition();
     var positionRight = rightEncoder.getPosition();
     if(gear == Gear.HIGH){
@@ -80,6 +81,10 @@ public class Chassis extends SubsystemBase {
     rightEncoder.setPosition(positionRight);
   }
 
+  public Gear getShifterPosition(){
+    return this.gearPosition;
+  }
+
   public void arcadeDrive(double power, double turn) {
     driveTrain.arcadeDrive(power,turn);
   }
@@ -88,6 +93,7 @@ public class Chassis extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
     SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
     SmartDashboard.putNumber("LeftAmps", leftLeader.getOutputCurrent());
     SmartDashboard.putNumber("RightAmps", rightLeader.getOutputCurrent());

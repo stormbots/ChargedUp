@@ -27,8 +27,8 @@ public final class Constants {
     // Drive train stuff
     public static int kChassisMotorLeft=1;
     public static int kChassisMotorLeftFollower=2;
-    public static int kChassisMotorRight=4;
-    public static int kChassisMotorRightFollower=3;
+    public static int kChassisMotorRight=3;
+    public static int kChassisMotorRightFollower=4;
     public static int kShifterSolenoid=1;
     
     

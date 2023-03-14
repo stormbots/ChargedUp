@@ -176,9 +176,9 @@ public class RobotContainer {
     operator.button(5).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
         //Place cones
-        new setArm(48, 51, 48, 0.2, arm, intake), 
+        new setArm(48, 50, 48, 0.2, arm, intake), 
         //Execute cones
-        new setArm(34.5, 51, 35, 0.2, arm, intake)
+        new setArm(34.5, 50, 35, 0.2, arm, intake)
           .withTimeout(0.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
           .withTimeout(0.25)
@@ -189,7 +189,7 @@ public class RobotContainer {
         //Place cubes
         new setArm(35, 48, 6, 0.2, arm, intake), 
         //Execute cubes
-        new setArm(35, 48, 6, -0.1, arm, intake).withTimeout(.1),
+        new setArm(35, 48, 6, -0.2, arm, intake),
 
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
@@ -212,7 +212,7 @@ public class RobotContainer {
         //Place cubes 
         new setArm(29.0, 11.0, 4.0, 0.2, arm, intake),
         //Execute cubes 
-        new setArm(29.0, 11.0, 4.0, -0.1, arm, intake),
+        new setArm(29.0, 11.0, 4.0, -0.25, arm, intake),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
