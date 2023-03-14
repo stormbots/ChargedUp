@@ -327,6 +327,7 @@ public class RobotContainer {
   }
 
   public enum CommandSelect{
+    kLevelArmAndResetEncoder,
     kPlaceConeMidBackwards,
     kPlaceCubeMidBackwards,
     kPlaceCubeHighBackwards,
@@ -360,6 +361,20 @@ public class RobotContainer {
       .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
       ;
 
+      case kLevelArmAndResetEncoder:
+      return new InstantCommand()
+      .andThen(new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
+      .andThen(new WaitCommand(0.1))
+      //go to cube pickup
+      //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
+      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
+      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
+      .andThen(new InstantCommand(()->{
+          //reject jank; Only run this if the arm successfully got where it should have gone
+          if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
+        }))
+      ;
+
      case kPlaceConeMidBackwards:
      return new InstantCommand()
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
@@ -373,16 +388,7 @@ public class RobotContainer {
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
      .andThen(new WaitCommand(0.1))
      //put arm up somewhere away from posts
-     .andThen( new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
-     .andThen(new WaitCommand(0.1))
-     //go to cube pickup
-     //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
-     .andThen(new InstantCommand(()->{
-        //reject jank; Only run this if the arm successfully got where it should have gone
-        if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
-      }))
+     .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
      ;
 
      case kPlaceCubeHighBackwards:
@@ -397,16 +403,7 @@ public class RobotContainer {
      .andThen(new setArm(0, 0, 0, -0.1, arm, intake).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(.75))
      .andThen(new WaitCommand(0.1))
      //put arm up somewhere away from posts
-     .andThen( new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
-     .andThen(new WaitCommand(0.1))
-     //go to cube pickup
-     //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
-     .andThen(new InstantCommand(()->{
-        //reject jank; Only run this if the arm successfully got where it should have gone
-        if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
-      }))
+     .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
      ;
 
      case kPlaceCubeMidBackwards:
@@ -421,20 +418,9 @@ public class RobotContainer {
      .andThen(new setArm(0, 0, 0, -0.1, arm, intake).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(.75))
      .andThen(new WaitCommand(0.1))
      //put arm up somewhere away from posts
-     .andThen( new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
-     .andThen(new WaitCommand(0.1))
-     //go to cube pickup
-     //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
-     .andThen(new InstantCommand(()->{
-        //reject jank; Only run this if the arm successfully got where it should have gone
-        if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
-      }))
+     .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
      ;
-      
     }
-    
     
     //Anything that's not fully defined or commented out, return nothing and skip it in any sequences
     return new InstantCommand();
