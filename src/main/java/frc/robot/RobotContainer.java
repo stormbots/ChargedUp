@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.lang.constant.DynamicConstantDesc;
-
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
@@ -29,10 +27,10 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Arm.PrepareOrExecute;
 import frc.robot.subsystems.Chassis;
-import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Chassis.Gear;
-import frc.robot.subsystems.Lighting.LedPattern;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lighting;
+import frc.robot.subsystems.Lighting.LedPattern;
 import frc.robot.subsystems.Vision;
 
 /**
@@ -382,6 +380,8 @@ public class RobotContainer {
         // arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false) ;        
       } 
     ));
+
+    SmartDashboard.putData("autos/Level+Reset Arm", new InstantCommand().andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder)));
 
 
     var blueLeftConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
