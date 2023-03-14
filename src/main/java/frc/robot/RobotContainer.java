@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.lang.constant.DynamicConstantDesc;
-
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
@@ -33,18 +31,17 @@ import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.ChassisTurnGyro;
 import frc.robot.commands.ChassisVisionRetro;
-import frc.robot.commands.VisionTurnToTargetPose;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Arm.PrepareOrExecute;
 import frc.robot.subsystems.Chassis;
-import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Chassis.Gear;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Lighting;
 import frc.robot.subsystems.Lighting.LedPattern;
-import frc.robot.subsystems.Vision.LimelightPipeline;
 import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.Vision.LimelightPipeline;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -438,6 +435,8 @@ public class RobotContainer {
         // arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false) ;        
       } 
     ));
+
+    SmartDashboard.putData("autos/Level+Reset Arm", new InstantCommand().andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder)));
 
 
     var blueLeftConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
