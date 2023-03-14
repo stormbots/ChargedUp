@@ -182,7 +182,7 @@ public class RobotContainer {
           .withTimeout(0.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
           .withTimeout(0.25)
-          .andThen(new setArm(48, 40, 35, 0.2, arm, intake)),
+          .andThen(new setArm(48, 50, 90, 0.2, arm, intake)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
