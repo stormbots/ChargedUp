@@ -63,6 +63,8 @@ public class Chassis extends SubsystemBase {
     rightEncoder.setPosition(0);
 
     for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
+      // m.restoreFactoryDefaults();
+      
       //Set limits for motors
       m.setOpenLoopRampRate(0.08);
 

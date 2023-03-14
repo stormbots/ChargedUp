@@ -105,7 +105,7 @@ public class RobotContainer {
     SmartDashboard.putData(field);
 
     // Configure the button bindings
-    driver.button(8).whileTrue(new VisionTurnToTargetPose(chassis, vision));
+    //driver.button(8).whileTrue(new VisionTurnToTargetPose(chassis, vision));
     //.whileHeld(new DrivetrainVisionTargeting(driver.getRawAxis(1),driver.getRawAxis(2),chassis, vision, navx));
     
 

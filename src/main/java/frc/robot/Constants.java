@@ -26,8 +26,8 @@ public final class Constants {
     // Drive train stuff
     public static int kChassisMotorLeft=1;
     public static int kChassisMotorLeftFollower=2;
-    public static int kChassisMotorRight=4;
-    public static int kChassisMotorRightFollower=3;
+    public static int kChassisMotorRight=3;
+    public static int kChassisMotorRightFollower=4;
     public static int kShifterSolenoid=1;
     
     
@@ -77,9 +77,9 @@ public final class Constants {
     public static double kDriveLowKPTilt = 0.12/12.0; //proportional
     public static double kDriveLowKDTilt = 0;//0.15/12.0; //proportional
         
-    public static double kTurnLowKS = 0.16; //proportional
+    public static double kTurnLowKS = 0.23-0.01; //proportional
     public static double kTurnHighKS = 0.31; //proportional
-    public static double kTurnLowKP = 0.14/10.0; //proportional
+    public static double kTurnLowKP = 0.18/10.0; //proportional
     public static double kTurnHighKP = 0.03; //proportional 0.14/90/.25*0.02*kp 
     //ouput = g*= .14/ ( (90/.25) *0.02t )
     //.14*.25/90/0.02-> gain of 0.019
