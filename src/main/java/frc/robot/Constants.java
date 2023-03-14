@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -40,7 +41,8 @@ public final class Constants {
     //Hand+wrist
     public static int kWristMotorID=13;
     // public static int kWristServoChannel=8;
-    public static int kIntakeSolenoid=4;
+    public static int kIntakeForwardSolenoid=4;
+    public static int kIntakeReverseSolenoid=15;
     public static int kIntakeMotor=9;
     public static int kWristAnalogEncoderChannel=0;
 
@@ -176,7 +178,7 @@ public final class Constants {
     public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=-(360-275); //-275 CORRECT
+    public static double kAbsoluteAngleOffset=98;
     public static double kFFCos=0.042*12;
     public static double kP=1/90.0;
     public static double kI=0;
@@ -186,8 +188,8 @@ public final class Constants {
   }
 
   public static class IntakeConstants{
-    public static boolean kClosedBoolean=false;
-    public static boolean kOpenBoolean=!kClosedBoolean;
+    public static Value kClosed=Value.kReverse;
+    public static Value kOpen=Value.kForward;
     public static int kCurrentLimitFree=25;
     public static int kCurrentLimitStall=18;
     public static boolean kIntakeMotorInverted=true;
@@ -214,7 +216,7 @@ public final class Constants {
     HardwareID.kArmAnalogEncoderChannel=0;
     // HardwareID.kWristServoChannel=8;
     HardwareID.kWristMotorID=13;
-    HardwareID.kIntakeSolenoid=3;
+    //HardwareID.kIntakeForwarSolenoid=3;
     HardwareID.kIntakeMotor=9;
 
 

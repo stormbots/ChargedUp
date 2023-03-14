@@ -213,7 +213,7 @@ public class RobotContainer {
    
     //INTAKE MOTOR MANUAL EJECT/
     operator.button(4).whileTrue(new RunCommand (()->{
-      arm.intakeMotor.set(-0.1);
+      arm.intakeMotor.set(-0.2);
     },intake));
     operator.button(4).onFalse(new InstantCommand (()->{
       arm.intakeMotor.set(0.0);
@@ -223,19 +223,20 @@ public class RobotContainer {
     operator.button(5).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
         //Place cones
-        new setArm(48, 45, 48, 0.2, arm, intake), 
+        new setArm(48, 51, 48, 0.2, arm, intake), 
         //Execute cones
-        new setArm(34.5, 45, 35, 0.2, arm, intake)
-          //reduce after verifying
-          .withTimeout(0.1)
-          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+        new setArm(34.5, 51, 35, 0.2, arm, intake)
+          .withTimeout(0.25)
+          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
+          .withTimeout(0.25)
+          .andThen(new setArm(48, 40, 35, 0.2, arm, intake)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
         //Place cubes
-        new setArm(35, 51, 6, 0.2, arm, intake), 
+        new setArm(35, 48, 6, 0.2, arm, intake), 
         //Execute cubes
-        new setArm(35, 51, 6, -0.2, arm, intake).withTimeout(.1),
+        new setArm(35, 48, 6, -0.1, arm, intake).withTimeout(.1),
 
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
@@ -249,7 +250,7 @@ public class RobotContainer {
         new setArm(45.0, 25.0, 20, 0.2, arm, intake), 
         //Execute Cones
         new setArm(28.0, 25.0, 20, 0.2, arm, intake)
-          .withTimeout(.1)
+          .withTimeout(.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
@@ -258,7 +259,7 @@ public class RobotContainer {
         //Place cubes 
         new setArm(29.0, 11.0, 4.0, 0.2, arm, intake),
         //Execute cubes 
-        new setArm(29.0, 11.0, 4.0, -0.2, arm, intake),
+        new setArm(29.0, 11.0, 4.0, -0.1, arm, intake),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
@@ -268,18 +269,36 @@ public class RobotContainer {
     //PICKUP DOUBLE SUBSTATION
     operator.button(9).whileTrue(new setArm(50, 21, 11, 1.0, arm, intake));
 
-    //PICKUP SINGLE SUBSTATION
-    //operator.button(7).whileTrue(new setArm(65, 11, 0, 1.0, arm));
-    //PLACEHOLDER GET ACTUAL VALUES 2/25/2023
+    //PICKUP TIPPED CONE
+    operator.button(7).whileTrue(new InstantCommand()
+      .andThen(new setArm(10,0,-75,0,arm,intake).until(()->arm.isRobotOnTarget(3, 1, 3)))
+      .andThen(new setArm(-12,0,-80,1.0,arm,intake).withTimeout(1))
+      .andThen(new setArm(10,0, -75, 1.0, arm, intake))
+    );
      
     //PICKUP FROM GROUND/SCORE LOW
-    operator.button(8).whileTrue( 
-      commandBuilder(CommandSelect.kArmToPickupPosition)
+    operator.button(8).whileTrue(new InstantCommand()
+      .andThen(new setArm(()->-25 ,()->6,()->0,()->0.2,arm,intake)
+      .until(()->arm.isRobotOnTarget(20, 50, 7)).withTimeout(0.25))
+      .andThen(commandBuilder(CommandSelect.kArmToPickupPosition))
     );
     
     //MOVE TO CARRY POSITION
-    operator.button(2).whileTrue( commandBuilder(CommandSelect.kArmToCarryPosition));
+    operator.button(2).whileTrue(new InstantCommand()
+    .andThen(
+      
+      new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
+      //.until(()->arm.isRobotOnTarget(90, 10, 90))
+    )
+    .andThen(commandBuilder(CommandSelect.kArmToCarryPosition))
+    );
+    
     operator.button(2).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
+
+    // new InstantCommand()
+    // .andThen()
+    // ;
+    ;
     //TEST SHOOTING CUBES
     operator.button(12).whileTrue(new RunCommand (()->{
       arm.intakeMotor.set(-1.0);
@@ -304,6 +323,8 @@ public class RobotContainer {
 
   public enum CommandSelect{
     kPlaceConeMidBackwards,
+    kPlaceCubeMidBackwards,
+    kPlaceCubeHighBackwards,
     kDriveToGamePiece,
     kDriveToChargerAndBalance,
     kArmToCarryPosition,
@@ -315,7 +336,7 @@ public class RobotContainer {
     switch(commandSnippet){
       case kArmToPickupPosition:
       return new ConditionalCommand(
-      new setArm(-45, 1, 10, 1.0, arm, intake), //cone
+      new setArm(-46, 0, -4, 1.0, arm, intake), //cone
       new setArm(-38, 6, -5, 1.0, arm, intake), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
       ;
@@ -339,12 +360,60 @@ public class RobotContainer {
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
-     //place get values
+     //place 
      .andThen(new setArm(145, 27, 157, 0.2, arm, intake).withTimeout(.75))
      .andThen(new WaitCommand(0.1))
-     //execute get values
+     //execute 
      .andThen(new setArm(166, 27, 172, 0.2, arm, intake).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(.75))
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+     .andThen(new WaitCommand(0.1))
+     //put arm up somewhere away from posts
+     .andThen( new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
+     .andThen(new WaitCommand(0.1))
+     //go to cube pickup
+     //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
+     .andThen(new InstantCommand(()->{
+        //reject jank; Only run this if the arm successfully got where it should have gone
+        if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
+      }))
+     ;
+
+     case kPlaceCubeHighBackwards:
+     return new InstantCommand()
+     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
+     //place 
+     .andThen(new setArm(0, 0, 0, 0.2, arm, intake).withTimeout(.75))
+     .andThen(new WaitCommand(0.1))
+     //execute 
+     .andThen(new setArm(0, 0, 0, -0.1, arm, intake).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(.75))
+     .andThen(new WaitCommand(0.1))
+     //put arm up somewhere away from posts
+     .andThen( new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
+     .andThen(new WaitCommand(0.1))
+     //go to cube pickup
+     //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
+     .andThen(new InstantCommand(()->{
+        //reject jank; Only run this if the arm successfully got where it should have gone
+        if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
+      }))
+     ;
+
+     case kPlaceCubeMidBackwards:
+     return new InstantCommand()
+     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
+     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
+     //place get values
+     .andThen(new setArm(0, 0, 0, 0.2, arm, intake).withTimeout(.75))
+     .andThen(new WaitCommand(0.1))
+     //execute get values
+     .andThen(new setArm(0, 0, 0, -0.1, arm, intake).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(.75))
      .andThen(new WaitCommand(0.1))
      //put arm up somewhere away from posts
      .andThen( new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)).withTimeout(.5) )
@@ -379,8 +448,8 @@ public class RobotContainer {
     var blueLeftConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
     .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
 
-    var blueMiddleConeBalance =commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
+    // var blueMiddleConeBalance =commandBuilder(CommandSelect.kPlaceConeMidBackwards)
+    // .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
 
     var blueRightConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
     .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
@@ -388,20 +457,56 @@ public class RobotContainer {
     var redRightConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
     .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
 
-    var redMiddleConeBalance = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
+    // var redMiddleConeBalance = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
+    // .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
 
     var redLeftConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
     .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
 
-    var balanceCommunity = new InstantCommand()
+    var redLeftCubePlaceMid = commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+
+    var redRightCubePlaceMid= commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+
+    var blueLeftCubePlaceMid = commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+
+    var blueRightCubePlaceMid = commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+    
+    var redRightCubePlaceHigh = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+
+    var redLeftCubePlaceHigh  = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+
+    var blueLeftCubePlaceHigh = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+
+    var blueRightCubePlaceHigh = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+  
+
+    var balanceCommunityScoreConeMid = new InstantCommand()
     .andThen( commandBuilder(CommandSelect.kPlaceConeMidBackwards))
     .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
     .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
-    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
+    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx));
+
+    var balanceCommunityScoreCubeMid = new InstantCommand()
+    .andThen( commandBuilder(CommandSelect.kPlaceCubeMidBackwards))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
+    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx));
+
+    var balanceCommunityScoreCubeHigh = new InstantCommand()
+    .andThen( commandBuilder(CommandSelect.kPlaceCubeHighBackwards))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
+    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx));
 
     // .andThen(
-            ;
 
     var targetAngle = 90;
     var jankyFollowAembotOutOfCommunity= new InstantCommand()
@@ -421,15 +526,23 @@ public class RobotContainer {
 
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
     autoChooser.addOption("Blue Left Cone",blueLeftConePlaceMid);
-    autoChooser.addOption("Blue Middle Cone Balance",blueMiddleConeBalance);
+    autoChooser.addOption("Blue Left Cube Mid",blueLeftCubePlaceMid);
+    autoChooser.addOption("Blue Left Cube High",blueLeftCubePlaceHigh);
     autoChooser.addOption("Blue Right Cone",blueRightConePlaceMid);
+    autoChooser.addOption("Blue Right Cube Mid",blueRightCubePlaceMid);
+    autoChooser.addOption("Blue Right Cube High", blueRightCubePlaceHigh);
     autoChooser.addOption("Red Left Cone",redLeftConePlaceMid);
-    autoChooser.addOption("Red Middle Cone Balance",redMiddleConeBalance);
+    autoChooser.addOption("Red Left Cube Mid",redLeftCubePlaceMid);
+    autoChooser.addOption("Red Left Cube High",redLeftCubePlaceHigh);
     autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
+    autoChooser.addOption("Red Right Cube Mid",redRightCubePlaceMid);
+    autoChooser.addOption("Red Right Cube High", redRightCubePlaceHigh);
     autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
     autoChooser.addOption("Score then do nothing",commandBuilder(CommandSelect.kPlaceConeMidBackwards));
     autoChooser.addOption("Drive Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
-    autoChooser.addOption("Community balance",balanceCommunity);
+    autoChooser.addOption("Mobility+Balance+Score Cone Mid",balanceCommunityScoreConeMid);
+    autoChooser.addOption("Mobility + Balance + Score Cube Mid", balanceCommunityScoreCubeMid);
+    autoChooser.addOption("Mobility + Balance + Score Cube High", balanceCommunityScoreCubeHigh);
     autoChooser.addOption("UNTESTED Follow Aembot",jankyFollowAembotOutOfCommunity);
 
 

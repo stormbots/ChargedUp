@@ -44,7 +44,8 @@ public class setArm extends CommandBase {
       DoubleSupplier extension,
       DoubleSupplier wristAngle, 
       DoubleSupplier intakeSpeed, 
-      Arm arm) {
+      Arm arm,
+      Intake intake) {
     this.arm = arm;
     this.angle = armAngle;
     this.extension = extension;
@@ -52,6 +53,7 @@ public class setArm extends CommandBase {
     this.wristAngle = wristAngle;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
+    addRequirements(intake);
   }
 
 

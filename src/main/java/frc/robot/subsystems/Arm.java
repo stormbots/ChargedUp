@@ -15,6 +15,7 @@ import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -65,7 +66,7 @@ public class Arm extends SubsystemBase {
 
   // Intake Actuation
   public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
-  public Solenoid intakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kIntakeSolenoid); 
+  public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, 4, 15); 
   public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid);//temp value
   
   
@@ -113,7 +114,9 @@ public class Arm extends SubsystemBase {
     wristMotor.setSmartCurrentLimit(12,15);
     wristMotor.setInverted(WristConstants.kReverseMotor);
     wristMotor.getEncoder().setPositionConversionFactor(WristConstants.kConversionFactor);
-    wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    if(wristAbsEncoder.isConnected()){
+      wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    }
     wristMotor.setSoftLimit(SoftLimitDirection.kForward, WristConstants.kMaxAngle); 
     wristMotor.setSoftLimit(SoftLimitDirection.kReverse, WristConstants.kMinAngle); 
     wristMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
@@ -293,6 +296,13 @@ public class Arm extends SubsystemBase {
   }
 
   public boolean isWristOnTarget(double tolerance){
+    if(wristSetpoint >= getWristAngle() && getWristAngle() >= WristConstants.kMaxAngle -7 ){
+      return true;
+    }
+    if(wristSetpoint <= getWristAngle() && getWristAngle() <= WristConstants.kMinAngle+7){
+      return true;
+    }
+
     return Clamp.bounded(getWristAngle(),
     wristSetpoint-tolerance, 
     wristSetpoint + tolerance )
@@ -311,10 +321,10 @@ public class Arm extends SubsystemBase {
   public void setIntake(IntakeSolenoidPosition handPosition){
     this.intakeSolenoidPosition=handPosition;
     if(handPosition == IntakeSolenoidPosition.CLOSED){
-      intakeSolenoid.set(IntakeConstants.kClosedBoolean);
+      intakeSolenoid.set(IntakeConstants.kClosed);
     }
     else{
-      intakeSolenoid.set(IntakeConstants.kOpenBoolean);
+      intakeSolenoid.set(IntakeConstants.kOpen);
     }
   }
 
@@ -347,8 +357,9 @@ public class Arm extends SubsystemBase {
     //setWristAngle(wristAngleTarget);
     if(getRetractRotations()<-0.1){retractMotor.getEncoder().setPosition(-0.1);}
 
-    //armMotor.getEncoder().setPosition(getArmAngleAbsolute());
-    wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    if(wristAbsEncoder.isConnected()){
+      wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
+    }
     SmartDashboard.putNumber("arm/wrist/absencoder", wristAbsEncoder.getAbsolutePosition()*360);
     SmartDashboard.putNumber("arm/wrist/absenc+offset", wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset);
     SmartDashboard.putNumber("arm/wrist/wristAngleAbsolute", getWristAngleAbsolute());
