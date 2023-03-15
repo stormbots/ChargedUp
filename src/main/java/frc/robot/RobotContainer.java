@@ -112,15 +112,7 @@ public class RobotContainer {
     cube1mid.setPose(14.73, 3, new Rotation2d(Math.PI));
 
     
-    operator.button(17)
-    .onTrue(new InstantCommand(()->vision.setTarget(TargetType.ConeMid)))
-    // .onTrue(new InstantCommand(()->vision.setTarget(TargetType.ConeMid,-2,+2))) //TODO: Allow setting offsets for the target
-    .whileTrue(new setArm(
-      ()->vision.getArmAngleToTarget(),
-      ()->vision.getArmExtensionToTarget(),
-      ()->arm.getArmAngle(),
-      ()->0.2, arm, intake)
-    );
+   
 
 
 
@@ -195,7 +187,7 @@ public class RobotContainer {
 
     driver.button(4).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
-      //.andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
+      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
       .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
       .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );

@@ -49,9 +49,11 @@ public class ChassisTurnGyro extends CommandBase {
     
         //turning left/right stuff
         double targetAngle = -180;// navx.getRotation2d().getDegrees()  < 0 ? 180 : -180;
-        double angle =  navx.getRotation2d().getDegrees(); // negative to account for navx rotation relative to chassis
+        double angle =  navx.getRotation2d().getRadians(); // negative to account for navx rotation relative to chassis
+        angle = MathUtil.angleModulus(angle);
+        angle = Math.toDegrees(angle);
 
-        SmartDashboard.putNumber("chassis/angle", angle);
+
         if( angle <-0){
           targetAngle = -180;
         }
@@ -59,11 +61,13 @@ public class ChassisTurnGyro extends CommandBase {
           targetAngle = 180;
         }    
         angleError = targetAngle - angle;
-        angleError= MathUtil.clamp(angleError, -50, 50);
+        angleError= MathUtil.clamp(angleError, -25, 25);
+
         double turnoutput = angleError*ChassisConstants.kTurnLowKP;
         turnoutput += ChassisConstants.kTurnLowKS*Math.signum(turnoutput);
 
         turnoutput += driverTurn.getAsDouble();
+        turnoutput += navx.getRate() * .05/4.0;
 
         chassis.arcadeDrive(driverForward.getAsDouble(), turnoutput);
 
@@ -78,6 +82,7 @@ public class ChassisTurnGyro extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return Clamp.bounded(angleError, -tolerance, tolerance);
+    
+    return Clamp.bounded(angleError, -tolerance, tolerance) && Math.abs(navx.getRate()) < 15 ;
   }
 }
