@@ -268,12 +268,19 @@ public class RobotContainer {
     operator.button(9).whileTrue(new setArm(50, 21, 11, 1.0, arm, intake));
 
     //PICKUP TIPPED CONE
-    operator.button(7).whileTrue(new InstantCommand()
-      .andThen(new setArm(10,0,-75,0,arm,intake).until(()->arm.isRobotOnTarget(3, 1, 3)))
-      .andThen(new setArm(-12,0,-80,1.0,arm,intake).withTimeout(1))
-      .andThen(new setArm(10,0, -75, 1.0, arm, intake))
-    );
-     
+    // operator.button(7).whileTrue(new InstantCommand()
+    // .andThen(new setArm(45,0,-75,0,arm,intake).withTimeout(1))
+    // .andThen(new setArm(10,0,-75,0,arm,intake).until(()->arm.isRobotOnTarget(3, 1, 1)))
+    // .andThen(new setArm(-15,0,-100,1.0,arm,intake).withTimeout(1))
+    // .andThen(new setArm(10,0, -75, 1.0, arm, intake))
+    // );
+    operator.button(7).whileTrue(new ConditionalCommand(
+      new setArm(10,0,-75,0,arm,intake), 
+      new setArm(-15,0,-100,1.0,arm,intake).withTimeout(0.5)
+      .andThen(new setArm(10,0,-75,0,arm,intake)), 
+      ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
+      ;
+  
     //PICKUP FROM GROUND/SCORE LOW
     operator.button(8).whileTrue(new InstantCommand()
       .andThen(new setArm(()->-25 ,()->6,()->0,()->0.2,arm,intake)
@@ -284,7 +291,6 @@ public class RobotContainer {
     //MOVE TO CARRY POSITION
     operator.button(2).whileTrue(new InstantCommand()
     .andThen(
-      
       new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
       //.until(()->arm.isRobotOnTarget(90, 10, 90))
     )

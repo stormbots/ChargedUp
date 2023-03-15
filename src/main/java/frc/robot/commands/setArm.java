@@ -23,8 +23,8 @@ public class setArm extends CommandBase {
     RetractConstants.kMaxRetractionRotations*1.5,
     -RetractConstants.kMaxRetractionRotations*1.5, 0);
   SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
-    WristConstants.kMaxRangeOfMotion*2.0, 
-    -WristConstants.kMaxRangeOfMotion*2.0, 0);
+    WristConstants.kMaxRangeOfMotion*1.5, 
+    -WristConstants.kMaxRangeOfMotion*1.5, 0);
 
 
   /** Moves arm to a pose. */
