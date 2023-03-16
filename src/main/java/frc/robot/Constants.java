@@ -180,7 +180,7 @@ public final class Constants {
     public static boolean kReverseMotor=false;
     public static double kAbsoluteAngleOffset=98;
     public static double kFFCos=0.042*12;
-    public static double kP=1/90.0;
+    public static double kP=1/70.0;
     public static double kI=0;
     public static double kD=0;
     public static double kAbsoluteAngleDistancePerRotation=360;

@@ -296,10 +296,10 @@ public class Arm extends SubsystemBase {
   }
 
   public boolean isWristOnTarget(double tolerance){
-    if(wristSetpoint >= getWristAngle() && getWristAngle() >= WristConstants.kMaxAngle -7 ){
+    if(wristSetpoint >= getWristAngle() && getWristAngleAbsolute() >= WristConstants.kMaxAngle -7 ){
       return true;
     }
-    if(wristSetpoint <= getWristAngle() && getWristAngle() <= WristConstants.kMinAngle+7){
+    if(wristSetpoint <= getWristAngle() && getWristAngleAbsolute() <= WristConstants.kMinAngle+7){
       return true;
     }
 

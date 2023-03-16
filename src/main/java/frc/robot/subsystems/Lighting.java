@@ -33,7 +33,7 @@ public class Lighting extends SubsystemBase {
   @Override
   public void periodic() {
     // leds.set(BlinkenPattern.BLINKING_RAINBOW.pwm()); // Test function
-    BlinkenPattern newpattern = BlinkenPattern.CODE_BLUE;
+    BlinkenPattern newpattern = BlinkenPattern.SOLID_AQUA;
     // This method will be called once per scheduler run
     switch(pattern){
       case BLUE: 

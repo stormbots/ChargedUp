@@ -113,7 +113,7 @@ public class Chassis extends SubsystemBase {
   @Override
   public void periodic() {
 
-    SmartDashboard.putNumber("gyro angle", -(navx.getAngle()%360));
+    SmartDashboard.putNumber("chassis/angle", navx.getRotation2d().getDegrees());
     //pe.update(rot, left.getEncoder().getPosition(), right.getEncoder().getPosition());
     pe.update(navx.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
     field.setRobotPose(pe.getEstimatedPosition());
