@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.RetractConstants;
 import frc.robot.Constants.WristConstants;
 import frc.robot.subsystems.Arm;
@@ -25,7 +26,8 @@ public class setArm extends CommandBase {
   SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
     WristConstants.kMaxRangeOfMotion*1.5, 
     -WristConstants.kMaxRangeOfMotion*1.5, 0);
-
+  SlewRateLimiter armRateLimiter =new SlewRateLimiter(
+    180, 180, 0);
 
   /** Moves arm to a pose. */
   public setArm(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm, Intake intake) {
@@ -62,6 +64,7 @@ public class setArm extends CommandBase {
   public void initialize() {
     wristRateLimiter.reset(arm.getWristAngle());
     retractRateLimiter.reset(arm.getRetractRotations());
+    armRateLimiter.reset(arm.getArmAngle  ());
   }
 
 
