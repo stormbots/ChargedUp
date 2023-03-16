@@ -68,7 +68,6 @@ public class ChassisVisionRetro extends CommandBase {
   public void end(boolean interrupted) {
     vision.setPipeline(LimelightPipeline.kNoVision);
     chassis.arcadeDrive(0, 0);
-    chassis.setShifter(Gear.HIGH);
   }
 
   // Returns true when the command should end.

@@ -100,7 +100,7 @@ public class Vision extends SubsystemBase {
     // SmartDashboard.putNumber("vision/Area", targetArea);
     SmartDashboard.putNumberArray("vision/Botpose", bp);
     SmartDashboard.putNumber("vision/TargetDistance", distance());
-    SmartDashboard.putNumber("vision/DegFromTarget", testGetAngleToTargetTestPose());
+    //SmartDashboard.putNumber("vision/DegFromTarget", getAngleToTargetPose());
 
     rot = new Rotation2d( Math.toRadians( bp[5]) );
     // botPose =  new Pose2d(bp[0]+15.980/2.0, bp[1]+8.210/2.0, rot);
@@ -141,9 +141,9 @@ public class Vision extends SubsystemBase {
     return tv.getDouble(0) == 1 ? true : false;
   }
 
-  public double testGetAngleToTargetTestPose(){
+  public double getAngleToTargetPose(Pose3d pose){
     Pose2d botpose = poseEstimator.getEstimatedPosition();
-    Pose2d targetpose = field.getObject("cube1mid").getPose();
+    var targetpose = pose.toPose2d();
 
     double dx =  targetpose.getX() - botpose.getX();
     double dy = targetpose.getY() - botpose.getY();
@@ -151,10 +151,7 @@ public class Vision extends SubsystemBase {
     SmartDashboard.putNumber("dx", dx);
     SmartDashboard.putNumber("dy", dy);
     double angle = Math.toDegrees(Math.atan2(dy,dx));
-    // angle += botpose.getRotation().getDegrees();
 
-    // var delta = targetpose.minus(botpose);
-    // angle = delta.getRotation().getDegrees();
     // SmartDashboard.putNumber("vision/deltax", delta.getX());
     // SmartDashboard.putNumber("vision/deltay", delta.getY());
     // SmartDashboard.putNumber("vision/deltaAngle", delta.getRotation().getDegrees());
@@ -163,7 +160,7 @@ public class Vision extends SubsystemBase {
     SmartDashboard.putNumber("botposeAngle",botposeAngle);
     angle = botposeAngle - angle;
     return angle;
-    // var delta = botpose.relativeTo(targetpose); //TODO possibly useful
+
 
   }
 
@@ -180,7 +177,7 @@ public class Vision extends SubsystemBase {
   }
 
 
-  public void setTarget(TargetType targetType){
+  public Pose3d setTarget(TargetType targetType){
     //TODO: allow passing in offsets for the target, and then add them to the distance and heights to the target
     List<Pose3d> targetList=FieldPosition.GetTargetList(targetType);
     Pose2d botPose = poseEstimator.getEstimatedPosition();
@@ -193,11 +190,12 @@ public class Vision extends SubsystemBase {
       target = targetList.get(0); //nothing to sort for this case
       break;
     case PickupDouble:
-      target = FieldPosition.GetNearestByX(botPose,targetList);
+      target = FieldPosition.GetNearestByY(botPose,targetList);
       break;
     default:
       target = FieldPosition.GetNearestByY(botPose,targetList); //what we usually want
     }
+    return target;
   }
 
   public void setPipeline(LimelightPipeline pipeline){

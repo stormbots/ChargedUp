@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -31,6 +32,7 @@ import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.ChassisTurnGyro;
 import frc.robot.commands.ChassisVisionRetro;
+import frc.robot.commands.VisionTurnToTargetPose;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
@@ -170,6 +172,14 @@ public class RobotContainer {
         }  
       }, lighting));
 
+      vision.setDefaultCommand(
+        new ConditionalCommand(
+          new RunCommand(()->{vision.setPipeline(LimelightPipeline.kNoVision);}),
+          new RunCommand(()->{vision.setPipeline(LimelightPipeline.kAprilTag);}),
+          ()->DriverStation.isAutonomous()==true
+          )
+      );
+
   }
 
 
@@ -195,10 +205,16 @@ public class RobotContainer {
 
     driver.button(4).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
-      //.andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
+      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
       .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
       .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
+
+    driver.button(3).whileTrue(new InstantCommand()
+      .andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, 10, chassis, vision, navx))
+    );
+
+
 
   }
 
