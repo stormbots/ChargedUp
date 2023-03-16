@@ -202,9 +202,9 @@ public class RobotContainer {
       .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
-    driver.button(3).whileTrue(new InstantCommand()
-      .andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, 10, chassis, vision, navx))
-    );
+    // driver.button(3).whileTrue(new InstantCommand()
+    //   .andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, 10, chassis, vision, navx))
+    // );
 
 
 
