@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Lighting extends SubsystemBase {
-  Spark leds = new Spark(0);
+  Spark leds = new Spark(1);
   public enum LedPattern{
     BLUE,RED,
     NEED_CONE,HAVE_CONE,

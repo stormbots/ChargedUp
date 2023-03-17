@@ -166,12 +166,10 @@ public class RobotContainer {
 
       vision.setDefaultCommand(
         new ConditionalCommand(
-          new RunCommand(()->{vision.setPipeline(LimelightPipeline.kNoVision);}),
-          new RunCommand(()->{vision.setPipeline(LimelightPipeline.kAprilTag);}),
+          new RunCommand(()->{vision.setPipeline(LimelightPipeline.kNoVision);},vision),
+          new RunCommand(()->{vision.setPipeline(LimelightPipeline.kAprilTag);},vision),
           ()->DriverStation.isAutonomous()==true
-          )
-      );
-
+          ));
   }
 
 
@@ -242,8 +240,8 @@ public class RobotContainer {
         new setArm(34.5, 50, 35, 0.2, arm, intake)
           .withTimeout(0.25)
           .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
-          .withTimeout(0.25)
-          .andThen(new setArm(48, 50, 90, 0.2, arm, intake)),
+          .withTimeout(0.25+0.1)
+          .andThen(new setArm(48, 50-5, 90, 0.2, arm, intake)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
@@ -281,7 +279,7 @@ public class RobotContainer {
     
 
     //PICKUP DOUBLE SUBSTATION
-    operator.button(9).whileTrue(new setArm(50, 21, 11, 1.0, arm, intake));
+    operator.button(9).whileTrue(new setArm(47, 21, 11, 1.0, arm, intake));
 
     //PICKUP TIPPED CONE
     // operator.button(7).whileTrue(new InstantCommand()
@@ -349,6 +347,7 @@ public class RobotContainer {
     kDriveToGamePiece,
     kPickupCube,
     kDriveToChargerAndBalance,
+    kDrivePastChargerReverseAndBalance,
     kArmToCarryPosition,
     kArmToPickupPosition,
   }
@@ -374,20 +373,24 @@ public class RobotContainer {
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))) 
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(197-10), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
-        .alongWith(new setArm(-38, 6, -5, 1.0, arm, intake).withTimeout(4.5))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
+        .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(4.5))
       )
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-183),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
         .alongWith(new setArm(90, 11, 180, 0.5, arm, intake).withTimeout(4.5))
       )
-    
       ;
   
       case kDriveToChargerAndBalance:
-      return new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5 , Units.inchesToMeters(20), navx, chassis)
-      .withTimeout(4)
-      // .andThen( commandBuilder(CommandSelect.kArmToCarryPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
-      // .andThen(new WaitCommand(0.1))
+      return new InstantCommand()
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5 , Units.inchesToMeters(20), navx, chassis))
+      .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
+      ;
+
+      case kDrivePastChargerReverseAndBalance:
+      return new InstantCommand()
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
       .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
       ;
 
@@ -433,7 +436,7 @@ public class RobotContainer {
      .andThen(new setArm(140, 0,90,0.0,arm,intake).withTimeout(0.50))
     
      //put arm up somewhere away from posts
-     //.andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
+     .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
      ;
 
      case kPlaceCubeMidBackwards:
@@ -466,103 +469,52 @@ public class RobotContainer {
 
     SmartDashboard.putData("autos/Level+Reset Arm", new InstantCommand().andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder)));
 
+ 
+    var midConeBalanceNoMobility = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
 
-    var blueLeftConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
-
-    // var blueMiddleConeBalance =commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    // .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
-
-    var blueRightConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
-    
-    var redRightConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
-
-    // var redMiddleConeBalance = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    // .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
-
-    var redLeftConePlaceMid = commandBuilder(CommandSelect.kPlaceConeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
 
     var TwoCubePlace = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
     .andThen(commandBuilder(CommandSelect.kPickupCube))
     .andThen(commandBuilder(CommandSelect.kPlaceCubeMidBackwards))
-    .andThen(commandBuilder(CommandSelect.kDriveToGamePiece));
+    // .andThen(commandBuilder(CommandSelect.kDriveToGamePiece)); //do not use; too risky at yakima
+    ;
 
-    var redRightCubePlaceMid= commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kPickupCube));
+    var cubeHighBalanceNoMobility  = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
 
-    var blueLeftCubePlaceMid = commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kPickupCube));
-
-    var blueRightCubePlaceMid = commandBuilder(CommandSelect.kPlaceCubeMidBackwards)
-    .andThen(commandBuilder(CommandSelect.kPickupCube));
-    
-
-    var redLeftCubePlaceHigh  = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
-    .andThen(commandBuilder(CommandSelect.kPickupCube));
-
-    var blueLeftCubePlaceHigh = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
-    .andThen(commandBuilder(CommandSelect.kPickupCube));
-
-    var blueRightCubePlaceHigh = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
-    .andThen(commandBuilder(CommandSelect.kPickupCube));
-  
 
     var balanceCommunityScoreConeMid = new InstantCommand()
     .andThen( commandBuilder(CommandSelect.kPlaceConeMidBackwards))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
-    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx));
+    .andThen(commandBuilder(CommandSelect.kDrivePastChargerReverseAndBalance))
+    ;
 
     var balanceCommunityScoreCubeMid = new InstantCommand()
     .andThen( commandBuilder(CommandSelect.kPlaceCubeMidBackwards))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
-    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx));
+    .andThen(commandBuilder(CommandSelect.kDrivePastChargerReverseAndBalance))
+    ;
 
     var balanceCommunityScoreCubeHigh = new InstantCommand()
     .andThen( commandBuilder(CommandSelect.kPlaceCubeHighBackwards))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(160), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-65), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
-    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx));
-
-    // .andThen(
-
-    var targetAngle = 90;
-    var jankyFollowAembotOutOfCommunity= new InstantCommand()
-    .andThen( commandBuilder(CommandSelect.kPlaceConeMidBackwards))
-      //left turn 90
-      .andThen(new ChassisDriveNavx(0, ()->targetAngle, 5, 10, navx, chassis))
-      //go straight some distance
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(48), ()->targetAngle, 5, 10, navx, chassis))
-      //turn right 90
-      .andThen(new ChassisDriveNavx(0, ()->0, 5, 10, navx, chassis))
-      // turn some DynamicConstantDesc
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(193), ()->0, 5, 10, navx, chassis))
-
-
+    .andThen(commandBuilder(CommandSelect.kDrivePastChargerReverseAndBalance))
     ;
-      // new ChassisDriveNavx(targetDistance, targetBearingSupplier, angleTolerance, distanceTolerance, gyro, chassis)
 
+    
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
-    autoChooser.addOption("Blue Left Cone",blueLeftConePlaceMid);
-    autoChooser.addOption("Blue Right Cone",blueRightConePlaceMid);
-    autoChooser.addOption("Red Left Cone",redLeftConePlaceMid);
+
     autoChooser.addOption("Two Cube Auto",TwoCubePlace);
-    autoChooser.addOption("Red Right Cone",redRightConePlaceMid);
-    autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
-    autoChooser.addOption("Score then do nothing",commandBuilder(CommandSelect.kPlaceConeMidBackwards));
-    autoChooser.addOption("Drive Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
-    autoChooser.addOption("Mobility+Balance+Score Cone Mid",balanceCommunityScoreConeMid);
+    autoChooser.addOption("Cube High, Mobility, Balance", balanceCommunityScoreCubeHigh);
+    autoChooser.addOption("Cube High, balance, no mobility",cubeHighBalanceNoMobility);
+    autoChooser.addOption("CubeHigh, no drive",commandBuilder(CommandSelect.kPlaceCubeHighBackwards));
     // autoChooser.addOption("Mobility + Balance + Score Cube Mid", balanceCommunityScoreCubeMid);
-    // autoChooser.addOption("Mobility + Balance + Score Cube High", balanceCommunityScoreCubeHigh);
-    autoChooser.addOption("UNTESTED Follow Aembot",jankyFollowAembotOutOfCommunity);
+    autoChooser.addOption("Cone Mid, Mobility, Balance",balanceCommunityScoreConeMid);
+    autoChooser.addOption("Cone Mid, balance, no mobility",midConeBalanceNoMobility);
+    autoChooser.addOption("Cone Mid, no drive",commandBuilder(CommandSelect.kPlaceConeMidBackwards));
 
+    autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
+    autoChooser.addOption("Mobility, no balance",commandBuilder(CommandSelect.kDriveToGamePiece));
 
-
-    SmartDashboard.putData("autos/Auto Chooser",autoChooser);
+    SmartDashboard.putData("autos/Auto Chooser", autoChooser);
   }
   
   public Command getAutonomousCommand(){

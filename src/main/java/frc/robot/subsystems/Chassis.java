@@ -66,7 +66,7 @@ public class Chassis extends SubsystemBase {
       // m.restoreFactoryDefaults();
       
       //Set limits for motors
-      m.setOpenLoopRampRate(0.08);
+      m.setOpenLoopRampRate(0.1);
 
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();
@@ -84,6 +84,7 @@ public class Chassis extends SubsystemBase {
   }
 
   public void setShifter(Gear gear){
+    //gear = gear.LOW;
     this.gearPosition = gear;
     var positionLeft = leftEncoder.getPosition();
     var positionRight = rightEncoder.getPosition();
@@ -120,17 +121,21 @@ public class Chassis extends SubsystemBase {
 
 
     // This method will be called once per scheduler run
-    SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
-    SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
-    SmartDashboard.putNumber("chassis/LeftAmps", leftLeader.getOutputCurrent());
-    SmartDashboard.putNumber("chassis/RightAmps", rightLeader.getOutputCurrent());
-    SmartDashboard.putNumber("chassis/LeftFAmps", leftFollower.getOutputCurrent());
-    SmartDashboard.putNumber("chassis/RightFAmps", rightFollower.getOutputCurrent());
+    // SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
     // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
-    SmartDashboard.putNumber("chassis/voltLeftOutput", leftLeader.getAppliedOutput()/leftLeader.getBusVoltage());
-    SmartDashboard.putNumber("chassis/voltRightOutput", rightLeader.getAppliedOutput()/rightLeader.getBusVoltage());
-    SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
-    SmartDashboard.putNumber("chassis/inchesLeft", Units.metersToInches(leftEncoder.getPosition()));
-    SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
+    // SmartDashboard.putNumber("chassis/LeftAmps", leftLeader.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/RightAmps", rightLeader.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/LeftFAmps", leftFollower.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/RightFAmps", rightFollower.getOutputCurrent());
+    // // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
+    // SmartDashboard.putNumber("chassis/voltLeftOutput", leftLeader.getAppliedOutput()/leftLeader.getBusVoltage());
+    // SmartDashboard.putNumber("chassis/voltRightOutput", rightLeader.getAppliedOutput()/rightLeader.getBusVoltage());
+    // SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
+    // SmartDashboard.putNumber("chassis/inchesLeft", Units.metersToInches(leftEncoder.getPosition()));
+    // SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
+    SmartDashboard.putNumber("chassis/1 amp", leftLeader.getOutputCurrent());
+    SmartDashboard.putNumber("chassis/2 amp", leftFollower.getOutputCurrent());
+    SmartDashboard.putNumber("chassis/3 amp", rightLeader.getOutputCurrent());
+    SmartDashboard.putNumber("chassis/4 amp", rightFollower.getOutputCurrent());
   }
 }
