@@ -79,7 +79,7 @@ public final class Constants {
     public static double kDriveLowKPTilt = 0.12/12.0; //proportional
     public static double kDriveLowKDTilt = 0;//0.15/12.0; //proportional
         
-    public static double kTurnLowKS = 0.23-0.01; //proportional
+    public static double kTurnLowKS = 0.23-0.01-0.0; //proportional
     public static double kTurnHighKS = 0.31; //proportional
     public static double kTurnLowKP = 0.18/10.0; //proportional
     public static double kTurnHighKP = 0.03; //proportional 0.14/90/.25*0.02*kp 

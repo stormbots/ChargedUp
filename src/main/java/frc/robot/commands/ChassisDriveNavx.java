@@ -49,18 +49,32 @@ public class ChassisDriveNavx extends CommandBase {
     DoubleSupplier targetBearingSupplier, double angleTolerance, double distanceTolerance, AHRS gyro, Chassis chassis) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(chassis);
-
     this.chassis = chassis;
     this.gyro = gyro;
     this.targetDistance = targetDistance;
     this.targetBearingSupplier = targetBearingSupplier;
-
     this.angleTolerance = angleTolerance;
     this.distanceTolerance = distanceTolerance;
-
-
     distanceSlew = new SlewRateLimiter(1.5, -1.5, 0);
   }
+
+  public ChassisDriveNavx(
+    double targetDistance, 
+    DoubleSupplier targetBearingSupplier, double angleTolerance, double distanceTolerance,
+    double velocity,
+    AHRS gyro, Chassis chassis) {
+    // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(chassis);
+    this.chassis = chassis;
+    this.gyro = gyro;
+    this.targetDistance = targetDistance;
+    this.targetBearingSupplier = targetBearingSupplier;
+    this.angleTolerance = angleTolerance;
+    this.distanceTolerance = distanceTolerance;
+    distanceSlew = new SlewRateLimiter(velocity, -velocity, 0);
+  }
+
+
 
   // Called when the command is initially scheduled.
   @Override

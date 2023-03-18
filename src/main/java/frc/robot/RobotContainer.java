@@ -279,7 +279,7 @@ public class RobotContainer {
     
 
     //PICKUP DOUBLE SUBSTATION
-    operator.button(9).whileTrue(new setArm(47, 21, 11, 1.0, arm, intake));
+    operator.button(9).whileTrue(new setArm(47, 19, 11, 1.0, arm, intake));
 
     //PICKUP TIPPED CONE
     // operator.button(7).whileTrue(new InstantCommand()
