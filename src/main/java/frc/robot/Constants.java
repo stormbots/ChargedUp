@@ -67,12 +67,15 @@ public final class Constants {
     public static boolean kShiftHigh=true; //TODO
     public static boolean kShiftLow=!kShiftHigh; //TODO
 
+    public static double kLowGearSlewRate = 1/0.35;
+    public static double kHighGearSlewRate = 1/0.7;
+
     public static boolean kLeftInverted = false;
     public static boolean kRightInverted = !kLeftInverted;
 
     //basic chassis constants for levelling and proportional turning
     public static double kDriveLowKSLevel = 0.12;
-    public static double kDriveLowKSTilted = 0.22; //for use only when driving up a tilted ramp
+    public static double kDriveLowKSTilted = 0.22+0.0; //for use only when driving up a tilted ramp
     public static double kDriveHighKSLevel = 0.2;
     public static double kDriveHighKSTilted = 0.0; //for use only when driving up a tilted ramp
     

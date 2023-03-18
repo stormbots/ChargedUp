@@ -66,12 +66,13 @@ public class Chassis extends SubsystemBase {
       // m.restoreFactoryDefaults();
       
       //Set limits for motors
-      m.setOpenLoopRampRate(0.1);
+      m.setOpenLoopRampRate(0.11+0.02); //0.2 in old code
+      
 
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();
       //Restricts each motor to a max of 60 amps
-      m.setSmartCurrentLimit(200/4, 200/4);//240 is sensible current limit to chassis, but causing brownouts
+      m.setSmartCurrentLimit(45, 45);//240 is sensible current limit to chassis, but causing brownouts
     }
     //Set motors to follow the same side
     leftFollower.follow(leftLeader);
@@ -133,9 +134,19 @@ public class Chassis extends SubsystemBase {
     // SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
     // SmartDashboard.putNumber("chassis/inchesLeft", Units.metersToInches(leftEncoder.getPosition()));
     // SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
+
     SmartDashboard.putNumber("chassis/1 amp", leftLeader.getOutputCurrent());
     SmartDashboard.putNumber("chassis/2 amp", leftFollower.getOutputCurrent());
     SmartDashboard.putNumber("chassis/3 amp", rightLeader.getOutputCurrent());
     SmartDashboard.putNumber("chassis/4 amp", rightFollower.getOutputCurrent());
-  }
+    SmartDashboard.putNumber("temp 1", leftLeader.getMotorTemperature());
+    SmartDashboard.putNumber("temp 2", leftFollower.getMotorTemperature());
+    SmartDashboard.putNumber("temp 3", rightLeader.getMotorTemperature());
+    SmartDashboard.putNumber("temp 4", rightFollower.getMotorTemperature());
+
+    System.out.println("M1 temp: " + leftLeader.getMotorTemperature());
+    System.out.println("M2 temp: " + leftFollower.getMotorTemperature());
+    System.out.println("M3 temp: " + rightLeader.getMotorTemperature());
+    System.out.println("M4 temp: " + rightFollower.getMotorTemperature());
+}
 }

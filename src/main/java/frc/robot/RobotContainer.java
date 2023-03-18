@@ -132,7 +132,8 @@ public class RobotContainer {
       // this one's really basic, but needed to get systems moving right away.
        new RunCommand(
         ()->{
-          SmartDashboard.putNumber("chassis/turnvalue",-driver.getRawAxis(2));
+          SmartDashboard.putNumber("chassis/forwardvalue",-driver.getRawAxis(1));
+          // SmartDashboard.putNumber("chassis/turnvalue",-driver.getRawAxis(2));
           chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
         ,chassis)
        );
