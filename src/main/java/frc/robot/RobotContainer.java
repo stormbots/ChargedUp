@@ -313,16 +313,22 @@ public class RobotContainer {
     );
     
     operator.button(2).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
-
-    // new InstantCommand()
-    // .andThen()
-    // ;
     ;
-    //TEST SHOOTING CUBES
+    //JANKY TEST BUTTONS
+
+    //Adjust Cone grip
+    operator.button(13).whileTrue(new InstantCommand()
+      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
+      .andThen(new setArm(130, 0, 150, 0.3, arm, intake).withTimeout(0.5))
+      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+      .andThen(new WaitCommand(0.25))
+      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
+      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
+    );
     operator.button(12).whileTrue(new RunCommand (()->{
       arm.intakeMotor.set(-1.0);
     },intake));
-    operator.button(12).onFalse(new RunCommand (()->{
+    operator.button(12).onFalse(new InstantCommand (()->{
       arm.intakeMotor.set(0.0);
     },intake));
     //Sync Encoders & Clear Stickies
@@ -338,6 +344,7 @@ public class RobotContainer {
       chassis.rightLeader.clearFaults();
       chassis.rightFollower.clearFaults();
     }));
+    
   }
 
   public enum CommandSelect{
