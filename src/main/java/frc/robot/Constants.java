@@ -29,7 +29,8 @@ public final class Constants {
     public static int kChassisMotorLeftFollower=2;
     public static int kChassisMotorRight=3;
     public static int kChassisMotorRightFollower=4;
-    public static int kShifterSolenoid=1;
+    public static int kShifterSolenoid = 1;
+    public static int kShifterSolenoidb = 14;
     
     
     // Arm inputs
@@ -50,8 +51,7 @@ public final class Constants {
     //Vision and driver stuff
     public static int kCameraFrontID=0;
     public static int kCameraRearID=1;
-    public static String kLimelightIP="10.28.11.100";
-
+    public static String kLimelightIP="10.28.11.31"; //31, for pi. get it? Heh. 
   }
 
   public  static class ChassisConstants{
@@ -64,8 +64,8 @@ public final class Constants {
     public static double kEncoderConversionFactorLow=Units.inchesToMeters(100/66.66);
     public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
 
-    public static boolean kShiftHigh=true; //TODO
-    public static boolean kShiftLow=!kShiftHigh; //TODO
+    public static Value kShiftHigh=Value.kForward; //TODO
+    public static Value kShiftLow= (kShiftHigh==Value.kForward ? Value.kReverse : Value.kForward); //TODO
 
     public static double kLowGearSlewRate = 1/0.35;
     public static double kHighGearSlewRate = 1/0.7;

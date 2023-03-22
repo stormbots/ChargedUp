@@ -9,10 +9,12 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.stormbots.Lerp;
 import com.stormbots.closedloop.MiniPID;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -38,7 +40,9 @@ public class Chassis extends SubsystemBase {
   public RelativeEncoder leftEncoder = leftLeader.getEncoder();
   public RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
-  Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
+  int maxChassisCurrentAllowance = 45;
+
+  DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid,HardwareID.kShifterSolenoidb);
   public Gear gearPosition = Gear.LOW;
   DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
   private Field2d field;
@@ -66,13 +70,13 @@ public class Chassis extends SubsystemBase {
       // m.restoreFactoryDefaults();
       
       //Set limits for motors
-      m.setOpenLoopRampRate(0.11+0.02); //0.2 in old code
+      m.setOpenLoopRampRate(0.13*2); //0.2 in old code //Leaving a *2 for testing to see if there's any difference in testing
       
 
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();
       //Restricts each motor to a max of 60 amps
-      m.setSmartCurrentLimit(45, 45);//240 is sensible current limit to chassis, but causing brownouts
+      m.setSmartCurrentLimit(maxChassisCurrentAllowance);//240 is sensible current limit to chassis, but causing brownouts
     }
     //Set motors to follow the same side
     leftFollower.follow(leftLeader);
@@ -111,7 +115,6 @@ public class Chassis extends SubsystemBase {
     driveTrain.arcadeDrive(power,turn);
   }
 
- 
   @Override
   public void periodic() {
 
@@ -121,14 +124,18 @@ public class Chassis extends SubsystemBase {
     field.setRobotPose(pe.getEstimatedPosition());
 
 
+    //MOTOR SAFETY PRECAUTION. Drop output if motors are too hot.
+    for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
+      if(DriverStation.isFMSAttached())break;
+      var temp = m.getMotorTemperature();
+      if(temp<40)continue;
+      var maxCurrent = Lerp.lerp(temp, 55, 65, maxChassisCurrentAllowance, maxChassisCurrentAllowance/4);
+      m.setSmartCurrentLimit((int)maxCurrent);
+    }
+
     // This method will be called once per scheduler run
     // SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
     // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
-    // SmartDashboard.putNumber("chassis/LeftAmps", leftLeader.getOutputCurrent());
-    // SmartDashboard.putNumber("chassis/RightAmps", rightLeader.getOutputCurrent());
-    // SmartDashboard.putNumber("chassis/LeftFAmps", leftFollower.getOutputCurrent());
-    // SmartDashboard.putNumber("chassis/RightFAmps", rightFollower.getOutputCurrent());
-    // // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
     // SmartDashboard.putNumber("chassis/voltLeftOutput", leftLeader.getAppliedOutput()/leftLeader.getBusVoltage());
     // SmartDashboard.putNumber("chassis/voltRightOutput", rightLeader.getAppliedOutput()/rightLeader.getBusVoltage());
     // SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
@@ -139,14 +146,11 @@ public class Chassis extends SubsystemBase {
     SmartDashboard.putNumber("chassis/2 amp", leftFollower.getOutputCurrent());
     SmartDashboard.putNumber("chassis/3 amp", rightLeader.getOutputCurrent());
     SmartDashboard.putNumber("chassis/4 amp", rightFollower.getOutputCurrent());
-    SmartDashboard.putNumber("temp 1", leftLeader.getMotorTemperature());
-    SmartDashboard.putNumber("temp 2", leftFollower.getMotorTemperature());
-    SmartDashboard.putNumber("temp 3", rightLeader.getMotorTemperature());
-    SmartDashboard.putNumber("temp 4", rightFollower.getMotorTemperature());
 
-    System.out.println("M1 temp: " + leftLeader.getMotorTemperature());
-    System.out.println("M2 temp: " + leftFollower.getMotorTemperature());
-    System.out.println("M3 temp: " + rightLeader.getMotorTemperature());
-    System.out.println("M4 temp: " + rightFollower.getMotorTemperature());
-}
+    SmartDashboard.putNumber("chassis/temp 1", leftLeader.getMotorTemperature());
+    SmartDashboard.putNumber("chassis/temp 2", leftFollower.getMotorTemperature());
+    SmartDashboard.putNumber("chassis/temp 3", rightLeader.getMotorTemperature());
+    SmartDashboard.putNumber("chassis/temp 4", rightFollower.getMotorTemperature());
+
+  }
 }
