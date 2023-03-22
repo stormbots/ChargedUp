@@ -108,7 +108,7 @@ public class RobotContainer {
     // Configure the button bindings
     //driver.button(8).whileTrue(new VisionTurnToTargetPose(chassis, vision));
     //.whileHeld(new DrivetrainVisionTargeting(driver.getRawAxis(1),driver.getRawAxis(2),chassis, vision, navx));
-    
+
 
     var cube1mid = field.getObject("cube1mid");
     cube1mid.setPose(14.73, 3, new Rotation2d(Math.PI));
