@@ -40,6 +40,9 @@ public class Chassis extends SubsystemBase {
   public RelativeEncoder leftEncoder = leftLeader.getEncoder();
   public RelativeEncoder rightEncoder = rightLeader.getEncoder();
 
+  public static double ramprateHighGear = 0.13*2;
+  public static double ramprateLowGear = 0.13;
+
   int maxChassisCurrentAllowance = 45;
 
   DoubleSolenoid shifter = new DoubleSolenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid,HardwareID.kShifterSolenoidb);
@@ -53,7 +56,9 @@ public class Chassis extends SubsystemBase {
   public MiniPID pidTurn = new MiniPID(0,0,0)
   .setSetpointRange(15)
   .setP(ChassisConstants.kTurnLowKP) // GOAL/ACTUAL or 
-  .setF((s,a,e)->{return Math.signum(e)*ChassisConstants.kTurnLowKS; });
+  .setF((s,a,e)->{return Math.signum(e)*ChassisConstants.kTurnLowKS; })
+  .setContinuousMode(-180,180)
+  ;
   
 
   /** Creates a new Chassis. */
@@ -70,9 +75,8 @@ public class Chassis extends SubsystemBase {
       // m.restoreFactoryDefaults();
       
       //Set limits for motors
-      m.setOpenLoopRampRate(0.13*2); //0.2 in old code //Leaving a *2 for testing to see if there's any difference in testing
+      m.setOpenLoopRampRate(ramprateHighGear);
       
-
       m.setIdleMode(IdleMode.kBrake);
       m.clearFaults();
       //Restricts each motor to a max of 60 amps
@@ -94,11 +98,17 @@ public class Chassis extends SubsystemBase {
     var positionLeft = leftEncoder.getPosition();
     var positionRight = rightEncoder.getPosition();
     if(gear == Gear.HIGH){
+      for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
+        m.setOpenLoopRampRate(ramprateHighGear);
+      }
       shifter.set(ChassisConstants.kShiftHigh);
       leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorHigh);
       rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorHigh);
     }
     else{
+      for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
+        m.setOpenLoopRampRate(ramprateLowGear);
+      }
       leftEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
       rightEncoder.setPositionConversionFactor(ChassisConstants.kEncoderConversionFactorLow);
       shifter.set(ChassisConstants.kShiftLow);
@@ -128,13 +138,15 @@ public class Chassis extends SubsystemBase {
     for(CANSparkMax m : new CANSparkMax[]{leftLeader,rightLeader,leftFollower,rightFollower}){
       if(DriverStation.isFMSAttached())break;
       var temp = m.getMotorTemperature();
-      if(temp<40)continue;
+      if(temp<55)continue;
       var maxCurrent = Lerp.lerp(temp, 55, 65, maxChassisCurrentAllowance, maxChassisCurrentAllowance/4);
-      m.setSmartCurrentLimit((int)maxCurrent);
+      // m.setSmartCurrentLimit((int)maxCurrent);
+      var other = SmartDashboard.getNumber("chassis/Motor Overtemp!", 0);
+      SmartDashboard.putNumber("chassis/Motor Overtemp!", Math.max(temp, other));
     }
 
     // This method will be called once per scheduler run
-    // SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
+    SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
     // SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
     // SmartDashboard.putNumber("chassis/voltLeftOutput", leftLeader.getAppliedOutput()/leftLeader.getBusVoltage());
     // SmartDashboard.putNumber("chassis/voltRightOutput", rightLeader.getAppliedOutput()/rightLeader.getBusVoltage());

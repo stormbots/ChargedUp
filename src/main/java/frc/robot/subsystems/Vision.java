@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import java.lang.reflect.Array;
 import java.util.List;
 
+import javax.swing.undo.StateEdit;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.stormbots.closedloop.MiniPID;
 
@@ -209,6 +211,8 @@ public class Vision extends SubsystemBase {
       case kHighCone:
       table.getEntry("pipeline").setNumber(2);
       break;
+      case kAprilTag:
+      table.getEntry("pipeline").setNumber(3);
       }
   }
 }

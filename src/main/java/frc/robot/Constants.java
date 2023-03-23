@@ -42,7 +42,7 @@ public final class Constants {
     //Hand+wrist
     public static int kWristMotorID=13;
     // public static int kWristServoChannel=8;
-    public static int kIntakeForwardSolenoid=4;
+    public static int kIntakeForwardSolenoid=5;
     public static int kIntakeReverseSolenoid=15;
     public static int kIntakeMotor=9;
     public static int kWristAnalogEncoderChannel=0;
@@ -174,14 +174,14 @@ public final class Constants {
   }
 
   public static class WristConstants{
-    public static float kMinAngle=-75; 
+    public static float kMinAngle=-95; 
     public static float kMaxAngle=43; 
     public static double kMinRotations=-75; 
     public static double kMaxRotations=10;
     public static double kMaxRangeOfMotion = kMaxRotations-kMinRotations;
     public static double kConversionFactor= 360/(63/1 * 5/4.0);
     public static boolean kReverseMotor=false;
-    public static double kAbsoluteAngleOffset=98;
+    public static double kAbsoluteAngleOffset=98+8;
     public static double kFFCos=0.042*12;
     public static double kP=1/70.0;
     public static double kI=0;

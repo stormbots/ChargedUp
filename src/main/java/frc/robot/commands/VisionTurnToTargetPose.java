@@ -9,8 +9,10 @@ import java.util.function.DoubleSupplier;
 import com.kauailabs.navx.frc.AHRS;
 import com.stormbots.closedloop.MiniPID;
 
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.ChassisConstants;
 import frc.robot.FieldPosition.TargetType;
 import frc.robot.subsystems.Chassis;
@@ -25,11 +27,12 @@ public class VisionTurnToTargetPose extends CommandBase {
   private Vision vision;
   private Chassis chassis;
   private AHRS navx;
+  Field2d field;
 
 
 
   /** Creates a new VisionTurnToTargetPose. */
-  public VisionTurnToTargetPose(DoubleSupplier fwdPower, DoubleSupplier turnPower, TargetType targetType, double tolerance, Chassis chassis, Vision vision, AHRS navx) {
+  public VisionTurnToTargetPose(DoubleSupplier fwdPower, DoubleSupplier turnPower, TargetType targetType, Field2d field, double tolerance, Chassis chassis, Vision vision, AHRS navx) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.fwdPower = fwdPower;
     this.turnPower = turnPower;
@@ -38,7 +41,8 @@ public class VisionTurnToTargetPose extends CommandBase {
     this.vision = vision;
     this.chassis = chassis;
     this.navx = navx;
-    //turnpid = chassis.pidTurn;
+    turnpid = chassis.pidTurn;
+    this.field =  field;
 
     addRequirements(chassis);
     addRequirements(vision);
@@ -60,20 +64,25 @@ public class VisionTurnToTargetPose extends CommandBase {
 
     var target = vision.setTarget(targetType);
     double angle = vision.getAngleToTargetPose(target);
-    SmartDashboard.putNumber("testangletotarget", angle);
+    SmartDashboard.putNumber("visionpose/Angle to target", angle);
+    field.getObject("targetpose").setPose(target.toPose2d());
 
     //get feedforwards and pids
-    var kp = chassis.getShifterPosition()==Gear.HIGH ? ChassisConstants.kTurnHighKP : ChassisConstants.kTurnLowKP;
-    var kff = chassis.getShifterPosition()==Gear.HIGH ? ChassisConstants.kTurnHighKS : ChassisConstants.kTurnLowKS;
+    // var kp = chassis.getShifterPosition()==Gear.HIGH ? ChassisConstants.kTurnHighKP : ChassisConstants.kTurnLowKP;
+    // var kff = chassis.getShifterPosition()==Gear.HIGH ? ChassisConstants.kTurnHighKS : ChassisConstants.kTurnLowKS;
 
     //turning and driving
-    double turnoutput = angle*kp;
-    turnoutput += kff*Math.signum(turnoutput);
+    // double turnOutput = angle*kp;
+    // turnOutput += kff*Math.signum(turnOutput);
+
+    var turnOutput = turnpid.getOutput(0.0, angle);
+    SmartDashboard.putNumber("visionpose/turnoutput", turnOutput);
+
 
     //driver input
     var forward = fwdPower.getAsDouble();
-    turnoutput += turnPower.getAsDouble();
-    chassis.arcadeDrive(forward, turnoutput);
+    turnOutput += turnPower.getAsDouble();
+    chassis.arcadeDrive(forward, -turnOutput);
 
 
     // double turnpower = turnpid.getOutput(angle, 0);
@@ -85,7 +94,7 @@ public class VisionTurnToTargetPose extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     chassis.arcadeDrive(0, 0);
-    chassis.setShifter(Gear.HIGH);
+    // chassis.setShifter(Gear.HIGH);
   }
 
   // Returns true when the command should end.

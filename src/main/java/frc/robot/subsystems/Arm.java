@@ -66,7 +66,7 @@ public class Arm extends SubsystemBase {
 
   // Intake Actuation
   public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
-  public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, 4, 15); 
+  public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, HardwareID.kIntakeForwardSolenoid, Constants.HardwareID.kIntakeReverseSolenoid); 
   public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid);//temp value
   
   
@@ -148,8 +148,7 @@ public class Arm extends SubsystemBase {
     setRetractBrake(RetractSolenoidPosition.DISENGAGED);
     setIntake(IntakeSolenoidPosition.CLOSED);
 
-    SmartDashboard.putData("arm/retract/Reset Encoder",
-      new InstantCommand(()-> retractMotor.getEncoder().setPosition(0)));
+    SmartDashboard.putData("arm/retract/Reset Encoder", new InstantCommand(()-> retractMotor.getEncoder().setPosition(0)));
     //NOTE: We also re-set arm and wrist angles from the abs encoder in Robot.disabledPeriodic()
     // This is due to alleged boot up issues where the values from angle encoder are not 
     // properly scaled, resulting in incorrect angle readings.

@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import frc.robot.Constants.ChassisConstants;
+import frc.robot.FieldPosition.TargetType;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.ChassisTurnGyro;
@@ -176,7 +177,7 @@ public class RobotContainer {
 
   private void configureDriverBindings(){
     //DRIVER
-    driver.button(8)
+    driver.button(6)
     .onTrue(new InstantCommand(()->{
       chassis.setShifter(Gear.LOW);
     }))
@@ -191,18 +192,18 @@ public class RobotContainer {
       .andThen(()->chassis.setShifter(Gear.LOW))
       .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 10, chassis, navx))
       .andThen( new ChassisVisionRetro( ()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kMidCone, chassis, vision, navx) )
-      .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
+      // .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
     driver.button(4).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
       .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
       .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
-      .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
+      // .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
     // driver.button(3).whileTrue(new InstantCommand()
-    //   .andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, 10, chassis, vision, navx))
+    //   .andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, field, 10, chassis, vision, navx))
     // );
 
 
@@ -292,7 +293,7 @@ public class RobotContainer {
     operator.button(7).whileTrue(new ConditionalCommand(
       new setArm(10,0,-75,0,arm,intake), 
       new setArm(-15,0,-100,1.0,arm,intake).withTimeout(0.5)
-      .andThen(new setArm(10,0,-75,0,arm,intake)), 
+      .andThen(new setArm(10,0,-100,0,arm,intake)), 
       ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
       ;
   
@@ -319,9 +320,9 @@ public class RobotContainer {
     //Adjust Cone grip
     operator.button(13).whileTrue(new InstantCommand()
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
-      .andThen(new setArm(130, 0, 150, 0.3, arm, intake).withTimeout(0.5))
+      .andThen(new setArm(135, 0, 135, 0.3, arm, intake).withTimeout(0.75))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
-      .andThen(new WaitCommand(0.25))
+      .andThen(new WaitCommand(0.50))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
     );
@@ -388,7 +389,7 @@ public class RobotContainer {
         .alongWith(new setArm(90, 11, 180, 0.5, arm, intake).withTimeout(4.5))
       )
       ;
-  
+
       case kDriveToChargerAndBalance:
       return new InstantCommand()
       .andThen(new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5 , Units.inchesToMeters(20), navx, chassis))
@@ -507,6 +508,23 @@ public class RobotContainer {
     .andThen(commandBuilder(CommandSelect.kDrivePastChargerReverseAndBalance))
     ;
 
+    var placeConeDriveOverChargedPickUpBalance = new InstantCommand()
+    // .andThen(commandBuilder(CommandSelect.kPlaceCubeHighBackwards))
+    // Drive past charger
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 5 , Units.inchesToMeters(1), navx, chassis))
+    // Pickup up a cone? Cube?
+    .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
+    .andThen(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(2).until(()->arm.isRobotOnTarget(4, 1, 5)))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(20),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
+      .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake))
+    )
+    //move arm out of way and drive back to balance
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95), ()->0, 10, Units.inchesToMeters(10), navx, chassis)
+      .alongWith(commandBuilder(CommandSelect.kArmToCarryPosition))
+    )
+    //balance!
+    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
+    ;
     
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
 
@@ -518,9 +536,9 @@ public class RobotContainer {
     autoChooser.addOption("Cone Mid, Mobility, Balance",balanceCommunityScoreConeMid);
     autoChooser.addOption("Cone Mid, balance, no mobility",midConeBalanceNoMobility);
     autoChooser.addOption("Cone Mid, no drive",commandBuilder(CommandSelect.kPlaceConeMidBackwards));
-
     autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
     autoChooser.addOption("Mobility, no balance",commandBuilder(CommandSelect.kDriveToGamePiece));
+    autoChooser.addOption("TESTING Cone mid, pick up cone, balance", placeConeDriveOverChargedPickUpBalance);
 
     SmartDashboard.putData("autos/Auto Chooser", autoChooser);
   }

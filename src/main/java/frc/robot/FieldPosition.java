@@ -164,11 +164,6 @@ public class FieldPosition {
         add( new Pose3d(pickupCols[3], pickupRows[1], kPickupHeightDouble, new Rotation3d()) );
     }};
 
-    public final static ArrayList<Pose3d> test= new ArrayList<Pose3d>(){{
-        add( new Pose3d(pickupCols[3], pickupRows[0], kPickupHeightDouble, new Rotation3d()) );
-        add( new Pose3d(pickupCols[3], pickupRows[1], kPickupHeightDouble, new Rotation3d()) );
-    }};
-
     ///////////////////////////
     //Utility Functions
     ///////////////////////////
