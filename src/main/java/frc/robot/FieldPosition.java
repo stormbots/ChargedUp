@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -185,8 +184,8 @@ public class FieldPosition {
     public static Pose3d GetNearestToBearing(Pose2d botPose, List<Pose3d> poses){
         var filteredList = poses.stream()
         .sorted((a,b)-> Double.compare(
-            Math.abs(botPose.getY())- Math.abs(a.getY()),
-            Math.abs(botPose.getY())- Math.abs(b.getY())
+            Math.abs(botPose.getY() - a.getY()),
+            Math.abs(botPose.getY() - b.getY())
             )
         )
         .limit(2)
@@ -201,8 +200,8 @@ public class FieldPosition {
     public static Pose3d GetNearestByX(Pose2d botPose, List<Pose3d> poses){
         var filteredList = poses.stream()
         .min((a,b)-> Double.compare(
-            Math.abs(botPose.getX())- Math.abs(a.getX()),
-            Math.abs(botPose.getX())- Math.abs(b.getX())
+            Math.abs(botPose.getX()- a.getX()),
+            Math.abs(botPose.getX()- b.getX())
             )
         )
         ;
@@ -212,8 +211,8 @@ public class FieldPosition {
     public static Pose3d GetNearestByY(Pose2d botPose, List<Pose3d> poses){
         var filteredList = poses.stream()
         .min((a,b)-> Double.compare(
-            Math.abs(botPose.getY())- Math.abs(a.getY()),
-            Math.abs(botPose.getY())- Math.abs(b.getY())
+            Math.abs(botPose.getY()-a.getY()),
+            Math.abs(botPose.getY()-b.getY())
             )
         )
         ;
