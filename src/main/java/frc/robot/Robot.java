@@ -8,6 +8,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -30,6 +32,7 @@ public class Robot extends TimedRobot {
   UsbCamera camera1;
   // UsbCamera camera2;
   private RobotContainer robotContainer;
+
   
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -82,12 +85,27 @@ public class Robot extends TimedRobot {
   public void disabledInit(){
     robotContainer.vision.setPipeline(LimelightPipeline.kNoVision); 
     robotContainer.chassis.setShifter(Gear.LOW);
+
+    robotContainer.field.getObject("MeasuringTool").setPose(FieldPosition.kOriginOffsetX,FieldPosition.kOriginOffsetY,new Rotation2d());
+    robotContainer.vision.setPipeline(LimelightPipeline.kAprilTag);
   }
 
   @Override
   public void disabledPeriodic(){
     robotContainer.arm.armMotor.setIdleMode(IdleMode.kBrake);
 
+    //Put some useful simulation tools on the dashboard.
+    robotContainer.field.getObject("tags").setPoses(
+      FieldPosition.AprilTags.stream().map(Pose3d::toPose2d).toList()
+    );
+    robotContainer.field.getObject("bluepickup").setPoses(
+      FieldPosition.BluePickupDouble.stream().map(Pose3d::toPose2d).toList()
+    );
+    robotContainer.field.getObject("redpickup").setPoses(
+      FieldPosition.RedPickupDouble.stream().map(Pose3d::toPose2d).toList()
+    );
+    //done in chassis, but here just in case that one's not working
+    // robotContainer.field.setRobotPose(robotContainer.chassis.pe.getEstimatedPosition());
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -108,7 +126,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic(){
     robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
-
   }
 
   @Override
@@ -132,14 +149,11 @@ public class Robot extends TimedRobot {
     robotContainer.arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
   }
 
-  Field2d field = new Field2d();
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
     // robotContainer.lighting.setColor(LedPattern.RED);
-    SmartDashboard.putData(field);
-    
   }
 
   /** This function is called periodically during test mode. */
