@@ -55,17 +55,16 @@ public final class Constants {
   }
 
   public  static class ChassisConstants{
-    public static double kGeartrainHigh=16.36;
-    public static double kGeartrainLow=4.49;
-    public static double kWheelSpacing=Units.inchesToMeters(28);//TODO estimated
+    public static double kGeartrainHigh=4.74;
+    public static double kGeartrainLow=13.85;
+    public static double kWheelSpacing=Units.inchesToMeters(22.695);//TODO estimated
     public static double kWheelDiameter=Units.inchesToMeters(6.1);
     // public static double kEncoderConversionFactorLow=1/ChassisConstants.kGeartrainLow*Math.PI*ChassisConstants.kWheelDiameter;
-    // public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
     public static double kEncoderConversionFactorLow=Units.inchesToMeters(100/66.66);
     public static double kEncoderConversionFactorHigh=1/ChassisConstants.kGeartrainHigh*Math.PI*ChassisConstants.kWheelDiameter;
 
-    public static Value kShiftHigh=Value.kForward; //TODO
-    public static Value kShiftLow= (kShiftHigh==Value.kForward ? Value.kReverse : Value.kForward); //TODO
+    public static Value kShiftHigh=Value.kForward;
+    public static Value kShiftLow= (kShiftHigh==Value.kForward ? Value.kReverse : Value.kForward);
 
     public static double kLowGearSlewRate = 1/0.35;
     public static double kHighGearSlewRate = 1/0.7;

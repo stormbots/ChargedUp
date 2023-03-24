@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -108,8 +109,10 @@ public class FieldPosition {
     }};
 
     public final static ArrayList<Pose3d> RedPickupDouble= new ArrayList<Pose3d>(){{
-        add( new Pose3d(pickupCols[0], pickupRows[0], kPickupHeightDouble, new Rotation3d()) );
-        add( new Pose3d(pickupCols[0], pickupRows[1], kPickupHeightDouble, new Rotation3d()) );
+        add( new Pose3d(Units.inchesToMeters(14.25-12), Units.inchesToMeters(265.74-30), Units.inchesToMeters(27.38), new Rotation3d(0,0,0)) );
+        add( new Pose3d(Units.inchesToMeters(14.25-12), Units.inchesToMeters(265.74+30), Units.inchesToMeters(27.38), new Rotation3d(0,0,0)) );
+        // add( new Pose3d(pickupCols[0], pickupRows[0], kPickupHeightDouble, new Rotation3d()) );
+        // add( new Pose3d(pickupCols[0], pickupRows[1], kPickupHeightDouble, new Rotation3d()) );
     }};
 
     //******************************
@@ -159,8 +162,30 @@ public class FieldPosition {
     }};
 
     public final static ArrayList<Pose3d> BluePickupDouble = new ArrayList<Pose3d>(){{
-        add( new Pose3d(pickupCols[3], pickupRows[0], kPickupHeightDouble, new Rotation3d()) );
-        add( new Pose3d(pickupCols[3], pickupRows[1], kPickupHeightDouble, new Rotation3d()) );
+        add( new Pose3d(Units.inchesToMeters(636.77+12), Units.inchesToMeters(265.74-30), Units.inchesToMeters(27.38), new Rotation3d(0,0,Math.PI)) );
+        add( new Pose3d(Units.inchesToMeters(636.77+12), Units.inchesToMeters(265.74+30), Units.inchesToMeters(27.38), new Rotation3d(0,0,Math.PI)) );
+        // add( new Pose3d(pickupCols[3], pickupRows[0], kPickupHeightDouble, new Rotation3d()) );
+        // add( new Pose3d(pickupCols[3], pickupRows[1], kPickupHeightDouble, new Rotation3d()) );
+    }};
+
+    /**
+     * From https://firstfrc.blob.core.windows.net/frc2023/FieldAssets/2023LayoutMarkingDiagram.pdf page 4
+     * Distances are to center of field tag
+     * */
+    public final static ArrayList<Pose3d> AprilTags = new ArrayList<Pose3d>(){{
+        add( new Pose3d(Units.inchesToMeters(0), Units.inchesToMeters(0), Units.inchesToMeters(0), new Rotation3d()) );
+        //1,2,3 : Red alliance grid
+        add( new Pose3d(Units.inchesToMeters(610.77), Units.inchesToMeters(42.19), Units.inchesToMeters(18.22), new Rotation3d(0,0,Math.PI)) );
+        add( new Pose3d(Units.inchesToMeters(610.77), Units.inchesToMeters(108.19), Units.inchesToMeters(18.22), new Rotation3d(0,0,Math.PI)) );
+        add( new Pose3d(Units.inchesToMeters(610.77), Units.inchesToMeters(174.19), Units.inchesToMeters(18.22), new Rotation3d(0,0,Math.PI)) );
+        //4 Blue alliance loading station
+        add( new Pose3d(Units.inchesToMeters(636.77), Units.inchesToMeters(265.74), Units.inchesToMeters(27.38), new Rotation3d(0,0,Math.PI)) );
+        //5 Red Loading station
+        add( new Pose3d(Units.inchesToMeters(14.25), Units.inchesToMeters(265.74), Units.inchesToMeters(27.38), new Rotation3d(0,0,0)) );
+        //6,7,8 blue alliance grid
+        add( new Pose3d(Units.inchesToMeters(40.45), Units.inchesToMeters(174.19), Units.inchesToMeters(18.22), new Rotation3d(0,0,0)) );
+        add( new Pose3d(Units.inchesToMeters(40.45), Units.inchesToMeters(108.19), Units.inchesToMeters(18.22), new Rotation3d(0,0,0)) );
+        add( new Pose3d(Units.inchesToMeters(40.45), Units.inchesToMeters(42.19), Units.inchesToMeters(18.22), new Rotation3d(0,0,0)) );
     }};
 
     ///////////////////////////
