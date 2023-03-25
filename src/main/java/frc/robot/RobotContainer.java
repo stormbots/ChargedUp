@@ -226,11 +226,11 @@ public class RobotContainer {
         //Place cones
         new setArm(48, 50, 48, 0.2, arm, intake), 
         //Execute cones
-        new setArm(34.5, 50, 35, 0.2, arm, intake)
-          .withTimeout(0.25)
-          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
-          .withTimeout(0.25+0.1)
-          .andThen(new setArm(48, 50-5, 90, 0.2, arm, intake)),
+        new setArm(34.5, 50, 35, 0.2, arm, intake),
+          // .withTimeout(0.25)
+          // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
+          // .withTimeout(0.25+0.1)
+          // .andThen(new setArm(48, 50-5, 90, 0.2, arm, intake)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
@@ -250,9 +250,9 @@ public class RobotContainer {
         //Place Cones
         new setArm(45.0, 25.0, 20, 0.2, arm, intake), 
         //Execute Cones
-        new setArm(28.0, 25.0, 20, 0.2, arm, intake)
-          .withTimeout(.25)
-          .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+        new setArm(28.0, 25.0, 20, 0.2, arm, intake),
+          // .withTimeout(.25)
+          // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
       ,
       new ConditionalCommand(
@@ -372,7 +372,7 @@ public class RobotContainer {
       .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
         .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(4.5))
       )
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8),()->0,5,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(6)
         .alongWith(new setArm(90, 11, 180, 0.5, arm, intake).withTimeout(4.5))
       )
       ;
@@ -470,8 +470,17 @@ public class RobotContainer {
     .andThen(commandBuilder(CommandSelect.kDriveToChargerAndBalance));
 
 
-    var TwoCubePlace = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    var TwoCubePlaceLeftSide = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
     .andThen(commandBuilder(CommandSelect.kPickupCube))
+    .andThen(new ChassisTurnGyro(()->0.0, ()->0.0, 10, 5, chassis, navx).withTimeout(0.75))
+    .andThen(commandBuilder(CommandSelect.kPlaceCubeMidBackwards))
+    // .andThen(commandBuilder(CommandSelect.kDriveToGamePiece)); //do not use; too risky at yakima
+    ;
+
+    //testing
+    var TwoCubePlaceRightSide = commandBuilder(CommandSelect.kPlaceCubeHighBackwards)
+    .andThen(commandBuilder(CommandSelect.kPickupCube))
+    .andThen(new ChassisTurnGyro(()->0.0, ()->0.0, -10, 5, chassis, navx).withTimeout(0.75))
     .andThen(commandBuilder(CommandSelect.kPlaceCubeMidBackwards))
     // .andThen(commandBuilder(CommandSelect.kDriveToGamePiece)); //do not use; too risky at yakima
     ;
@@ -515,7 +524,8 @@ public class RobotContainer {
     
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
 
-    autoChooser.addOption("Two Cube Auto",TwoCubePlace);
+    autoChooser.addOption("Two Cube Auto(on left side)",TwoCubePlaceLeftSide);
+    autoChooser.addOption("Two Cube Auto(on right side)",TwoCubePlaceRightSide);
     autoChooser.addOption("Cube High, Mobility, Balance", balanceCommunityScoreCubeHigh);
     autoChooser.addOption("Cube High, balance, no mobility",cubeHighBalanceNoMobility);
     autoChooser.addOption("CubeHigh, no drive",commandBuilder(CommandSelect.kPlaceCubeHighBackwards));

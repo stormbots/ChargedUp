@@ -68,7 +68,7 @@ public class ChassisTurnGyro extends CommandBase {
         turnoutput += ChassisConstants.kTurnLowKS*Math.signum(turnoutput);
 
         turnoutput += driverTurn.getAsDouble();
-        turnoutput += navx.getRate() * .05/4.0;
+        turnoutput += navx.getRate() * .03/4.0; //.05 -> .03
 
         chassis.arcadeDrive(driverForward.getAsDouble(), turnoutput);
 
