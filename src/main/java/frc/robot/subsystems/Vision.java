@@ -107,7 +107,7 @@ public class Vision extends SubsystemBase {
     rot = new Rotation2d( Math.toRadians( bp[5]) );
     // botPose =  new Pose2d(bp[0]+15.980/2.0, bp[1]+8.210/2.0, rot);
 
-    botPose =  new Pose2d(bp[0]+15.980/2.0-0.6, bp[1]+(8.210/2.0)+0.02, rot); //the -0.6 is just because trial and error
+    botPose =  new Pose2d(bp[0]+15.980/2.0+0.04, bp[1]+(8.210/2.0), rot); //the -0.6 is just because trial and error
 
     poseEstimator.addVisionMeasurement(botPose, Timer.getFPGATimestamp());
 

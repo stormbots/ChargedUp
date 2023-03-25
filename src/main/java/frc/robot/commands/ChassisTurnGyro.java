@@ -24,11 +24,13 @@ public class ChassisTurnGyro extends CommandBase {
   private DoubleSupplier driverForward;
   private double tolerance;
   private double angleError;
+  private double targetAngle;
 
-  public ChassisTurnGyro(DoubleSupplier forward, DoubleSupplier turn, double tolerance, Chassis chassis, AHRS navx) {
+  public ChassisTurnGyro(DoubleSupplier forward, DoubleSupplier turn, double targetAngle, double tolerance, Chassis chassis, AHRS navx) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.navx = navx;
     this.chassis = chassis;
+    this.targetAngle = targetAngle;
     this.driverForward = forward;
     this.driverTurn = turn;
     this.tolerance = tolerance; 
@@ -44,23 +46,22 @@ public class ChassisTurnGyro extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-        //Optionally, restrict our system response to avoid excess power 
-    
-    
         //turning left/right stuff
-        double targetAngle = -180;// navx.getRotation2d().getDegrees()  < 0 ? 180 : -180;
         double angle =  navx.getRotation2d().getRadians(); // negative to account for navx rotation relative to chassis
         angle = MathUtil.angleModulus(angle);
         angle = Math.toDegrees(angle);
 
-
-        if( angle <-0){
-          targetAngle = -180;
-        }
-        else if( angle > 0){
-          targetAngle = 180;
-        }    
         angleError = targetAngle - angle;
+
+        var continuousMin=-180;
+        var continuousMax=180;
+        if(continuousMin != continuousMax){
+          var continuousHalfRange = (continuousMax-continuousMin)/2.0;
+          angleError %= (continuousHalfRange*2);
+          if(angleError>continuousHalfRange) angleError-=2*continuousHalfRange;
+          if(angleError<-continuousHalfRange) angleError+=2*continuousHalfRange;
+        }
+    
         angleError= MathUtil.clamp(angleError, -25, 25);
 
         double turnoutput = angleError*ChassisConstants.kTurnLowKP;

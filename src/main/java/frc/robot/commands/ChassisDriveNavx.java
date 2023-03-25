@@ -37,8 +37,8 @@ public class ChassisDriveNavx extends CommandBase {
 
   
   SlewRateLimiter distanceSlew;
-  MiniPID pid = new MiniPID(0.1/12.0, 0, 0);
-
+  // MiniPID pid = new MiniPID(0.1/12, 0, 0);
+  MiniPID pid = new MiniPID(ChassisConstants.kTurnLowKP, 0, 0);
 
   /**
    * Creates a new ChassisDriveManual.
@@ -116,7 +116,7 @@ public class ChassisDriveNavx extends CommandBase {
     double forwardSpeed = FB.fb(targetDistance, distance, 0.6); // TABI 0.4 || PRACTICE 0.4
 
 
-    turn+= Math.signum(turn)*ChassisConstants.kTurnLowKS; //TODO: fIXME WHEN MINIPID WORKS PROPERLY
+    turn+= Math.signum(turn)*ChassisConstants.kTurnLowKS*.5; //*.3 = no wobble, but some drift allowed
     // turn+= Math.signum(turn)*0.02; //TODO: fIXME WHEN MINIPID WORKS PROPERLY // TABIIIIIIIIIIIIIIIIIIIII
 
 

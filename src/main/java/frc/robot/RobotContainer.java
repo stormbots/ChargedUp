@@ -91,7 +91,7 @@ public class RobotContainer {
     PCH.clearStickyFaults();
     pdp.clearStickyFaults();
     if (Constants.isCompBot){
-      PCH.enableCompressorAnalog(80, 120);
+      PCH.enableCompressorAnalog(110, 120);
     }
     else{
     }
@@ -178,23 +178,22 @@ public class RobotContainer {
 
     driver.button(2).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
-      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 10, chassis, navx))
+      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), -180, 10, chassis, navx))
       .andThen( new ChassisVisionRetro( ()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kMidCone, chassis, vision, navx) )
       // .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
     driver.button(4).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
-      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), 20, chassis, navx))
+      .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), -180, 20, chassis, navx))
       .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
       // .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
-    // driver.button(3).whileTrue(new InstantCommand()
-    //   .andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, field, 10, chassis, vision, navx))
-    // );
-
-
+    driver.button(3).whileTrue(new InstantCommand()
+    .andThen(new ChassisTurnGyro(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), 0, 20, chassis, navx))
+      //.andThen(new VisionTurnToTargetPose(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), TargetType.PickupDouble, field, 10, chassis, vision, navx))
+    );
 
   }
 
@@ -373,7 +372,7 @@ public class RobotContainer {
       .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
         .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(4.5))
       )
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
         .alongWith(new setArm(90, 11, 180, 0.5, arm, intake).withTimeout(4.5))
       )
       ;
@@ -387,7 +386,7 @@ public class RobotContainer {
       case kDrivePastChargerReverseAndBalance:
       return new InstantCommand()
       .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-8), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
       .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
       ;
 
@@ -497,17 +496,17 @@ public class RobotContainer {
     ;
 
     var placeConeDriveOverChargedPickUpBalance = new InstantCommand()
-    // .andThen(commandBuilder(CommandSelect.kPlaceCubeHighBackwards))
+    .andThen(commandBuilder(CommandSelect.kPlaceConeMidBackwards))
     // Drive past charger
     .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 5 , Units.inchesToMeters(1), navx, chassis))
-    // Pickup up a cone? Cube?
+    // Pickup up a cone
     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
     .andThen(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(2).until(()->arm.isRobotOnTarget(4, 1, 5)))
     .andThen(new ChassisDriveNavx(Units.inchesToMeters(20),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
       .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake))
     )
     //move arm out of way and drive back to balance
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95), ()->0, 10, Units.inchesToMeters(10), navx, chassis)
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20), ()->0, 10, Units.inchesToMeters(10), navx, chassis)
       .alongWith(commandBuilder(CommandSelect.kArmToCarryPosition))
     )
     //balance!
