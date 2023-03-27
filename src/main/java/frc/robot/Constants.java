@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
@@ -195,6 +196,30 @@ public final class Constants {
     public static boolean kIntakeMotorInverted=true;
   }
 
+  public static class SYSIDConstants{
+    public static double kS = 0;
+    public static double kV = 0;
+    public static double kA = 0;
+    public static double kP = 0;
+
+    public static double ksVolts = 0;
+    public static double kvVoltSecondsPerMeter = 0;
+    public static double kaVoltSecondsSquaredPerMeter = 0;
+    
+
+    public static double kpDriveVel = 0;
+
+    public static double kTrackwidthMeters = 0.69;
+    public static DifferentialDriveKinematics kDriveKinematics =
+        new DifferentialDriveKinematics(kTrackwidthMeters);
+
+    public static double kMaxSpeedMetersPerSecond = 4;
+    public static double kMaxAccelerationMetersPerSecondSquared = 1;
+
+    public static double kRamseteB = 2;
+    public static double kRamseteZeta = 0.7;
+  }
+
   /** Contains tuned paramaters for Practice Bot, if they differ from comp
    * 
    */
@@ -264,6 +289,29 @@ public final class Constants {
     // WristConstants.kReverseMotor=false;
 
 
+
+    //SYSID Constants
+    SYSIDConstants.kS = 0;
+    SYSIDConstants.kV = 0;
+    SYSIDConstants.kA = 0;
+    SYSIDConstants.kP = 0;
+
+    SYSIDConstants.ksVolts = 0;
+    SYSIDConstants.kvVoltSecondsPerMeter = 0;
+    SYSIDConstants.kaVoltSecondsSquaredPerMeter = 0;
+    
+
+    SYSIDConstants.kpDriveVel = 0;
+
+    SYSIDConstants.kTrackwidthMeters = 0.69;
+    SYSIDConstants.kDriveKinematics =
+        new DifferentialDriveKinematics(SYSIDConstants.kTrackwidthMeters);
+
+    SYSIDConstants.kMaxSpeedMetersPerSecond = 4;
+    SYSIDConstants.kMaxAccelerationMetersPerSecondSquared = 1;
+    
+    SYSIDConstants.kRamseteB = 2;
+    SYSIDConstants.kRamseteZeta = 0.7;
   }
 
 }

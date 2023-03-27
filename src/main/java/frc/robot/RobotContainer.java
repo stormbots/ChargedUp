@@ -4,9 +4,21 @@
 
 package frc.robot;
 
+import java.util.List;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -17,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -46,7 +59,7 @@ public class RobotContainer {
   public PowerDistribution pdp = new PowerDistribution(21,ModuleType.kRev);
 
   // The robot's subsystems and commands are defined here...
-  public Chassis chassis = new Chassis();
+  public Chassis chassis = new Chassis(navx);
   public Arm arm = new Arm();
   public Intake intake = new Intake();
   public Vision vision = new Vision();
@@ -492,6 +505,49 @@ public class RobotContainer {
   public Command getAutonomousCommand(){
     // return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
     // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
-    return autoChooser.getSelected();
+    // return autoChooser.getSelected();
+
+    var autoVoltageConstraint =
+      new DifferentialDriveVoltageConstraint(
+        new SimpleMotorFeedforward(
+          Constants.SYSIDConstants.ksVolts, 
+          Constants.SYSIDConstants.kvVoltSecondsPerMeter,
+          Constants.SYSIDConstants.kaVoltSecondsSquaredPerMeter),
+        Constants.SYSIDConstants.kDriveKinematics,
+        10
+      );
+
+      TrajectoryConfig config =
+        new TrajectoryConfig(
+          Constants.SYSIDConstants.kMaxSpeedMetersPerSecond, 
+          Constants.SYSIDConstants.kMaxAccelerationMetersPerSecondSquared)
+          .setKinematics(Constants.SYSIDConstants.kDriveKinematics)
+          .addConstraint(autoVoltageConstraint);
+
+      Trajectory exampleTrajectory =
+        TrajectoryGenerator.generateTrajectory(
+          new Pose2d(0, 0, new Rotation2d(0)), 
+          List.of(new Translation2d(1,1), new Translation2d(2, -1)), 
+          new Pose2d(3, 0, new Rotation2d(0)), 
+          config);
+
+      RamseteCommand ramseteCommand =
+        new RamseteCommand(
+          exampleTrajectory, 
+          chassis::getPose, 
+          new RamseteController(Constants.SYSIDConstants.kRamseteB, Constants.SYSIDConstants.kRamseteZeta), 
+          new SimpleMotorFeedforward(
+          Constants.SYSIDConstants.ksVolts, 
+          Constants.SYSIDConstants.kvVoltSecondsPerMeter,
+          Constants.SYSIDConstants.kaVoltSecondsSquaredPerMeter), 
+          Constants.SYSIDConstants.kDriveKinematics, 
+          chassis::getWheelSpeeds, 
+          new PIDController(Constants.SYSIDConstants.kpDriveVel, 0, 0), 
+          new PIDController(Constants.SYSIDConstants.kpDriveVel, 0, 0), 
+          chassis::tankDriveVolts, 
+          chassis);
+
+          return ramseteCommand.andThen(  ()->chassis.tankDriveVolts(0, 0)  );
+
   }
 }

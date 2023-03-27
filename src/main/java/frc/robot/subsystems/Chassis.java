@@ -4,11 +4,15 @@
 
 package frc.robot.subsystems;
 
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -36,10 +40,15 @@ public class Chassis extends SubsystemBase {
 
   Solenoid shifter = new Solenoid(PneumaticsModuleType.REVPH, HardwareID.kShifterSolenoid);
   public Gear gearPosition = Gear.LOW;
+
+  public AHRS navx;
+
   DifferentialDrive driveTrain = new DifferentialDrive(leftLeader, rightLeader);
+  private final DifferentialDriveOdometry m_odometry;
+
 
   /** Creates a new Chassis. */
-  public Chassis() {
+  public Chassis(AHRS navx) {
     //Reset Encoders
     leftEncoder.setPosition(0);
     rightEncoder.setPosition(0);
@@ -60,7 +69,10 @@ public class Chassis extends SubsystemBase {
     leftLeader.setInverted(ChassisConstants.kLeftInverted);
     rightLeader.setInverted(ChassisConstants.kRightInverted);
 
+    this.navx = navx;
     setShifter(Gear.LOW); //Robot.teleopInit() will set this high for drivers
+
+    m_odometry = new DifferentialDriveOdometry(navx.getRotation2d(), leftEncoder.getPosition()*0.305, rightEncoder.getPosition()*0.305);
   }
 
   public void setShifter(Gear gear){
@@ -92,6 +104,9 @@ public class Chassis extends SubsystemBase {
  
   @Override
   public void periodic() {
+
+    m_odometry.update(navx.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+
     // This method will be called once per scheduler run
     SmartDashboard.putString("ShifterPosition", getShifterPosition().toString());
     SmartDashboard.putNumber("BusVoltage",  rightLeader.getBusVoltage());
@@ -105,5 +120,30 @@ public class Chassis extends SubsystemBase {
     SmartDashboard.putNumber("chassis/metersLeft", leftEncoder.getPosition());
     SmartDashboard.putNumber("chassis/inchesLeft", Units.metersToInches(leftEncoder.getPosition()));
     SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
+  }
+
+  public Pose2d getPose(){
+    return m_odometry.getPoseMeters();
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    leftLeader.setVoltage(leftVolts);
+    rightFollower.setVoltage(rightVolts);
+    driveTrain.feed();
+  }
+
+  public DifferentialDriveWheelSpeeds getWheelSpeeds(){
+    return new DifferentialDriveWheelSpeeds(leftEncoder.getPosition()*0.305, rightEncoder.getPosition()*0.305); //i would like to know if there is a feet to meters method but i am too lazy to do that right now
+  }
+
+  public void resetEncoders(){
+    leftEncoder.setPosition(0);
+    rightEncoder.setPosition(0);
+  }
+
+  public void resetOdometry(Pose2d pose) {
+    resetEncoders();
+    m_odometry.resetPosition(
+        navx.getRotation2d(), leftEncoder.getPosition()*0.305, rightEncoder.getPosition()*0.305, pose);
   }
 }
