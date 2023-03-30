@@ -27,15 +27,14 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import frc.robot.Constants.ChassisConstants;
-import frc.robot.FieldPosition.TargetType;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.ChassisTurnGyro;
 import frc.robot.commands.ChassisVisionRetro;
-import frc.robot.commands.VisionTurnToTargetPose;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
+import frc.robot.subsystems.Arm.PlaceOrPrepareOrExecute;
 import frc.robot.subsystems.Arm.PrepareOrExecute;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
@@ -234,6 +233,10 @@ public class RobotContainer {
     ));
     operator.button(3).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.EXECUTE)));
     operator.button(3).onFalse(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
+
+    operator.button(5).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
+    operator.button(6).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
+    operator.button(10).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
     //INTAKE MOTORS DRIVE INWARDS
     operator.povCenter().whileFalse((new RunCommand(()->arm.intakeMotor.set(1.0),intake)));
     operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.2),intake) );
@@ -247,52 +250,116 @@ public class RobotContainer {
     },intake));
 
     //POSITION TOP LEVEL
-    operator.button(5).whileTrue(new ConditionalCommand(
-      new ConditionalCommand(
-        //Place cones
-        new setArm(48, 49, 48, 0.2, arm, intake), 
-        //Execute cones
-        new setArm(34.5, 49, 35, 0.2, arm, intake),
-          // .withTimeout(0.25)
-          // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
-          // .withTimeout(0.25+0.1)
-          // .andThen(new setArm(48, 50-5, 90, 0.2, arm, intake)),
-        ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
-      ,
-      new ConditionalCommand(
-        //Place cubes
-        new setArm(35, 48, 6, 0.2, arm, intake), 
-        //Execute cubes
-        new setArm(35, 48, 6, -0.2, arm, intake),
+    // operator.button(5).whileTrue(new ConditionalCommand(
+    //   new ConditionalCommand(
+    //     //Place cones
+    //     new setArm(48, 49, 48, 0.2, arm, intake), 
+    //     //Execute cones
+    //     new setArm(34.5, 49, 35, 0.2, arm, intake),
+    //       // .withTimeout(0.25)
+    //       // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
+    //       // .withTimeout(0.25+0.1)
+    //       // .andThen(new setArm(48, 50-5, 90, 0.2, arm, intake)),
+    //     ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
+    //   ,
+    //   new ConditionalCommand(
+    //     //Place cubes
+    //     new setArm(35, 48, 6, 0.2, arm, intake), 
+    //     //Execute cubes
+    //     new setArm(35, 48, 6, -0.2, arm, intake),
 
+    //     ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
+    //   ,
+    //   ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
+    
+    
+    //HIGH cube scoring
+    operator.button(5)
+    .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.OPEN)
+    .whileTrue(new ConditionalCommand(
+      //Prepare HIGH Cube
+      new setArm(35, 0, 6, 0.2, arm, intake)
+      , 
+      new ConditionalCommand(
+        //Place HIGH cube
+        new setArm(35, 48, 6, 0.2, arm, intake), 
+        //Execute HIGH Cube
+        new setArm(35, 48, 6, -0.25, arm, intake),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
+    ,
+    ()->arm.getPlaceOrPrepareOrExecute()== PlaceOrPrepareOrExecute.PLACE));
+
+    //HIGH Cone Scoring
+    operator.button(5)
+    .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
+    .whileTrue(new ConditionalCommand(
+      //Prepare HIGH cone
+      new setArm(48, 0, 48, 0.2, arm, intake)
+      , 
+      new ConditionalCommand(
+        //Place  HIGH cones
+        new setArm(48, 49, 48, 0.2, arm, intake), 
+        //Execute HIGH cones
+        new setArm(34.5, 49, 35, 0.2, arm, intake),
+        ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
       ,
-      ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
+      ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
+    
 
     
     //POSITION MID LEVEL
-    operator.button(6).whileTrue(new ConditionalCommand(
-      new ConditionalCommand(
-        //Place Cones
-        new setArm(45.0, 25.0, 20, 0.2, arm, intake), 
-        //Execute Cones
-        new setArm(28.0, 25.0, 20, 0.2, arm, intake),
-          // .withTimeout(.25)
-          // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
-        ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
-      ,
-      new ConditionalCommand(
-        //Get cube values
-        //Place cubes 
-        new setArm(29.0, 11.0, 4.0, 0.2, arm, intake),
-        //Execute cubes 
-        new setArm(29.0, 11.0, 4.0, -0.25, arm, intake),
-        ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
-      ,
-      ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
+    // operator.button(6).whileTrue(new ConditionalCommand(
+    //   new ConditionalCommand(
+    //     //Place Cones
+    //     new setArm(45.0, 25.0, 20, 0.2, arm, intake), 
+    //     //Execute Cones
+    //     new setArm(28.0, 25.0, 20, 0.2, arm, intake),
+    //       // .withTimeout(.25)
+    //       // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+    //     ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
+    //   ,
+    //   new ConditionalCommand(
+    //     //Get cube values
+    //     //Place cubes 
+    //     new setArm(29.0, 11.0, 4.0, 0.2, arm, intake),
+    //     //Execute cubes 
+    //     new setArm(29.0, 11.0, 4.0, -0.25, arm, intake),
+    //     ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
+    //   ,
+    //   ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED));
 
+    //MID cube scoring
+    operator.button(6)
+    .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.OPEN)
+    .whileTrue(new ConditionalCommand(
+      //Prepare MID Cube
+      new setArm(29, 0, 4, 0.2, arm, intake)
+      , 
+      new ConditionalCommand(
+        //Place MID cube
+        new setArm(29, 11, 4, 0.2, arm, intake), 
+        //Execute MID Cube
+        new setArm(29, 11, 4, -0.25, arm, intake),
+        ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
+    ,
+    ()->arm.getPlaceOrPrepareOrExecute()== PlaceOrPrepareOrExecute.PLACE));
+
+    //MID Cone Scoring
+    operator.button(6)
+    .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
+    .whileTrue(new ConditionalCommand(
+      //Prepare MID cone
+      new setArm(45, 0, 20, 0.2, arm, intake)
+      , 
+      new ConditionalCommand(
+        //Place  MID cones
+        new setArm(45, 25, 20, 0.2, arm, intake), 
+        //Execute MID cones
+        new setArm(28, 25, 20, 0.2, arm, intake),
+        ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
+      ,
+      ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
     
-
     //PICKUP DOUBLE SUBSTATION
     operator.button(9).whileTrue(new setArm(47, 19, 11, 1.0, arm, intake));
 
@@ -318,14 +385,29 @@ public class RobotContainer {
     );
     
     //SCORE LOW
-    operator.button(10).whileTrue(new ConditionalCommand(
-      new setArm(15,10,-45,0.2,arm,intake), 
-      new setArm(15, 10, -45, -0.2, arm, intake).withTimeout(0.25)
-      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))), 
-      ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
-      ;
+    // operator.button(10).whileTrue(new ConditionalCommand(
+    //   new setArm(15,10,-45,0.2,arm,intake), 
+    //   new setArm(15, 10, -45, -0.2, arm, intake).withTimeout(0.25)
+    //   .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))), 
+    //   ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
+    //   ;
 
-    
+    //SCORE LOW
+    operator.button(10)
+      .whileTrue(new ConditionalCommand(
+        //Prepare LOW 
+        new setArm(15, 0, -45, 0.2, arm, intake)
+        , 
+        new ConditionalCommand(
+          //Place  LOw 
+          new setArm(15, 10, -45, 0.2, arm, intake), 
+          //Execute LOW 
+          new setArm(15, 10, -45, -0.2, arm, intake).withTimeout(0.15)
+          .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))),
+          ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
+        ,
+        ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
+        
     //MOVE TO CARRY POSITION
     operator.button(2).whileTrue(new InstantCommand()
     .andThen(
@@ -336,6 +418,8 @@ public class RobotContainer {
     );
     
     operator.button(2).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
+    operator.button(2).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
+    operator.button(2).onTrue(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)));
     ;
     //JANKY TEST BUTTONS
 
@@ -365,15 +449,32 @@ public class RobotContainer {
       chassis.rightFollower.clearFaults();
     }));
     //Score backwards mid cone
-    operator.button(14).whileTrue(new ConditionalCommand(
-      //Place Cones
-      new setArm(145, 27, 157, 0.2, arm, intake), 
-      //Execute Cones
-      new setArm(166, 27, 172, 0.2, arm, intake),
-        // .withTimeout(.25)
-        // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
-      ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
-      ;
+    // operator.button(14).whileTrue(new ConditionalCommand(
+    //   //Place Cones
+    //   new setArm(145, 27, 157, 0.2, arm, intake), 
+    //   //Execute Cones
+    //   new setArm(166, 27, 172, 0.2, arm, intake),
+    //     // .withTimeout(.25)
+    //     // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+    //   ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
+    //   ;
+
+    //Score Backwards MID
+    operator.button(14)
+      .whileTrue(new ConditionalCommand(
+        //Prepare MID Backwards
+        new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward,false))
+        .andThen(new setArm(145, 0, 157, 0.2, arm, intake))
+        , 
+        new ConditionalCommand(
+          //Place  MID Backwards 
+          new setArm(145, 27, 157, 0.2, arm, intake), 
+          //Execute MID Backwards 
+          new setArm(166, 27, 172, 0.2, arm, intake),
+          ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
+        ,
+        ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
+        
   }
 
   public enum CommandSelect{

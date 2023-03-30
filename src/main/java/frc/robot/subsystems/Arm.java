@@ -44,10 +44,16 @@ public class Arm extends SubsystemBase {
     EXECUTE
   }
 
+  public static enum PlaceOrPrepareOrExecute{
+    PLACE,
+    PREPARE,
+    EXECUTE,
+  }
+
   private RetractSolenoidPosition retractSolenoidPosition = RetractSolenoidPosition.DISENGAGED;
   public IntakeSolenoidPosition intakeSolenoidPosition = IntakeSolenoidPosition.CLOSED;
   public PrepareOrExecute prepareOrExecute  = PrepareOrExecute.PREPARE;
-
+  public PlaceOrPrepareOrExecute placeOrPrepareOrExecute = PlaceOrPrepareOrExecute.PREPARE;
   
   // Angular motors
   public CANSparkMax armMotor = new CANSparkMax(Constants.HardwareID.kArmMotor, MotorType.kBrushless);
@@ -67,7 +73,7 @@ public class Arm extends SubsystemBase {
   // Intake Actuation
   public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
   public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, HardwareID.kIntakeForwardSolenoid, Constants.HardwareID.kIntakeReverseSolenoid); 
-  public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid);//temp value
+  public DoubleSolenoid brakeSolenoid = new DoubleSolenoid(1,PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid, Constants.HardwareID.kRetractBrakeSolenoidReverse);//temp value
   
   
   // Wrist Actuation
@@ -339,6 +345,13 @@ public class Arm extends SubsystemBase {
     this.prepareOrExecute=selection;
   }
   
+  public void setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute selection){
+    this.placeOrPrepareOrExecute=selection;
+  }
+
+  public PlaceOrPrepareOrExecute getPlaceOrPrepareOrExecute(){
+    return this.placeOrPrepareOrExecute;
+  }
   public PrepareOrExecute getPrepareOrExecute(){
     return this.prepareOrExecute;
   }
