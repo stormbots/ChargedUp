@@ -250,9 +250,9 @@ public class RobotContainer {
     operator.button(5).whileTrue(new ConditionalCommand(
       new ConditionalCommand(
         //Place cones
-        new setArm(48, 50, 48, 0.2, arm, intake), 
+        new setArm(48, 49, 48, 0.2, arm, intake), 
         //Execute cones
-        new setArm(34.5, 50, 35, 0.2, arm, intake),
+        new setArm(34.5, 49, 35, 0.2, arm, intake),
           // .withTimeout(0.25)
           // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN))
           // .withTimeout(0.25+0.1)
@@ -310,12 +310,21 @@ public class RobotContainer {
       ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
       ;
   
-    //PICKUP FROM GROUND/SCORE LOW
+    //PICKUP FROM GROUND/
     operator.button(8).whileTrue(new InstantCommand()
       .andThen(new setArm(()->-25 ,()->6,()->0,()->0.2,arm,intake)
       .until(()->arm.isRobotOnTarget(20, 50, 7)).withTimeout(0.25))
       .andThen(commandBuilder(CommandSelect.kArmToPickupPosition))
     );
+    
+    //SCORE LOW
+    operator.button(10).whileTrue(new ConditionalCommand(
+      new setArm(15,10,-45,0.2,arm,intake), 
+      new setArm(15, 10, -45, -0.2, arm, intake).withTimeout(0.25)
+      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))), 
+      ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
+      ;
+
     
     //MOVE TO CARRY POSITION
     operator.button(2).whileTrue(new InstantCommand()
@@ -334,9 +343,6 @@ public class RobotContainer {
     operator.button(13).whileTrue(new InstantCommand()
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
       .andThen(new setArm(135, 0, 135, 0.3, arm, intake).withTimeout(0.75))
-      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
-      .andThen(new WaitCommand(0.50))
-      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
     );
     operator.button(12).whileTrue(new RunCommand (()->{
@@ -358,7 +364,16 @@ public class RobotContainer {
       chassis.rightLeader.clearFaults();
       chassis.rightFollower.clearFaults();
     }));
-    
+    //Score backwards mid cone
+    operator.button(14).whileTrue(new ConditionalCommand(
+      //Place Cones
+      new setArm(145, 27, 157, 0.2, arm, intake), 
+      //Execute Cones
+      new setArm(166, 27, 172, 0.2, arm, intake),
+        // .withTimeout(.25)
+        // .andThen(()->arm.setIntake(IntakeSolenoidPosition.OPEN)),
+      ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
+      ;
   }
 
   public enum CommandSelect{
@@ -372,6 +387,7 @@ public class RobotContainer {
     kDrivePastChargerReverseAndBalance,
     kArmToCarryPosition,
     kArmToPickupPosition,
+    kArmtoExtendedPickupPosition
   }
 
   /** Generate useful common auto parts that we can fit together */
@@ -383,6 +399,9 @@ public class RobotContainer {
       new setArm(-38, 6, -5, 1.0, arm, intake), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
       ;
+
+      case kArmtoExtendedPickupPosition:
+      return new setArm(-7, 55, 2, 1.0, arm, intake);
 
       case kArmToCarryPosition:
       return new setArm(90, 0, 150, 0.3, arm, intake);
