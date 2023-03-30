@@ -531,6 +531,13 @@ public class RobotContainer {
           new Pose2d(3, 0, new Rotation2d(0)), 
           config);
 
+      Trajectory testTrajectory =
+        TrajectoryGenerator.generateTrajectory(
+          new Pose2d(0, 0, new Rotation2d(0)), 
+          List.of(new Translation2d(0.25,0), new Translation2d(0.5, 0)), 
+          new Pose2d(1, 0, new Rotation2d(0)), 
+          config);
+
       RamseteCommand ramseteCommand =
         new RamseteCommand(
           exampleTrajectory, 
