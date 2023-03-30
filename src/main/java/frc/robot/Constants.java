@@ -197,17 +197,12 @@ public final class Constants {
   }
 
   public static class SYSIDConstants{
-    public static double kS = 0;
-    public static double kV = 0;
-    public static double kA = 0;
-    public static double kP = 0;
-
-    public static double ksVolts = 0;
-    public static double kvVoltSecondsPerMeter = 0;
-    public static double kaVoltSecondsSquaredPerMeter = 0;
+    public static double ksVolts = 0.18975;
+    public static double kvVoltSecondsPerMeter = 3.3753;
+    public static double kaVoltSecondsSquaredPerMeter = 0.30112;
     
 
-    public static double kpDriveVel = 0;
+    public static double kpDriveVel = 3.8464E-07;
 
     public static double kTrackwidthMeters = 0.56;
     public static DifferentialDriveKinematics kDriveKinematics =
@@ -291,17 +286,10 @@ public final class Constants {
 
 
     //SYSID Constants
-    SYSIDConstants.kS = 0;
-    SYSIDConstants.kV = 0;
-    SYSIDConstants.kA = 0;
-    SYSIDConstants.kP = 0;
-
-    SYSIDConstants.ksVolts = 0;
-    SYSIDConstants.kvVoltSecondsPerMeter = 0;
-    SYSIDConstants.kaVoltSecondsSquaredPerMeter = 0;
-    
-
-    SYSIDConstants.kpDriveVel = 0;
+    SYSIDConstants.ksVolts = 0.18975;
+    SYSIDConstants.kvVoltSecondsPerMeter = 3.3753;
+    SYSIDConstants.kaVoltSecondsSquaredPerMeter = 0.30112;
+    SYSIDConstants.kpDriveVel = 3.8464E-07;
 
     SYSIDConstants.kTrackwidthMeters = 0.69;
     SYSIDConstants.kDriveKinematics =

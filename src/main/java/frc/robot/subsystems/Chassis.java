@@ -72,7 +72,7 @@ public class Chassis extends SubsystemBase {
     this.navx = navx;
     setShifter(Gear.LOW); //Robot.teleopInit() will set this high for drivers
 
-    m_odometry = new DifferentialDriveOdometry(navx.getRotation2d(), leftEncoder.getPosition()*0.305, rightEncoder.getPosition()*0.305);
+    m_odometry = new DifferentialDriveOdometry(navx.getRotation2d(), Units.inchesToMeters(leftEncoder.getPosition()), Units.inchesToMeters(rightEncoder.getPosition()));
   }
 
   public void setShifter(Gear gear){
@@ -128,7 +128,7 @@ public class Chassis extends SubsystemBase {
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftLeader.setVoltage(leftVolts);
-    rightFollower.setVoltage(rightVolts);
+    rightLeader.setVoltage(rightVolts);
     driveTrain.feed();
   }
 

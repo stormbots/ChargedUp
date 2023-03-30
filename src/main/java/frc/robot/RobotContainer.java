@@ -502,41 +502,45 @@ public class RobotContainer {
     SmartDashboard.putData("autos/Auto Chooser",autoChooser);
   }
   
+
+  DifferentialDriveVoltageConstraint autoVoltageConstraint =
+  new DifferentialDriveVoltageConstraint(
+    new SimpleMotorFeedforward(
+      Constants.SYSIDConstants.ksVolts, 
+      Constants.SYSIDConstants.kvVoltSecondsPerMeter,
+      Constants.SYSIDConstants.kaVoltSecondsSquaredPerMeter),
+    Constants.SYSIDConstants.kDriveKinematics,
+    10
+  );
+
+  TrajectoryConfig config =
+    new TrajectoryConfig(
+      Constants.SYSIDConstants.kMaxSpeedMetersPerSecond, 
+      Constants.SYSIDConstants.kMaxAccelerationMetersPerSecondSquared)
+      .setKinematics(Constants.SYSIDConstants.kDriveKinematics)
+      .addConstraint(autoVoltageConstraint);
+
+  Trajectory exampleTrajectory =
+    TrajectoryGenerator.generateTrajectory(
+      new Pose2d(0, 0, new Rotation2d(0)), 
+      List.of(new Translation2d(1,0)), 
+      // new Pose2d(2, 0, new Rotation2d(0)), 
+      new Pose2d(Units.inchesToMeters(170), 0, new Rotation2d(0)), 
+      config);
+
   public Command getAutonomousCommand(){
     // return new RunCommand( ()->chassis.arcadeDrive(0.05, 0), chassis);
     // return new ChassisDriveNavx(1, ()->0, 5 , 0.01, navx, chassis);
     // return autoChooser.getSelected();
 
-    var autoVoltageConstraint =
-      new DifferentialDriveVoltageConstraint(
-        new SimpleMotorFeedforward(
-          Constants.SYSIDConstants.ksVolts, 
-          Constants.SYSIDConstants.kvVoltSecondsPerMeter,
-          Constants.SYSIDConstants.kaVoltSecondsSquaredPerMeter),
-        Constants.SYSIDConstants.kDriveKinematics,
-        10
-      );
 
-      TrajectoryConfig config =
-        new TrajectoryConfig(
-          Constants.SYSIDConstants.kMaxSpeedMetersPerSecond, 
-          Constants.SYSIDConstants.kMaxAccelerationMetersPerSecondSquared)
-          .setKinematics(Constants.SYSIDConstants.kDriveKinematics)
-          .addConstraint(autoVoltageConstraint);
 
-      Trajectory exampleTrajectory =
-        TrajectoryGenerator.generateTrajectory(
-          new Pose2d(0, 0, new Rotation2d(0)), 
-          List.of(new Translation2d(1,1), new Translation2d(2, -1)), 
-          new Pose2d(3, 0, new Rotation2d(0)), 
-          config);
-
-      Trajectory testTrajectory =
-        TrajectoryGenerator.generateTrajectory(
-          new Pose2d(0, 0, new Rotation2d(0)), 
-          List.of(new Translation2d(0.25,0), new Translation2d(0.5, 0)), 
-          new Pose2d(1, 0, new Rotation2d(0)), 
-          config);
+      // Trajectory testTrajectory =
+      //   TrajectoryGenerator.generateTrajectory(
+      //     new Pose2d(0, 0, new Rotation2d(0)), 
+      //     List.of(new Translation2d(0.5, 0)), 
+      //     new Pose2d(Units.inchesToMeters(170), 0, new Rotation2d(0)), 
+      //     config);
 
       RamseteCommand ramseteCommand =
         new RamseteCommand(
@@ -554,6 +558,7 @@ public class RobotContainer {
           chassis::tankDriveVolts, 
           chassis);
 
+          chassis.resetOdometry(new Pose2d());
           return ramseteCommand.andThen(  ()->chassis.tankDriveVolts(0, 0)  );
 
   }
