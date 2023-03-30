@@ -176,6 +176,11 @@ public class RobotContainer {
       new ChassisBalance(()->-driver.getRawAxis(1)/2.0, ()-> driver.getRawAxis(2)/2.0, chassis, navx)
     );
 
+    // driver.button(1).whileTrue(
+    //   new ChassisDriveNavx(0, ()->Math.abs(navx.getRotation2d().getDegrees())>90? 180 : 0, 0, Units.inchesToMeters(0), navx, chassis)
+    //   )
+    // ;
+
     driver.button(2).whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
       .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), -180, 10, chassis, navx))
@@ -183,12 +188,33 @@ public class RobotContainer {
       // .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
 
-    driver.button(4).whileTrue(new InstantCommand()
+
+    //Mid cube
+    // driver.button(2)
+    // .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.OPEN)
+    // .whileTrue(new InstantCommand()
+    //   .andThen(()->chassis.setShifter(Gear.LOW))
+    //   .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), -180, 20, chassis, navx))
+    // )
+    // ;
+
+    driver.button(4)
+    // .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
+    .whileTrue(new InstantCommand()
       .andThen(()->chassis.setShifter(Gear.LOW))
       .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), -180, 20, chassis, navx))
       .andThen(new ChassisVisionRetro(()-> -driver.getRawAxis(1),()-> -driver.getRawAxis(2), LimelightPipeline.kHighCone, chassis, vision, navx))
       // .finallyDo((cancelled)->chassis.setShifter(Gear.HIGH))
     );
+
+    //Gyro to 0 when holding a cube
+    // driver.button(4)
+    // .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.OPEN)
+    // .whileTrue(new InstantCommand()
+    //   .andThen(()->chassis.setShifter(Gear.LOW))
+    //   .andThen(new ChassisTurnGyro(() -> -driver.getRawAxis(1),()-> driver.getRawAxis(2), -180, 20, chassis, navx))
+    // )
+    // ;
 
     driver.button(3).whileTrue(new InstantCommand()
     .andThen(new ChassisTurnGyro(()-> -driver.getRawAxis(1), ()-> driver.getRawAxis(2), 0, 20, chassis, navx))
