@@ -111,7 +111,7 @@ public final class Constants {
 
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
-    public static double kAbsoluteAngleOffset=270;
+    public static double kAbsoluteAngleOffset=270-63;
     public static double kAbsoluteAngleDistancePerRotation=360;
     public static double kMotorEncoderConversionFactor = 90/(30.7-(-4.1));
 
