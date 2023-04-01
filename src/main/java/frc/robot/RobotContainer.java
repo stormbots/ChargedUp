@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import java.time.Instant;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,16 +29,21 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ChassisConstants;
+import frc.robot.Constants.RetractConstants;
 import frc.robot.commands.ChassisBalance;
 import frc.robot.commands.ChassisDriveNavx;
 import frc.robot.commands.ChassisTurnGyro;
 import frc.robot.commands.ChassisVisionRetro;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.ArmBrake;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Arm.PlaceOrPrepareOrExecute;
 import frc.robot.subsystems.Arm.PrepareOrExecute;
+import frc.robot.subsystems.Arm.RetractSolenoidPosition;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Intake;
@@ -69,7 +77,7 @@ public class RobotContainer {
   public Intake intake = new Intake();
   public Vision vision = new Vision(pe, navx, field);
   public final Lighting lighting = new Lighting();
-
+  public ArmBrake armBrake= new ArmBrake();
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandJoystick driver = new CommandJoystick(0);
   private final CommandJoystick operator = new CommandJoystick(1);
@@ -133,13 +141,31 @@ public class RobotContainer {
           arm.driveRetract(operator.getRawAxis(0));
           arm.driveWrist(operator.getRawAxis(2));
         },arm
-      ));
-
-      intake.setDefaultCommand(new InstantCommand(
+      ).beforeStarting(new InstantCommand(
         ()->{
-        arm.intakeMotor.set(.20);
-        },intake
-      ));
+          arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+          arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+        }))
+      );
+
+      armBrake.setDefaultCommand(new RunCommand(
+        ()->{
+          arm.setRetractBrake(RetractSolenoidPosition.DISENGAGED);
+        },armBrake)
+        .finallyDo((bool)->arm.setRetractBrake(RetractSolenoidPosition.ENGAGED))
+      );
+      //attempt to auto-disable bot
+      new Trigger(()->DriverStation.getMatchTime()<0.5)
+      // .and(()->DriverStation.isFMSAttached())
+      .onTrue(new RunCommand(()->arm.setRetractBrake(RetractSolenoidPosition.ENGAGED),armBrake))
+      ;
+      
+
+      // intake.setDefaultCommand(new InstantCommand(
+      //   ()->{
+      //   arm.intakeMotor.set(.20);
+      //   },intake
+      // ));
 
       lighting.setDefaultCommand(new RunCommand(()->{
         if(arm.prepareOrExecute==PrepareOrExecute.EXECUTE){
@@ -233,10 +259,13 @@ public class RobotContainer {
     ));
     operator.button(3).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.EXECUTE)));
     operator.button(3).onFalse(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
+    operator.button(3).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PREPARE)));
+    operator.button(3).onFalse(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.EXECUTE)));
 
-    operator.button(5).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
-    operator.button(6).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
-    operator.button(10).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
+
+    // operator.button(5).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
+    // operator.button(6).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
+    // operator.button(10).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
     //INTAKE MOTORS DRIVE INWARDS
     operator.povCenter().whileFalse((new RunCommand(()->arm.intakeMotor.set(1.0),intake)));
     operator.povCenter().onTrue(new RunCommand(()->arm.intakeMotor.set(0.2),intake) );
@@ -282,9 +311,9 @@ public class RobotContainer {
       , 
       new ConditionalCommand(
         //Place HIGH cube
-        new setArm(35, 48, 6, 0.2, arm, intake), 
+        new setArm(35, 48, 6, -0.2, arm, intake), 
         //Execute HIGH Cube
-        new setArm(35, 48, 6, -0.25, arm, intake),
+        new setArm(35, 48, 6, 0.25, arm, intake),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
     ,
     ()->arm.getPlaceOrPrepareOrExecute()== PlaceOrPrepareOrExecute.PLACE));
@@ -294,13 +323,13 @@ public class RobotContainer {
     .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
     .whileTrue(new ConditionalCommand(
       //Prepare HIGH cone
-      new setArm(48, 0, 48, 0.2, arm, intake)
+      new setArm(42, 0, 48, 0.2, arm, intake)
       , 
       new ConditionalCommand(
         //Place  HIGH cones
-        new setArm(48, 49, 48, 0.2, arm, intake), 
+        new setArm(42, 49, 48, 0.2, arm, intake), 
         //Execute HIGH cones
-        new setArm(34.5, 49, 35, 0.2, arm, intake),
+        new setArm(27, 49, 35, 0.2, arm, intake),
         ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
       ,
       ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
@@ -337,9 +366,9 @@ public class RobotContainer {
       , 
       new ConditionalCommand(
         //Place MID cube
-        new setArm(29, 11, 4, 0.2, arm, intake), 
+        new setArm(29, 11, 4, -0.2, arm, intake), 
         //Execute MID Cube
-        new setArm(29, 11, 4, -0.25, arm, intake),
+        new setArm(29, 11, 4, 0.25, arm, intake),
         ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE)
     ,
     ()->arm.getPlaceOrPrepareOrExecute()== PlaceOrPrepareOrExecute.PLACE));
@@ -355,13 +384,13 @@ public class RobotContainer {
         //Place  MID cones
         new setArm(45, 25, 20, 0.2, arm, intake), 
         //Execute MID cones
-        new setArm(28, 25, 20, 0.2, arm, intake),
+        new setArm(20, 25, 20, 0.2, arm, intake),
         ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
       ,
       ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
     
     //PICKUP DOUBLE SUBSTATION
-    operator.button(9).whileTrue(new setArm(47, 19, 11, 1.0, arm, intake));
+    operator.button(9).whileTrue(new setArm(50, 13.5,0, 1.0, arm, intake));
 
     //PICKUP TIPPED CONE
     // operator.button(7).whileTrue(new InstantCommand()
@@ -372,7 +401,7 @@ public class RobotContainer {
     // );
     operator.button(7).whileTrue(new ConditionalCommand(
       new setArm(10,0,-75,0,arm,intake), 
-      new setArm(-15,0,-100,1.0,arm,intake).withTimeout(0.5)
+      new setArm(-25,0,-100,1.0,arm,intake).withTimeout(0.5)
       .andThen(new setArm(10,0,-100,0,arm,intake)), 
       ()->arm.getPrepareOrExecute()==PrepareOrExecute.PREPARE))
       ;
@@ -400,9 +429,9 @@ public class RobotContainer {
         , 
         new ConditionalCommand(
           //Place  LOw 
-          new setArm(15, 10, -45, 0.2, arm, intake), 
+          new setArm(15, 15, -45, 0.2, arm, intake), 
           //Execute LOW 
-          new setArm(15, 10, -45, -0.2, arm, intake).withTimeout(0.15)
+          new setArm(15, 15, -45, -0.2, arm, intake).withTimeout(0.15)
           .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))),
           ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
         ,
@@ -411,11 +440,13 @@ public class RobotContainer {
     //MOVE TO CARRY POSITION
     operator.button(2).whileTrue(new InstantCommand()
     .andThen(
-      new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
+      // new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
+      new setArm(()-> MathUtil.clamp(arm.getArmAngle(), 30, 180) ,()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
       //.until(()->arm.isRobotOnTarget(90, 10, 90))
     )
     .andThen(commandBuilder(CommandSelect.kArmToCarryPosition))
     );
+    
     
     operator.button(2).onTrue(new InstantCommand(()->arm.setPrepareOrExecute(PrepareOrExecute.PREPARE)));
     operator.button(2).onTrue(new InstantCommand(()->arm.setPlaceOrPrepareOrExecute(PlaceOrPrepareOrExecute.PLACE)));
@@ -436,7 +467,7 @@ public class RobotContainer {
       arm.intakeMotor.set(0.0);
     },intake));
     //Sync Encoders & Clear Stickies
-    operator.button(11).onTrue(new InstantCommand(()->{
+    operator.button(11).whileTrue(new InstantCommand(()->{
       arm.armMotor.clearFaults();
       arm.retractMotor.clearFaults();
       arm.wristMotor.clearFaults();
@@ -447,7 +478,14 @@ public class RobotContainer {
       chassis.leftFollower.clearFaults();
       chassis.rightLeader.clearFaults();
       chassis.rightFollower.clearFaults();
-    }));
+    })
+    .andThen(new RunCommand(()->{
+      arm.retractMotor.enableSoftLimit(SoftLimitDirection.kReverse,false);
+      arm.retractMotor.set(RetractConstants.kaFFNear-0.05); //just enough to retract always
+    },arm))
+    .finallyDo((bool)->arm.retractMotor.enableSoftLimit(SoftLimitDirection.kReverse,true))
+    );
+    
     //Score backwards mid cone
     // operator.button(14).whileTrue(new ConditionalCommand(
     //   //Place Cones
@@ -460,20 +498,20 @@ public class RobotContainer {
     //   ;
 
     //Score Backwards MID
-    operator.button(14)
-      .whileTrue(new ConditionalCommand(
-        //Prepare MID Backwards
-        new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward,false))
-        .andThen(new setArm(145, 0, 157, 0.2, arm, intake))
-        , 
-        new ConditionalCommand(
-          //Place  MID Backwards 
-          new setArm(145, 27, 157, 0.2, arm, intake), 
-          //Execute MID Backwards 
-          new setArm(166, 27, 172, 0.2, arm, intake),
-          ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
-        ,
-        ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
+    // operator.button(14)
+    //   .whileTrue(new ConditionalCommand(
+    //     //Prepare MID Backwards
+    //     new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward,false))
+    //     .andThen(new setArm(145, 0, 157, 0.2, arm, intake))
+    //     , 
+    //     new ConditionalCommand(
+    //       //Place  MID Backwards 
+    //       new setArm(145, 27, 157, 0.2, arm, intake), 
+    //       //Execute MID Backwards 
+    //       new setArm(166, 27, 172, 0.2, arm, intake),
+    //       ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
+    //     ,
+    //     ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
         
   }
 
@@ -496,8 +534,8 @@ public class RobotContainer {
     switch(commandSnippet){
       case kArmToPickupPosition:
       return new ConditionalCommand(
-      new setArm(-46, 0, -4, 1.0, arm, intake), //cone
-      new setArm(-38, 6, -5, 1.0, arm, intake), //cube
+      new setArm(-50, 4, 0, 1.0, arm, intake), //cone
+      new setArm(-48, 3.5, 0, 1.0, arm, intake), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
       ;
 
@@ -515,11 +553,11 @@ public class RobotContainer {
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))) 
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
-        .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(4.5))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6+6+4), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
+        .deadlineWith(new setArm(-42, 5, -8, 0.3, arm, intake))
       )
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8),()->0,5,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(6)
-        .alongWith(new setArm(90, 11, 180, 0.5, arm, intake).withTimeout(4.5))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8-6-4),()->0,5,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(5)
+        .deadlineWith(new setArm(90, 11, 180, 0.5, arm, intake))
       )
       ;
 
@@ -538,39 +576,40 @@ public class RobotContainer {
 
       case kLevelArmAndResetEncoder:
       return new InstantCommand()
-      .andThen(new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(5, 1, 10)))
-      .andThen(new WaitCommand(0.1))
-      //go to cube pickup
-      //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
-      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
-      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
-      .andThen(new InstantCommand(()->{
-          //reject jank; Only run this if the arm successfully got where it should have gone
-          if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
-        }))
+      .andThen(new setArm(80, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(10, 1, 20)))
+      // .andThen(new WaitCommand(0.1))
+      // //go to cube pickup
+      // //.andThen( commandBuilder(CommandSelect.kArmToPickupPosition).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(1) )
+      // .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true)))
+      // .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true)))
+      // .andThen(new InstantCommand(()->{
+      //     //reject jank; Only run this if the arm successfully got where it should have gone
+      //     if( arm.getArmAngle()<90 ){ arm.armMotor.getEncoder().setPosition(arm.getArmAngleAbsolute() ); }
+      //   }))
       ;
 
      case kPlaceConeMidBackwards:
      return new InstantCommand()
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
+     
      //place 
      .andThen(new setArm(145, 27, 157, 0.2, arm, intake).withTimeout(.75))
-     .andThen(new WaitCommand(0.1))
+    //  .andThen(new WaitCommand(0.1))
      //execute 
      .andThen(new setArm(166, 27, 172, 0.2, arm, intake).until(()->arm.isRobotOnTarget(3, 1, 3)).withTimeout(.75))
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
-     .andThen(new WaitCommand(0.1))
-     //put arm up somewhere away from posts
-     .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
+    //  .andThen(new WaitCommand(0.1))
+     //put arm up somewhere away from 
+     .andThen(new setArm(166, 0, 90, 0.2, arm, intake).until(()->arm.isRobotOnTarget(10, 1, 20)))
+    //  .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
      ;
 
      case kPlaceCubeHighBackwards:
      return new InstantCommand()
-     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
+     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
+    
      //place 
      .andThen(new setArm(140, 48, 180, 1.0, arm, intake).until(()->arm.isRobotOnTarget(3,3,3)).withTimeout(0.75))
      //execute 
@@ -585,11 +624,11 @@ public class RobotContainer {
      return new InstantCommand()
      .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN)))
      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
-     .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
+ 
      //place get values
-     .andThen(new setArm(145, 11, 180, 0.5, arm, intake).until(()->arm.isRobotOnTarget(3,5,5)).withTimeout(0.5))
+     .andThen(new setArm(145, 14, 180, 0.5, arm, intake).until(()->arm.isRobotOnTarget(3,5,5)).withTimeout(0.75))
      //execute get values
-     .andThen(new setArm(145, 11, 180, -0.1, arm, intake).withTimeout(.25))
+     .andThen(new setArm(145, 14, 180, -0.1, arm, intake).withTimeout(.5))
      .andThen(new setArm(90,0,0,0,arm,intake).withTimeout(0.5))
      //put arm up somewhere away from posts
      .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))
@@ -653,19 +692,24 @@ public class RobotContainer {
     var placeConeDriveOverChargedPickUpBalance = new InstantCommand()
     .andThen(commandBuilder(CommandSelect.kPlaceConeMidBackwards))
     // Drive past charger
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 5 , Units.inchesToMeters(1), navx, chassis))
-    // Pickup up a cone
+    .andThen(
+      new ChassisDriveNavx(Units.inchesToMeters(164), ()->0, 5 , Units.inchesToMeters(10), navx, chassis).withTimeout(6)
+      .deadlineWith(new setArm(0, 0, 45, 0.2, arm, intake))
+    )
+      // Pickup up a cone
     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
-    .andThen(new setArm(-38, 6, -5, 0.3, arm, intake).withTimeout(2).until(()->arm.isRobotOnTarget(4, 1, 5)))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(20),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
-      .alongWith(new setArm(-38, 6, -5, 0.3, arm, intake))
+    .andThen(new setArm(-50, 4, 0, 1.0, arm, intake).withTimeout(2).until(()->arm.isRobotOnTarget(4, 1, 5)))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(66),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(6)
+      .deadlineWith(new setArm(-50, 4, 0, 1.0, arm, intake))
     )
     //move arm out of way and drive back to balance
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20), ()->0, 10, Units.inchesToMeters(10), navx, chassis)
-      .alongWith(commandBuilder(CommandSelect.kArmToCarryPosition))
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20-4), ()->0, 10, Units.inchesToMeters(10), navx, chassis)
+      .deadlineWith(commandBuilder(CommandSelect.kArmToCarryPosition))
     )
     //balance!
-    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
+    .andThen(new ChassisBalance(()->0, ()->0, chassis, navx)
+      .deadlineWith(commandBuilder(CommandSelect.kArmToCarryPosition))
+    )
     ;
     
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
