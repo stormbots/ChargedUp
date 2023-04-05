@@ -109,6 +109,7 @@ public class Arm extends SubsystemBase {
     armMotor.setSmartCurrentLimit(80);
     armMotor.setInverted(true);
     armMotor.getEncoder().setPositionConversionFactor(ArmConstants.kMotorEncoderConversionFactor);
+    armMotor.getEncoder().setVelocityConversionFactor(ArmConstants.kMotorEncoderConversionFactor/60.0);
     armMotor.getEncoder().setPosition(getArmAngleAbsolute());
     armMotor.setSoftLimit(SoftLimitDirection.kForward, ArmConstants.kSoftLimitForwardNear);
     armMotor.setSoftLimit(SoftLimitDirection.kReverse, ArmConstants.kSoftLimitReverseNear);

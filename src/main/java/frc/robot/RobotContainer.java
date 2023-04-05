@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.time.Instant;
-
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 
@@ -27,10 +25,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ChassisConstants;
 import frc.robot.Constants.RetractConstants;
 import frc.robot.commands.ChassisBalance;
@@ -39,11 +35,11 @@ import frc.robot.commands.ChassisTurnGyro;
 import frc.robot.commands.ChassisVisionRetro;
 import frc.robot.commands.setArm;
 import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.ArmBrake;
 import frc.robot.subsystems.Arm.IntakeSolenoidPosition;
 import frc.robot.subsystems.Arm.PlaceOrPrepareOrExecute;
 import frc.robot.subsystems.Arm.PrepareOrExecute;
 import frc.robot.subsystems.Arm.RetractSolenoidPosition;
+import frc.robot.subsystems.ArmBrake;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.Chassis.Gear;
 import frc.robot.subsystems.Intake;
@@ -130,7 +126,7 @@ public class RobotContainer {
         ()->{
           SmartDashboard.putNumber("chassis/forwardvalue",-driver.getRawAxis(1));
           // SmartDashboard.putNumber("chassis/turnvalue",-driver.getRawAxis(2));
-          chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2));}
+          chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2)*0.75);}
         ,chassis)
        );
 
@@ -161,11 +157,11 @@ public class RobotContainer {
       ;
       
 
-      // intake.setDefaultCommand(new InstantCommand(
-      //   ()->{
-      //   arm.intakeMotor.set(.20);
-      //   },intake
-      // ));
+      intake.setDefaultCommand(new InstantCommand(
+        ()->{
+        arm.intakeMotor.set(.20);
+        },intake
+      ));
 
       lighting.setDefaultCommand(new RunCommand(()->{
         if(arm.prepareOrExecute==PrepareOrExecute.EXECUTE){
@@ -329,7 +325,7 @@ public class RobotContainer {
         //Place  HIGH cones
         new setArm(42, 49, 48, 0.2, arm, intake), 
         //Execute HIGH cones
-        new setArm(27, 49, 35, 0.2, arm, intake),
+        new setArm(33, 49, 10, 0.2, arm, intake),
         ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
       ,
       ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
@@ -423,16 +419,34 @@ public class RobotContainer {
 
     //SCORE LOW
     operator.button(10)
+      .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.OPEN)
       .whileTrue(new ConditionalCommand(
-        //Prepare LOW 
-        new setArm(15, 0, -45, 0.2, arm, intake)
+        //Prepare LOW CUBE
+        new setArm(7, 0, -760, 0.2, arm, intake)
         , 
         new ConditionalCommand(
-          //Place  LOw 
-          new setArm(15, 15, -45, 0.2, arm, intake), 
-          //Execute LOW 
-          new setArm(15, 15, -45, -0.2, arm, intake).withTimeout(0.15)
-          .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))),
+          //Place  Lw CUBE
+          new setArm(7, 0, -60, 0.2, arm, intake), 
+          //Execute LOW CUBE
+          new setArm(7, 0, -60, -0.2, arm, intake)
+          .alongWith(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))),
+          ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
+        ,
+        ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
+    
+      //SCORE LOW
+    operator.button(10)
+      .and(()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
+      .whileTrue(new ConditionalCommand(
+        //Prepare LOW CONE
+        new setArm(-25, 2, 25, 0.2, arm, intake)
+        , 
+        new ConditionalCommand(
+          //Place  LOw CONE
+          new setArm(-25, 2, 25,  0.2, arm, intake), 
+          //Execute LOW CONE
+          new setArm(-25, 2, 25,  -0.2, arm, intake)
+          .alongWith(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))),
           ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PREPARE)
         ,
         ()->arm.getPlaceOrPrepareOrExecute()==PlaceOrPrepareOrExecute.PLACE));
@@ -441,7 +455,7 @@ public class RobotContainer {
     operator.button(2).whileTrue(new InstantCommand()
     .andThen(
       // new setArm(()->arm.getArmAngle(),()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
-      new setArm(()-> MathUtil.clamp(arm.getArmAngle(), 30, 180) ,()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
+      new setArm(()-> MathUtil.clamp(arm.getArmAngle(), 40, 180) ,()->0,()->arm.getWristAngle(),()->0.2,arm,intake).withTimeout(0.3)
       //.until(()->arm.isRobotOnTarget(90, 10, 90))
     )
     .andThen(commandBuilder(CommandSelect.kArmToCarryPosition))
@@ -535,7 +549,7 @@ public class RobotContainer {
       case kArmToPickupPosition:
       return new ConditionalCommand(
       new setArm(-50, 4, 0, 1.0, arm, intake), //cone
-      new setArm(-48, 3.5, 0, 1.0, arm, intake), //cube
+      new setArm(-41.5, 7, -8, 1.0, arm, intake), //cube
       ()->arm.getIntakePosition()==IntakeSolenoidPosition.CLOSED)
       ;
 
@@ -554,7 +568,7 @@ public class RobotContainer {
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))) 
       .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6+6+4), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
-        .deadlineWith(new setArm(-42, 5, -8, 0.3, arm, intake))
+        .deadlineWith(new setArm(-41.5, 7, -8, 0.3, arm, intake))
       )
       .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8-6-4),()->0,5,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(5)
         .deadlineWith(new setArm(90, 11, 180, 0.5, arm, intake))
@@ -714,9 +728,11 @@ public class RobotContainer {
     
     autoChooser.setDefaultOption("Do Nothing", new InstantCommand());
 
-    autoChooser.addOption("Two Cube Auto(on left side)",TwoCubePlaceLeftSide);
-    autoChooser.addOption("Two Cube Auto(on right side)",TwoCubePlaceRightSide);
+    autoChooser.addOption("LEFT Two Cube Auto",TwoCubePlaceLeftSide);
+    autoChooser.addOption("RIGHT Two Cube Auto",TwoCubePlaceRightSide);
+    autoChooser.addOption("Score 1 And Pickup + Balance", placeConeDriveOverChargedPickUpBalance);
     autoChooser.addOption("Cube High, Mobility, Balance", balanceCommunityScoreCubeHigh);
+    autoChooser.addOption("-------BELOW ARE UNTESTED ON FIELD--------", new InstantCommand(()->{}));
     autoChooser.addOption("Cube High, balance, no mobility",cubeHighBalanceNoMobility);
     autoChooser.addOption("CubeHigh, no drive",commandBuilder(CommandSelect.kPlaceCubeHighBackwards));
     // autoChooser.addOption("Mobility + Balance + Score Cube Mid", balanceCommunityScoreCubeMid);
@@ -725,7 +741,7 @@ public class RobotContainer {
     autoChooser.addOption("Cone Mid, no drive",commandBuilder(CommandSelect.kPlaceConeMidBackwards));
     autoChooser.addOption("Drive+Balance Only",commandBuilder(CommandSelect.kDriveToChargerAndBalance));
     autoChooser.addOption("Mobility, no balance",commandBuilder(CommandSelect.kDriveToGamePiece));
-    autoChooser.addOption("TESTING Cone mid, pick up cone, balance", placeConeDriveOverChargedPickUpBalance);
+  
 
     SmartDashboard.putData("autos/Auto Chooser", autoChooser);
   }

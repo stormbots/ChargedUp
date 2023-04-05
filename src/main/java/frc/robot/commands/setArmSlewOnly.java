@@ -7,8 +7,6 @@ package frc.robot.commands;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.RetractConstants;
@@ -16,7 +14,7 @@ import frc.robot.Constants.WristConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Intake;
 
-public class setArm extends CommandBase {
+public class setArmSlewOnly extends CommandBase {
   private final Arm arm;
   private DoubleSupplier angle;
   private DoubleSupplier extension;
@@ -28,20 +26,11 @@ public class setArm extends CommandBase {
   SlewRateLimiter wristRateLimiter = new SlewRateLimiter(
     WristConstants.kMaxRangeOfMotion*1.5, 
     -WristConstants.kMaxRangeOfMotion*1.5, 0);
-  // SlewRateLimiter armRateLimiter =new SlewRateLimiter(
-  //   180, 180, 0);
-
-
-  TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(
-    WristConstants.kMaxRangeOfMotion*1.5*4, //degrees/s
-    720 // degrees/s/s
-    );
-  TrapezoidProfile.State goal = new TrapezoidProfile.State(0, 0);
-  TrapezoidProfile armProfile = new TrapezoidProfile(constraints, goal);
-  double startTimer = 0;
+  SlewRateLimiter armRateLimiter =new SlewRateLimiter(
+    180, 180, 0);
 
   /** Moves arm to a pose. */
-  public setArm(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm, Intake intake) {
+  public setArmSlewOnly(double armAngle, double extension, double wristAngle, double intakeSpeed, Arm arm, Intake intake) {
     this.arm = arm;
     this.angle = ()->armAngle;
     this.extension = ()->extension;
@@ -50,10 +39,9 @@ public class setArm extends CommandBase {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
     addRequirements(intake);
-    goal = new TrapezoidProfile.State(armAngle, 0);
   }
 
-  public setArm(
+  public setArmSlewOnly(
       DoubleSupplier armAngle, 
       DoubleSupplier extension,
       DoubleSupplier wristAngle, 
@@ -76,10 +64,7 @@ public class setArm extends CommandBase {
   public void initialize() {
     wristRateLimiter.reset(arm.getWristAngle());
     retractRateLimiter.reset(arm.getRetractRotations());
-
-    startTimer = Timer.getFPGATimestamp();
-    var initial = new TrapezoidProfile.State(arm.getArmAngle(), arm.armMotor.getEncoder().getVelocity());
-    armProfile = new TrapezoidProfile(constraints, goal, initial);
+    armRateLimiter.reset(arm.getArmAngle  ());
   }
 
 
@@ -87,10 +72,9 @@ public class setArm extends CommandBase {
   @Override
   public void execute() {
     var extension = this.extension.getAsDouble();
+    var angle = this.angle.getAsDouble();
     var intakeSpeed = this.intakeSpeed.getAsDouble();
     var wristAngle = this.wristAngle.getAsDouble();
-
-    var targetPosition = armProfile.calculate(Timer.getFPGATimestamp()-startTimer).position;
 
 
     //TODO: We need to be mindful of extend poses
@@ -99,7 +83,7 @@ public class setArm extends CommandBase {
     arm.setRetractPID(retractRateLimiter.calculate(extension));
     arm.setWristPID(wristRateLimiter.calculate(wristAngle));
     arm.intakeMotor.set(intakeSpeed);
-    arm.setArmPID(targetPosition);
+    arm.setArmPID(angle);
 
   }
 
