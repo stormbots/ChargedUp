@@ -111,7 +111,7 @@ public final class Constants {
 
   public static class ArmConstants{
     public static double kGeartrain = 1/140.0;
-    public static double kAbsoluteAngleOffset=270-63;
+    public static double kAbsoluteAngleOffset=270-63+129-2;
     public static double kAbsoluteAngleDistancePerRotation=360;
     public static double kMotorEncoderConversionFactor = 90/(30.7-(-4.1));
 
@@ -149,8 +149,8 @@ public final class Constants {
     public static float kRetractSoftLimitReverse = 0;
     public static float kRetractSoftLimitForward = 55;
 
-    public static Value ENGAGED = Value.kForward;
-    public static Value DISENGAGED = Value.kReverse;
+    public static Value ENGAGED = Value.kReverse;
+    public static Value DISENGAGED = Value.kForward;
     public static double kGeartrain=5.56;
     public static double kStrapWidth=0.03;
     public static double kInnerDiameter=0.5;

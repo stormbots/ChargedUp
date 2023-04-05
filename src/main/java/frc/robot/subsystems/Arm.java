@@ -14,6 +14,7 @@ import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 import com.stormbots.Clamp;
 import com.stormbots.Lerp;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -260,8 +261,13 @@ public class Arm extends SubsystemBase {
   }
 
   public double getArmAngleAbsolute(){
-    var angle = armAbsEncoder.getAbsolutePosition()*360-Constants.ArmConstants.kAbsoluteAngleOffset;
-    if( angle < Constants.ArmConstants.kAbsoluteAngleOffset-360 ){ //TODO should be hardcodedd -90, as it's a physical value not related to offset
+    // var angle = armAbsEncoder.getAbsolutePosition()*360-Constants.ArmConstants.kAbsoluteAngleOffset;
+    var angle = armAbsEncoder.getAbsolutePosition()*Math.PI*2;
+    angle -= Math.toRadians( Constants.ArmConstants.kAbsoluteAngleOffset );
+    angle = MathUtil.angleModulus(angle);
+    angle = Math.toDegrees(angle);
+
+    if( angle < -90 ){ //TODO should be hardcodedd -90, as it's a physical value not related to offset
       return angle += 360; 
     }
     return angle;
@@ -400,7 +406,7 @@ public class Arm extends SubsystemBase {
     // SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
 
     SmartDashboard.putString("intakeState",getIntakePosition().toString());
-    SmartDashboard.putString("executeToggle", getPrepareOrExecute().toString());
+    SmartDashboard.putString("executeToggle", getPlaceOrPrepareOrExecute().toString());
     SmartDashboard.putString("brakeOn/Off", getPrepareOrExecute().toString());
   }
   
