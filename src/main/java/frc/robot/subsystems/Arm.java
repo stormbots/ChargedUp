@@ -74,8 +74,7 @@ public class Arm extends SubsystemBase {
   // Intake Actuation
   public CANSparkMax intakeMotor = new CANSparkMax(Constants.HardwareID.kIntakeMotor, MotorType.kBrushless);
   public DoubleSolenoid intakeSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, HardwareID.kIntakeForwardSolenoid, Constants.HardwareID.kIntakeReverseSolenoid); 
-  public DoubleSolenoid brakeSolenoid = new DoubleSolenoid(1,PneumaticsModuleType.REVPH, Constants.HardwareID.kRetractBrakeSolenoid, Constants.HardwareID.kRetractBrakeSolenoidReverse);//temp value
-  
+  public Solenoid brakeSolenoid = new Solenoid(PneumaticsModuleType.REVPH,Constants.HardwareID.kRetractBrakeSolenoid);//temp value
   
   // Wrist Actuation
   // public Servo wristServo = new Servo(Constants.HardwareID.kWristMotorID);
@@ -178,6 +177,9 @@ public class Arm extends SubsystemBase {
     }
   }
 
+  public RetractSolenoidPosition getRetractBrake(){
+    return this.retractSolenoidPosition;
+  }
   public void setRetractPID(double setpoint){
     this.retractSetpoint =setpoint;
     var retractFF = Lerp.lerp(getRetractRotations(), 
@@ -408,7 +410,7 @@ public class Arm extends SubsystemBase {
 
     SmartDashboard.putString("intakeState",getIntakePosition().toString());
     SmartDashboard.putString("executeToggle", getPlaceOrPrepareOrExecute().toString());
-    SmartDashboard.putString("brakeOn/Off", getPrepareOrExecute().toString());
+    // SmartDashboard.putString("brakeOn/Off", getRetractBrake().toString());
   }
   
   @Override

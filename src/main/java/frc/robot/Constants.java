@@ -36,8 +36,7 @@ public final class Constants {
     // Arm inputs
     public static int kArmMotor=5;
     public static int kRetractMotor=7;
-    public static int kRetractBrakeSolenoid=3;//freaking out
-    public static int kRetractBrakeSolenoidReverse=13;
+    public static int kRetractBrakeSolenoid=4;
     public static int kArmAnalogEncoderChannel=9;
 
     //Hand+wrist
@@ -149,8 +148,8 @@ public final class Constants {
     public static float kRetractSoftLimitReverse = 0;
     public static float kRetractSoftLimitForward = 55;
 
-    public static Value ENGAGED = Value.kReverse;
-    public static Value DISENGAGED = Value.kForward;
+    public static Boolean ENGAGED = false;
+    public static Boolean DISENGAGED = true;
     public static double kGeartrain=5.56;
     public static double kStrapWidth=0.03;
     public static double kInnerDiameter=0.5;

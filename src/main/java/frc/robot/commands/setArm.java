@@ -68,6 +68,8 @@ public class setArm extends CommandBase {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
     addRequirements(intake);
+    goal = new TrapezoidProfile.State(armAngle.getAsDouble(), 0);
+
   }
 
 
@@ -80,6 +82,7 @@ public class setArm extends CommandBase {
     startTimer = Timer.getFPGATimestamp();
     var initial = new TrapezoidProfile.State(arm.getArmAngle(), arm.armMotor.getEncoder().getVelocity());
     armProfile = new TrapezoidProfile(constraints, goal, initial);
+    Timer.delay(0.02);
   }
 
 
