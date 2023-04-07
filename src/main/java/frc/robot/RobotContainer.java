@@ -140,6 +140,7 @@ public class RobotContainer {
         },arm
       ).beforeStarting(new InstantCommand(
         ()->{
+          if(DriverStation.isAutonomous())return;
           arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
           arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
         }))
