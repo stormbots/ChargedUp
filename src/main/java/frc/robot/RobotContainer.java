@@ -572,24 +572,24 @@ public class RobotContainer {
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))) 
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6+6+4), ()->0, 3, Units.inchesToMeters(15), navx, chassis)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6+6+4), ()->0, 90, Units.inchesToMeters(15), navx, chassis)
         .deadlineWith(new setArm(-41.5, 7, -8, 0.3, arm, intake))
       )
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8-6-4),()->0, 3,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(5)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8-6-4),()->0,  90,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(5)
         .deadlineWith(new setArm(90, 11, 180, 0.5, arm, intake))
       )
       ;
 
       case kDriveToChargerAndBalance:
       return new InstantCommand()
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 5 , Units.inchesToMeters(20), navx, chassis))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(100), ()->0, 90 , Units.inchesToMeters(20), navx, chassis))
       .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
       ;
 
       case kDrivePastChargerReverseAndBalance:
       return new InstantCommand()
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 10, Units.inchesToMeters(20), navx, chassis))
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-8), ()->0, 10, Units.inchesToMeters(15), navx, chassis))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(200), ()->0, 90, Units.inchesToMeters(20), navx, chassis))
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-8), ()->0, 90, Units.inchesToMeters(15), navx, chassis))
       .andThen(new ChassisBalance(()->0, ()->0, chassis, navx))
       ;
 
@@ -717,13 +717,13 @@ public class RobotContainer {
     )
       // Pickup up a cone
     // .andThen(new setArm(-50, 4, 0, 1.0, arm, intake).withTimeout(2).until(()->arm.isRobotOnTarget(8, 3, 8)))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(66+4+4),()->0,5,Units.inchesToMeters(10),navx,chassis).withTimeout(5.5)
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(66+4+4),()->0,90,Units.inchesToMeters(10),navx,chassis).withTimeout(5.5)
       .deadlineWith(new setArm(-50, 4, 0, 1.0, arm, intake))
     )
     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
     .andThen(new WaitCommand(0.2))
     //move arm out of way and drive back to balance
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20-4-8-4), ()->0, 10, Units.inchesToMeters(10), navx, chassis)
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20-4-8-4), ()->0, 90, Units.inchesToMeters(10), navx, chassis)
       .deadlineWith(commandBuilder(CommandSelect.kArmToCarryPosition))
     )
     //balance!
