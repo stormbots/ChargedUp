@@ -72,6 +72,8 @@ public class ChassisDriveNavx extends CommandBase {
     this.angleTolerance = angleTolerance;
     this.distanceTolerance = distanceTolerance;
     distanceSlew = new SlewRateLimiter(velocity, -velocity, 0);
+    pid.setI(0.018/10.0);
+    pid.setContinuousMode(-180, 180);
   }
 
 
@@ -99,7 +101,6 @@ public class ChassisDriveNavx extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-
 
     // SmartDashboard.putNumber("Chassis/targetBearing", targetBearing);
     // SmartDashboard.putNumber("Chassis/targetBearingSupplier", targetBearingSupplier.getAsDouble());

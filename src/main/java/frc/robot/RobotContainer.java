@@ -406,7 +406,7 @@ public class RobotContainer {
   
     //PICKUP FROM GROUND/
     operator.button(8).whileTrue(new InstantCommand()
-      .andThen(new setArm(()->-25 ,()->6,()->0,()->0.2,arm,intake)
+      .andThen(new setArm(()->-25 ,()->0,()->0,()->0.2,arm,intake)
       .until(()->arm.isRobotOnTarget(20, 50, 7)).withTimeout(0.25))
       .andThen(commandBuilder(CommandSelect.kArmToPickupPosition))
     );
@@ -572,10 +572,10 @@ public class RobotContainer {
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
       .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kReverse, false)))
       .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.OPEN))) 
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6+6+4), ()->0, 5, Units.inchesToMeters(10), navx, chassis)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(205+6+6+4), ()->0, 3, Units.inchesToMeters(15), navx, chassis)
         .deadlineWith(new setArm(-41.5, 7, -8, 0.3, arm, intake))
       )
-      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8-6-4),()->0,5,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(5)
+      .andThen(new ChassisDriveNavx(Units.inchesToMeters(-193-10-8-6-4),()->0, 3,Units.inchesToMeters(10),1.75,navx,chassis).withTimeout(5)
         .deadlineWith(new setArm(90, 11, 180, 0.5, arm, intake))
       )
       ;
@@ -645,9 +645,9 @@ public class RobotContainer {
      .andThen(new InstantCommand(()->arm.armMotor.enableSoftLimit(SoftLimitDirection.kForward, false)))
  
      //place get values
-     .andThen(new setArm(145, 14, 180, 0.5, arm, intake).until(()->arm.isRobotOnTarget(3,5,5)).withTimeout(0.75))
+     .andThen(new setArm(145, 16, 180, 0.5, arm, intake).withTimeout(0.75))
      //execute get values
-     .andThen(new setArm(145, 14, 180, -0.1, arm, intake).withTimeout(.5))
+     .andThen(new setArm(145, 16, 180, -0.1, arm, intake).withTimeout(.5))
      .andThen(new setArm(90,0,0,0,arm,intake).withTimeout(0.5))
      //put arm up somewhere away from posts
      .andThen(commandBuilder(CommandSelect.kLevelArmAndResetEncoder))

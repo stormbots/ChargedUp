@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +31,7 @@ public class Robot extends TimedRobot {
   UsbCamera camera1;
   // UsbCamera camera2;
   private RobotContainer robotContainer;
+  private boolean autoHasRun = false;
 
   
   /**
@@ -92,6 +94,10 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic(){
     robotContainer.arm.armMotor.setIdleMode(IdleMode.kBrake);
+
+    if(autoHasRun == false){
+      robotContainer.navx.reset();
+    }
    
     //Put some useful simulation tools on the dashboard.
     robotContainer.field.getObject("tags").setPoses(
@@ -111,6 +117,14 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     robotContainer.navx.reset();
+    Timer.delay(0.04);
+    // robotContainer.navx.calibrate();
+    // robotContainer.navx.isCalibrating();//bad data
+    while(robotContainer.navx.isCalibrating()){
+      Timer.delay(0.01);
+      System.err.println("NAVX CALIBRATING");
+      robotContainer.chassis.arcadeDrive(0, 0);
+    }
 
     autonomousCommand = robotContainer.getAutonomousCommand();
 
@@ -119,6 +133,7 @@ public class Robot extends TimedRobot {
       autonomousCommand.schedule();
     }
 
+    autoHasRun = true;
   }
 
   /** This function is called periodically during autonomous. */
