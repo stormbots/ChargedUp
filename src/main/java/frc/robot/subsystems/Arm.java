@@ -381,35 +381,35 @@ public class Arm extends SubsystemBase {
     if(wristAbsEncoder.isConnected()){
       wristMotor.getEncoder().setPosition(getWristAngleAbsolute());
     }
-    SmartDashboard.putNumber("arm/wrist/absencoder", wristAbsEncoder.getAbsolutePosition()*360);
-    SmartDashboard.putNumber("arm/wrist/absenc+offset", wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset);
-    SmartDashboard.putNumber("arm/wrist/wristAngleAbsolute", getWristAngleAbsolute());
+    // SmartDashboard.putNumber("arm/wrist/absencoder", wristAbsEncoder.getAbsolutePosition()*360);
+    // SmartDashboard.putNumber("arm/wrist/absenc+offset", wristAbsEncoder.getAbsolutePosition()*360-WristConstants.kAbsoluteAngleOffset);
+    // SmartDashboard.putNumber("arm/wrist/wristAngleAbsolute", getWristAngleAbsolute());
 
-    SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
+    // SmartDashboard.putNumber("arm/poseData/angleSparkEncoder", armMotor.getEncoder().getPosition());
     //SmartDashboard.putNumber("arm/armangle/angleArmRotations", armMotor.getEncoder().getPosition()/armMotor.getEncoder().getPositionConversionFactor());
-    SmartDashboard.putNumber("arm/armangle/absoluteAdjusted", getArmAngleAbsolute()); //??
+    // SmartDashboard.putNumber("arm/armangle/absoluteAdjusted", getArmAngleAbsolute()); //??
     // SmartDashboard.putNumber("arm/armangle/absoluteRaw", armAbsEncoder.getAbsolutePosition()); //??
 
     // SmartDashboard.putNumber("arm/intake/intakeVolts", intakeMotor.getAppliedOutput()*intakeMotor.getBusVoltage());
     // SmartDashboard.putNumber("arm/intake/intakeAmps", intakeMotor.getOutputCurrent());
 
-    SmartDashboard.putNumber("arm/poseData/retractEncoderRotations", retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor());
+    // SmartDashboard.putNumber("arm/poseData/retractEncoderRotations", retractMotor.getEncoder().getPosition()/retractMotor.getEncoder().getPositionConversionFactor());
     // SmartDashboard.putNumber("arm/retract/retractVoltage", retractMotor.getAppliedOutput()*retractMotor.getBusVoltage());
     // SmartDashboard.putNumber("arm/retract/retractOutput", retractMotor.getAppliedOutput());
     // SmartDashboard.putNumber("arm/retract/retractamps", retractMotor.getOutputCurrent());
     // SmartDashboard.putNumber("arm/retract/lengthIn", getRetractLengthIn() );
     // SmartDashboard.putNumber("arm/retract/lengthM", getRetractLengthM() );
     
-    SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
+    // SmartDashboard.putNumber("arm/armangle/outputVoltage", armMotor.getAppliedOutput()*armMotor.getBusVoltage());
 
-    SmartDashboard.putNumber("arm/poseData/wristAngleHorizon", getWristAngle());
-    SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
+    // SmartDashboard.putNumber("arm/poseData/wristAngleHorizon", getWristAngle());
+    // SmartDashboard.putNumber("arm/wrist/angleMotorEnc", wristMotor.getEncoder().getPosition());
     // SmartDashboard.putNumber("arm/wrist/outputPow", wristMotor.getAppliedOutput());
     // SmartDashboard.putNumber("arm/wrist/outputVolt", wristMotor.getAppliedOutput()/wristMotor.getBusVoltage());
     // SmartDashboard.putNumber("arm/wrist/outputAmps", wristMotor.getOutputCurrent());
 
-    SmartDashboard.putString("intakeState",getIntakePosition().toString());
-    SmartDashboard.putString("executeToggle", getPlaceOrPrepareOrExecute().toString());
+    // SmartDashboard.putString("intakeState",getIntakePosition().toString());
+    // SmartDashboard.putString("executeToggle", getPlaceOrPrepareOrExecute().toString());
     // SmartDashboard.putString("brakeOn/Off", getRetractBrake().toString());
   }
   

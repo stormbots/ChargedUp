@@ -125,7 +125,7 @@ public class RobotContainer {
       // this one's really basic, but needed to get systems moving right away.
        new RunCommand(
         ()->{
-          SmartDashboard.putNumber("chassis/forwardvalue",-driver.getRawAxis(1));
+          // SmartDashboard.putNumber("chassis/forwardvalue",-driver.getRawAxis(1));
           // SmartDashboard.putNumber("chassis/turnvalue",-driver.getRawAxis(2));
           chassis.arcadeDrive( -driver.getRawAxis(1), -driver.getRawAxis(2)*0.75);}
         ,chassis)
@@ -712,18 +712,18 @@ public class RobotContainer {
     .andThen(commandBuilder(CommandSelect.kPlaceConeMidBackwards))
     // Drive past charger
     .andThen(
-      new ChassisDriveNavx(Units.inchesToMeters(164), ()->0, 5 , Units.inchesToMeters(10), 2,navx, chassis).withTimeout(5)
+      new ChassisDriveNavx(Units.inchesToMeters(164+22+10), ()->0, 90, Units.inchesToMeters(10), 2,navx, chassis).withTimeout(5)
       .deadlineWith(new setArm(0, 0, 45, 0.2, arm, intake))
     )
       // Pickup up a cone
     // .andThen(new setArm(-50, 4, 0, 1.0, arm, intake).withTimeout(2).until(()->arm.isRobotOnTarget(8, 3, 8)))
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(66+4+4),()->0,90,Units.inchesToMeters(10),navx,chassis).withTimeout(5.5)
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(66+4+4-16-10),()->0,90,Units.inchesToMeters(10), 2,navx,chassis).withTimeout(5.5)
       .deadlineWith(new setArm(-50, 4, 0, 1.0, arm, intake))
     )
     .andThen(new InstantCommand(()->arm.setIntake(IntakeSolenoidPosition.CLOSED)))
-    .andThen(new WaitCommand(0.2))
+    .andThen(new WaitCommand(0.15))
     //move arm out of way and drive back to balance
-    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20-4-8-4), ()->0, 90, Units.inchesToMeters(10), navx, chassis)
+    .andThen(new ChassisDriveNavx(Units.inchesToMeters(-95-20-4-8-4), ()->0, 90, Units.inchesToMeters(10), 1.7, navx, chassis)
       .deadlineWith(commandBuilder(CommandSelect.kArmToCarryPosition))
     )
     //balance!

@@ -95,10 +95,10 @@ public class ChassisBalance extends CommandBase {
     // SmartDashboard.putNumber("balance/targetAngle", targetAngle);
     // SmartDashboard.putNumber("balance/tilt", tilt);
     // SmartDashboard.putNumber("balance/tiltError", tiltError);
-    SmartDashboard.putNumber("balance/tiltDelta", tiltDelta);
-    SmartDashboard.putNumber("balance/tiltOutP", tiltOutP);
-    SmartDashboard.putNumber("balance/tiltOutD", tiltoutD);
-    SmartDashboard.putNumber("balance/tiltOutput", tiltOutput);
+    // SmartDashboard.putNumber("balance/tiltDelta", tiltDelta);
+    // SmartDashboard.putNumber("balance/tiltOutP", tiltOutP);
+    // SmartDashboard.putNumber("balance/tiltOutD", tiltoutD);
+    // SmartDashboard.putNumber("balance/tiltOutput", tiltOutput);
     // SmartDashboard.putNumber("balance/turnOutput", turnoutput);
     // SmartDashboard.putNumber("balance/turnAngle", angle);
     // SmartDashboard.putNumber("balance/turnError", angleError);

@@ -64,7 +64,7 @@ public class VisionTurnToTargetPose extends CommandBase {
 
     var target = vision.setTarget(targetType);
     double angle = vision.getAngleToTargetPose(target);
-    SmartDashboard.putNumber("visionpose/Angle to target", angle);
+    // SmartDashboard.putNumber("visionpose/Angle to target", angle);
     field.getObject("targetpose").setPose(target.toPose2d());
 
     //get feedforwards and pids
@@ -76,7 +76,7 @@ public class VisionTurnToTargetPose extends CommandBase {
     // turnOutput += kff*Math.signum(turnOutput);
 
     var turnOutput = turnpid.getOutput(0.0, angle);
-    SmartDashboard.putNumber("visionpose/turnoutput", turnOutput);
+    // SmartDashboard.putNumber("visionpose/turnoutput", turnOutput);
 
 
     //driver input
