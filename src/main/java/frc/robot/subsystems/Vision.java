@@ -81,9 +81,9 @@ public class Vision extends SubsystemBase {
   @Override
   public void periodic() {
 
-    SmartDashboard.putNumber("vision/navxangle", gyro.getAngle());
-    SmartDashboard.putNumber("vision/poseangle", poseEstimator.getEstimatedPosition().getRotation().getDegrees());
-    SmartDashboard.putNumber("vision/navxangle", gyro.getAngle());
+    // SmartDashboard.putNumber("vision/navxangle", gyro.getAngle());
+    // SmartDashboard.putNumber("vision/poseangle", poseEstimator.getEstimatedPosition().getRotation().getDegrees());
+    // SmartDashboard.putNumber("vision/navxangle", gyro.getAngle());
 
 
     //read values periodically
@@ -91,17 +91,17 @@ public class Vision extends SubsystemBase {
     double x = tx.getDouble(0.0);
     double y = ty.getDouble(0.0); 
 
-    SmartDashboard.putBoolean("vision/TargetValid", hasTargets);
-    SmartDashboard.putNumber("vision/X", x);
-    SmartDashboard.putNumber("vision/Y", y);
+    // SmartDashboard.putBoolean("vision/TargetValid", hasTargets);
+    // SmartDashboard.putNumber("vision/X", x);
+    // SmartDashboard.putNumber("vision/Y", y);
 
     double[] bp = bptable.getDoubleArray(bpDefault);
     if(Array.getLength(bp)<6) return;
         
     //post to smart dashboard periodically
     // SmartDashboard.putNumber("vision/Area", targetArea);
-    SmartDashboard.putNumberArray("vision/Botpose", bp);
-    SmartDashboard.putNumber("vision/TargetDistance", distance());
+    // SmartDashboard.putNumberArray("vision/Botpose", bp);
+    // SmartDashboard.putNumber("vision/TargetDistance", distance());
     //SmartDashboard.putNumber("vision/DegFromTarget", getAngleToTargetPose());
 
     rot = new Rotation2d( Math.toRadians( bp[5]) );
@@ -150,8 +150,8 @@ public class Vision extends SubsystemBase {
     double dx =  targetpose.getX() - botpose.getX();
     double dy = targetpose.getY() - botpose.getY();
     //trig
-    SmartDashboard.putNumber("dx", dx);
-    SmartDashboard.putNumber("dy", dy);
+    // SmartDashboard.putNumber("dx", dx);
+    // SmartDashboard.putNumber("dy", dy);
     double angle = Math.toDegrees(Math.atan2(dy,dx));
 
     // SmartDashboard.putNumber("vision/deltax", delta.getX());

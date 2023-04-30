@@ -76,9 +76,10 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    // SmartDashboard.putNumber("navx/angle", robotContainer.navx.getAngle());
 
-    SmartDashboard.putNumber("chassis/systemvoltage", robotContainer.pdp.getVoltage());
-    SmartDashboard.putBoolean("chassis/isHighGear", robotContainer.chassis.gearPosition==Gear.HIGH);
+    // SmartDashboard.putNumber("chassis/systemvoltage", robotContainer.pdp.getVoltage());
+    // SmartDashboard.putBoolean("chassis/isHighGear", robotContainer.chassis.gearPosition==Gear.HIGH);
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -118,8 +119,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     robotContainer.navx.reset();
     Timer.delay(0.04);
-    // robotContainer.navx.calibrate();
-    // robotContainer.navx.isCalibrating();//bad data
+
     while(robotContainer.navx.isCalibrating()){
       Timer.delay(0.01);
       System.err.println("NAVX CALIBRATING");

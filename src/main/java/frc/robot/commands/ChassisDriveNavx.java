@@ -29,7 +29,7 @@ public class ChassisDriveNavx extends CommandBase {
   private double targetDistance;
   private DoubleSupplier targetBearingSupplier;
   private double targetBearing;
-  private double initialBearing;
+  // private double initialBearing;
 
   private double angleTolerance;
   private double distanceTolerance;
@@ -56,6 +56,9 @@ public class ChassisDriveNavx extends CommandBase {
     this.angleTolerance = angleTolerance;
     this.distanceTolerance = distanceTolerance;
     distanceSlew = new SlewRateLimiter(1.5, -1.5, 0);
+    pid.setI(0.018/10.0);
+    pid.setMaxIOutput(0.1);
+    pid.setContinuousMode(-180, 180);
   }
 
   public ChassisDriveNavx(
@@ -73,6 +76,7 @@ public class ChassisDriveNavx extends CommandBase {
     this.distanceTolerance = distanceTolerance;
     distanceSlew = new SlewRateLimiter(velocity, -velocity, 0);
     pid.setI(0.018/10.0);
+    pid.setMaxIOutput(0.1);
     pid.setContinuousMode(-180, 180);
   }
 
@@ -81,19 +85,18 @@ public class ChassisDriveNavx extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    
     pid.reset();
-
 
     chassis.leftEncoder.setPosition(0);
     chassis.rightEncoder.setPosition(0);
-    Timer.delay(0.03);    
+    Timer.delay(0.04);    
     
     targetBearing = targetBearingSupplier.getAsDouble();
 
     distanceSlew.reset(0);
-    initialBearing = gyro.getAngle();
-    pid.setSetpoint(initialBearing + targetBearing);
+    // initialBearing = gyro.getAngle();
+    pid.setSetpoint(targetBearing);
 
     chassis.setShifter(Gear.LOW);
   }
@@ -147,11 +150,11 @@ public class ChassisDriveNavx extends CommandBase {
     // SmartDashboard.putNumber("Chassis/position Error", chassis.getAverageDistance() - targetDistance);
 
     var distanceOnTarget=Clamp.bounded(distance, targetDistance-distanceTolerance, targetDistance+distanceTolerance);
-    var angleOnTarget = Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance);
+    var angleOnTarget = Clamp.bounded(gyro.getAngle(), targetBearing-angleTolerance, targetBearing+angleTolerance);
 
-    SmartDashboard.putBoolean("autos/drivenavx/atDistance", distanceOnTarget);
-    SmartDashboard.putBoolean("autos/drivenavx/atAngle", angleOnTarget);
-    SmartDashboard.putBoolean("autos/drivenavx/atBoth", angleOnTarget && distanceOnTarget);
+    // SmartDashboard.putBoolean("autos/drivenavx/atDistance", distanceOnTarget);
+    // SmartDashboard.putBoolean("autos/drivenavx/atAngle", angleOnTarget);
+    // SmartDashboard.putBoolean("autos/drivenavx/atBoth", angleOnTarget && distanceOnTarget);
 
     // SmartDashboard.putBoolean("Chassis/Exit Angle", Clamp.bounded(gyro.getAngle(), initialBearing+targetBearing-angleTolerance, initialBearing+targetBearing+angleTolerance));
 

@@ -154,15 +154,15 @@ public class Chassis extends SubsystemBase {
     // SmartDashboard.putNumber("chassis/inchesLeft", Units.metersToInches(leftEncoder.getPosition()));
     // SmartDashboard.putNumber("chassis/rotationsLeft", leftEncoder.getPosition()/leftEncoder.getPositionConversionFactor());
 
-    SmartDashboard.putNumber("chassis/1 amp", leftLeader.getOutputCurrent());
-    SmartDashboard.putNumber("chassis/2 amp", leftFollower.getOutputCurrent());
-    SmartDashboard.putNumber("chassis/3 amp", rightLeader.getOutputCurrent());
-    SmartDashboard.putNumber("chassis/4 amp", rightFollower.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/1 amp", leftLeader.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/2 amp", leftFollower.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/3 amp", rightLeader.getOutputCurrent());
+    // SmartDashboard.putNumber("chassis/4 amp", rightFollower.getOutputCurrent());
 
-    SmartDashboard.putNumber("chassis/temp 1", leftLeader.getMotorTemperature());
-    SmartDashboard.putNumber("chassis/temp 2", leftFollower.getMotorTemperature());
-    SmartDashboard.putNumber("chassis/temp 3", rightLeader.getMotorTemperature());
-    SmartDashboard.putNumber("chassis/temp 4", rightFollower.getMotorTemperature());
+    // SmartDashboard.putNumber("chassis/temp 1", leftLeader.getMotorTemperature());
+    // SmartDashboard.putNumber("chassis/temp 2", leftFollower.getMotorTemperature());
+    // SmartDashboard.putNumber("chassis/temp 3", rightLeader.getMotorTemperature());
+    // SmartDashboard.putNumber("chassis/temp 4", rightFollower.getMotorTemperature());
 
   }
 }
