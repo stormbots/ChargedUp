@@ -7,3 +7,7 @@ make robot go
 [See the robot in action](https://www.youtube.com/watch?v=rCgKatK5Oyw)
 
 [All matches this season](https://www.thebluealliance.com/team/2811/2023)
+
+
+### Code Notes
+For extra info on how the bot + code work, see [README-DOCS.md](blob/main/README-DOCS.md)
