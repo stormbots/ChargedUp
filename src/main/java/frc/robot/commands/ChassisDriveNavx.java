@@ -77,7 +77,6 @@ public class ChassisDriveNavx extends CommandBase {
     distanceSlew = new SlewRateLimiter(velocity, -velocity, 0);
     pid.setI(0.018/10.0);
     pid.setMaxIOutput(0.1);
-    pid.setContinuousMode(-180, 180);
   }
 
 
