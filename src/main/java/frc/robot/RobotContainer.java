@@ -705,7 +705,9 @@ public class RobotContainer {
 
     var balanceCommunityScoreCubeHigh = new InstantCommand()
     .andThen( commandBuilder(CommandSelect.kPlaceCubeHighBackwards))
-    .andThen(commandBuilder(CommandSelect.kDrivePastChargerReverseAndBalance))
+    .andThen(commandBuilder(CommandSelect.kDrivePastChargerReverseAndBalance)
+      .deadlineWith(new setArm(90, 0, 180, 0.5, arm, intake))
+    )
     ;
 
     var placeConeDriveOverChargedPickUpBalance = new InstantCommand()
